@@ -4,12 +4,13 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
-import org.slf4j.{Logger, LoggerFactory}
-import spray.json.{DefaultJsonProtocol, _}
+import org.slf4j.{ Logger, LoggerFactory }
+import spray.json.{ DefaultJsonProtocol, _ }
+import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.routes.FlightData
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-
+import scala.concurrent.{ ExecutionContextExecutor, Future }
+import DashboardClient._
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val flightDataFormat = jsonFormat4(FlightData)
 }
@@ -22,6 +23,7 @@ object DrtClient extends JsonSupport {
     Http()(mat.system).singleRequest(HttpRequest(
       method = HttpMethods.POST,
       uri = uri,
+      headers = rolesToRoleHeader(List(Roles.NeboUpload)),
       entity = HttpEntity(ContentTypes.`application/json`, data.toJson.toString())))
   }
 
