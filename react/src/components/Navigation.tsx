@@ -52,6 +52,7 @@ export default function Navigation(props: IProps) {
                         <MenuItem onClick={handleClose}><Link to="/alerts">Alerts</Link></MenuItem>
                         : ""
                 }
+                <MenuItem onClick={handleClose}><Link to="/upload">Upload</Link></MenuItem>
                 <MenuItem onClick={handleClose}><a href={props.logoutLink} id="proposition-name">Log out</a></MenuItem>
             </Menu>
         </div>

@@ -11,6 +11,7 @@ export default class ApiClient implements IApiClient {
   public requestAccessEndPoint = "/api/request-access";
   public logoutEndPoint = "/oauth/logout";
   public alertsEndPoint = "/api/alerts";
+  public fileUploadEndPoint = "/upload";
 
   public fetchData(userEndPoint: string, handleResponse: (r: AxiosResponse) => void) {
     axios
@@ -30,4 +31,11 @@ export default class ApiClient implements IApiClient {
     console.log('caught: ' + throwable);
     // window.document.location.reload();
   }
+
+    public sendFileData(userEndPoint: string, data: any, handleResponse: (r: AxiosResponse) => void) {
+      axios
+        .post(userEndPoint, data)
+        .then(r => handleResponse(r))
+        .catch(t => console.log('caught: ' + t))
+    }
 }

@@ -8,7 +8,7 @@ import {AxiosResponse} from "axios";
 import Loading from "./components/Loading";
 import Navigation from "./components/Navigation";
 import ConfigLike from "./model/Config";
-import FileUploadSimple from "./components/FileUploadSimple";
+import FileUpload from "./components/FileUpload";
 
 interface UserLike {
     email: string;
@@ -99,7 +99,7 @@ export default class App extends React.Component<IProps, IState> {
                     <Route exact path="/upload">
                         {this.state.user === undefined ?
                             <Loading/> :
-                            <FileUploadSimple user={this.state.user}/>
+                            <FileUpload user={this.state.user}/>
                         }
                     </Route>
                 </Router>
