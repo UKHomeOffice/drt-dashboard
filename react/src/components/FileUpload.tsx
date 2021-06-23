@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import UserLike from "../model/User";
 import ApiClient from "../services/ApiClient";
 import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
+
 interface IProps {
     user: UserLike;
 }
@@ -20,7 +21,6 @@ class FileUpload extends React.Component<IProps, IState> {
     constructor(props: IProps) {
         super(props);
         this.state = {
-            // Initially, no file is selected
             selectedFile: null,
             fileInput: React.createRef(),
             displayMessage: 'Choose before Pressing the Upload button',
@@ -29,14 +29,12 @@ class FileUpload extends React.Component<IProps, IState> {
         };
     }
 
-    // On file select (from the pop up)
     onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             this.setState({selectedFile: event.target.files[0]});
         }
     };
 
-    // On file upload (click the upload button)
     onFileUpload = () => {
         const apiClient = new ApiClient;
         if (this.state.selectedFile) {
@@ -46,13 +44,13 @@ class FileUpload extends React.Component<IProps, IState> {
                 this.state.selectedFile,
                 this.state.selectedFile.name
             );
-            this.postUploadData("/uploadFile",formData,this.responseData);
-            if(this.state.hasError) {
+            this.postUploadData("/uploadFile", formData, this.responseData);
+            if (this.state.hasError) {
                 this.setState({displayMessage: this.state.selectedFile.name + ' file is unable to process. Please try again later or contact us.'});
-            } else{
+            } else {
                 this.setState({displayMessage: this.state.selectedFile.name + ' file is processed . You can upload new file .'});
             }
-            this.setState({hasError:false});
+            this.setState({hasError: false});
             this.setState({selectedFile: null});
             this.state.fileInput.current.value = '';
         }
@@ -63,18 +61,21 @@ class FileUpload extends React.Component<IProps, IState> {
         headers: {'Access-Control-Allow-Origin': '*'}
     };
 
-    public postUploadData(endPoint: string,data: any, handleResponse: (r: AxiosResponse) => void) {
-        let fileName = this.state.selectedFile.name ;
+    public postUploadData(endPoint: string, data: any, handleResponse: (r: AxiosResponse) => void) {
+        let fileName = this.state.selectedFile.name;
         axios
             .post(endPoint, data, this.reqConfig)
             .then(response => handleResponse(response))
-            .catch(t => this.setState(() => ({hasError: true, errorMessage: t ,displayMessage: fileName + ' file is unable to process. Please try again later or contact us.'})))
+            .catch(t => this.setState(() => ({
+                hasError: true,
+                errorMessage: t,
+                displayMessage: fileName + ' file is unable to process. Please try again later or contact us.'
+            })))
     }
 
     responseData = (response: AxiosResponse) => {
         console.log('response from post ' + response)
     }
-
 
     fileData = () => {
         if (this.state.selectedFile) {
@@ -106,8 +107,8 @@ class FileUpload extends React.Component<IProps, IState> {
                 <h1>
                     File Upload
                 </h1>
-                    <br/>
-                    <br/>
+                <br/>
+                <br/>
                 <h3>
                     Please upload nebo CSV file
                 </h3>
