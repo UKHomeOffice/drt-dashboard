@@ -1,8 +1,10 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post }
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model.{ HttpResponse, StatusCode }
+import akka.http.scaladsl.model.StatusCodes.{ BadRequest, Forbidden, InternalServerError, MethodNotAllowed }
+import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
 import akka.http.scaladsl.server.directives.FileInfo
+import akka.http.scaladsl.server.{ Route, _ }
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Framing, Source }
 import akka.util.ByteString
@@ -10,8 +12,8 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.homeoffice.drt.Dashboard._
-import uk.gov.homeoffice.drt.DrtClient._
-import uk.gov.homeoffice.drt.auth.Roles.{ CreateAlerts, NeboUpload }
+import uk.gov.homeoffice.drt.HttpClient
+import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
 
@@ -19,52 +21,86 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 case class Row(urnReference: String, associatedText: String, flightCode: String, arrivalPort: String, date: String)
 
-case class FlightData(flightCode: String, portCode: String, scheduled: MillisSinceEpoch, paxCount: Int)
+case class FlightData(portCode: String, flightCode: String, scheduled: MillisSinceEpoch, paxCount: Int)
 
 object UploadRoutes {
+
   type MillisSinceEpoch = Long
 
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  val routePath = "/data/feeds/red-list-counts"
+  val drtRoutePath = "/data/feeds/red-list-counts"
 
-  def apply(prefix: String, neboPortCodes: List[String])(implicit ec: ExecutionContextExecutor, mat: Materializer): Route = authByRole(NeboUpload) {
+  implicit def rejectionHandler =
+    RejectionHandler.newBuilder()
+      .handle {
+        case AuthorizationFailedRejection =>
+          complete(Forbidden, "You are not authorized to upload!")
+      }
+      .handle {
+        case ValidationRejection(msg, _) =>
+          complete(InternalServerError, "Not valid data!" + msg)
+      }
+      .handleAll[MethodRejection] { methodRejections =>
+        val names = methodRejections.map(_.supported.name)
+        complete(MethodNotAllowed, s"Not supported: ${names mkString " or "}!")
+      }
+      .handleNotFound {
+        complete("Not found!")
+      }
+      .result()
+
+  def apply(prefix: String, neboPortCodes: List[String], httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Route = {
     val route: Route =
-      pathPrefix(prefix) {
-        post {
-          fileUpload("csv") {
-            case (metadata, byteSource) =>
-              val flightData: Future[List[FlightData]] = processCSV(metadata, byteSource)
-              val responseF = neboPortCodes.map { portCode =>
-                flightData.flatMap(r => sendData(r.filter(_.flightCode.toLowerCase == portCode.toLowerCase), s"${drtUriForPortCode(portCode)}$routePath"))
-              }
-              onSuccess(Future.sequence(responseF)) { response =>
-                complete(s"Posted to DRT with status ${response.map(_.status)}")
-              }
+      authByRole(NeboUpload) {
+        pathPrefix(prefix) {
+          post {
+            fileUpload("csv") {
+              case (metadata, byteSource) =>
+                onSuccess(
+                  Future.sequence(
+                    neboPortCodes
+                      .map(sendFlightDataToPort(
+                        convertByteSourceToFlightData(metadata, byteSource), _, httpClient))))(response => complete(s"Posted to DRT with status ${response.map(r => r._1 -> r._2)}"))
+            }
           }
         }
       }
-    route
+
+    handleRejections(rejectionHandler)(route)
   }
 
-  def processCSV(metadata: FileInfo, byteSource: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, mat: Materializer) = {
-    val rowsF: Future[List[Row]] = byteSource.via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 2048, allowTruncation = true))
-      .map(mapToRow)
+  def sendFlightDataToPort(flightData: Future[List[FlightData]], portCode: String, httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[(String, StatusCode)] = {
+    flightData.flatMap { fd =>
+      val httpRequest = httpClient
+        .createDrtNeboRequest(
+          fd.filter(_.portCode.toLowerCase == portCode.toLowerCase), s"${drtUriForPortCode(portCode)}$drtRoutePath")
+      httpClient.send(httpRequest)
+    }.map(r => portCode -> r.status)
+  }
+
+  def convertByteSourceToFlightData(metadata: FileInfo, byteSource: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, mat: Materializer) = {
+    byteSource.via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 2048, allowTruncation = true))
+      .map(convertByteStringToRow)
       .runFold(List.empty[Row]) { (r, n) => r :+ n }
-
-    rowsF.map(rowToJson(_, metadata))
+      .map(rowToJson(_, metadata))
   }
 
-  def mapToRow(byteString: ByteString): Row = {
-    val map: Map[Int, String] = byteString.utf8String.split(",")
+  private def convertByteStringToRow(byteString: ByteString): Row = {
+    val indexMapRow: Map[Int, String] = byteString.utf8String.split(",")
       .zipWithIndex
       .toMap
       .map { case (k, v) => v -> k }
 
-    Row(map.getOrElse(0, "").trim, map.getOrElse(1, "").trim, map.getOrElse(2, "").trim, map.getOrElse(3, "").trim, map.getOrElse(4, "").trim)
+    Row(
+      indexMapRow.getOrElse(0, "").trim,
+      indexMapRow.getOrElse(1, "").trim,
+      indexMapRow.getOrElse(2, "").trim,
+      indexMapRow.getOrElse(3, "").trim,
+      indexMapRow.getOrElse(4, "").trim)
   }
 
-  def rowToJson(rows: List[Row], metadata: FileInfo): List[FlightData] = {
+  private def rowToJson(rows: List[Row], metadata: FileInfo): List[FlightData] = {
     val dataRows: Seq[Row] = rows.tail.filterNot(_.flightCode.isEmpty)
     log.info(s"Processing ${dataRows.size} rows from the file name `${metadata.fileName}`")
     dataRows.groupBy(_.arrivalPort)
@@ -74,6 +110,9 @@ object UploadRoutes {
       }.toList
   }
 
-  val covertDateTime: String => MillisSinceEpoch = date => if (date.isEmpty) 0 else DateTime.parse(date, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")).withZone(DateTimeZone.UTC).getMillis
+  val covertDateTime: String => MillisSinceEpoch = date => if (date.isEmpty) 0 else DateTime
+    .parse(date, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+    .withZone(DateTimeZone.UTC)
+    .getMillis
 
 }
