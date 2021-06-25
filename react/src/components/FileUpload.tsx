@@ -108,7 +108,7 @@ class FileUpload extends React.Component<IProps, IState> {
             return (
                 <div>
                     <br/>
-                    {message};
+                    {message}
                 </div>
             );
         }
@@ -126,14 +126,14 @@ class FileUpload extends React.Component<IProps, IState> {
                 </h1>
                 <br/>
                 <br/>
-                <div className="input">
-                    <h3>Upload your CSV file</h3>
+                <h3>Upload your CSV file</h3>
+                <div>
                     <br/>
-                    <input type="file" onChange={this.onFileChange} id="fileInputId" ref={this.state.fileInput}/>
+                       <input className="file-input" type="file" onChange={this.onFileChange} id="fileInputId" ref={this.state.fileInput}/>
                     <br/>
                     <br/>
                     <br/>
-                    {this.state.showUploadButton && <button onClick={this.onFileUpload}>Upload</button>}
+                       {this.state.showUploadButton && <button className="upload-button" onClick={this.onFileUpload}>Upload</button>}
                 </div>
                 {this.fileData()}
             </div>
