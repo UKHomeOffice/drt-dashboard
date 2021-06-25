@@ -13,6 +13,7 @@ interface IState {
     displayMessage: string;
     hasError: boolean;
     errorMessage: string;
+    showUploadButton: boolean;
 
 }
 
@@ -23,15 +24,19 @@ class FileUpload extends React.Component<IProps, IState> {
         this.state = {
             selectedFile: null,
             fileInput: React.createRef(),
-            displayMessage: 'Choose before Pressing the Upload button',
+            displayMessage: '',
             hasError: false,
-            errorMessage: ''
+            errorMessage: '',
+            showUploadButton: false
         };
     }
 
     onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             this.setState({selectedFile: event.target.files[0]});
+            this.setState({showUploadButton: true});
+            this.setState({displayMessage: ''});
+            this.setState({hasError: false});
         }
     };
 
@@ -46,12 +51,13 @@ class FileUpload extends React.Component<IProps, IState> {
             );
             this.postUploadData("/uploadFile", formData, this.responseData);
             if (this.state.hasError) {
-                this.setState({displayMessage: this.state.selectedFile.name + ' file is unable to process. Please try again later or contact us.'});
+                this.setState({displayMessage: this.state.selectedFile.name + ' failed to upload. Check your file, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.'});
             } else {
                 this.setState({displayMessage: this.state.selectedFile.name + ' file is processed . You can upload new file .'});
             }
-            this.setState({hasError: false});
+
             this.setState({selectedFile: null});
+            this.setState({showUploadButton: false});
             this.state.fileInput.current.value = '';
         }
 
@@ -69,7 +75,7 @@ class FileUpload extends React.Component<IProps, IState> {
             .catch(t => this.setState(() => ({
                 hasError: true,
                 errorMessage: t,
-                displayMessage: fileName + ' file is unable to process. Please try again later or contact us.'
+                displayMessage: fileName + ' failed to upload. Check your file, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.'
             })))
     }
 
@@ -77,55 +83,77 @@ class FileUpload extends React.Component<IProps, IState> {
         console.log('response from post ' + response)
     }
 
+
     fileData = () => {
+        let message;
         if (this.state.selectedFile) {
             return (
                 <div>
-                    <h2>File Details:</h2>
-                    <p>File Name: {this.state.selectedFile.name}</p>
-                    <p>File Type: {this.state.selectedFile.type}</p>
+                    <h2>File details:</h2>
+                    <p>File name: {this.state.selectedFile.name}</p>
+                    <p>File type: {this.state.selectedFile.type}</p>
                     <p>
-                        Last Modified:{" "}
+                        Last modified:{" "}
                         {this.state.selectedFile.lastModifiedDate.toDateString()}
                     </p>
 
                 </div>
             );
         } else {
+            if (this.state.hasError) {
+                message = <h4 className="upload-error">{this.state.displayMessage}</h4>
+            } else {
+                message = <h4 className="upload-success">{this.state.displayMessage}</h4>
+            }
             return (
                 <div>
                     <br/>
-                    <h4>{this.state.displayMessage}</h4>
+                    {message};
                 </div>
             );
         }
+
     };
 
     render() {
-        return (
-            <div>
+
+        let page;
+
+        if (this.props.user.roles.includes("nebo:upload")) {
+            page = <div>
                 <h1>
-                    File Upload
+                    Nebo data upload area
                 </h1>
                 <br/>
                 <br/>
-                <h3>
-                    Please upload nebo CSV file
-                </h3>
-                <div>
-                    <br/>
+                <div className="input">
+                    <h3>Upload your CSV file</h3>
                     <br/>
                     <input type="file" onChange={this.onFileChange} id="fileInputId" ref={this.state.fileInput}/>
                     <br/>
                     <br/>
                     <br/>
-                    <button onClick={this.onFileUpload}>
-                        Upload!
-                    </button>
+                    {this.state.showUploadButton && <button onClick={this.onFileUpload}>Upload</button>}
                 </div>
                 {this.fileData()}
             </div>
-        );
+
+        } else {
+            page = <div>
+                <h1>
+                    Nebo data upload area
+                </h1>
+                <br/>
+                <br/>
+                <span className="upload-error">You do not have permission to upload . Please contact us at drtpoiseteam@homeoffice.gov.uk if you need permission.</span>
+                <br/>
+                <br/>
+                <br/>
+            </div>
+
+        }
+
+        return (page);
     }
 }
 
