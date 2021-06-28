@@ -58,7 +58,7 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   "Given a correct permission to users, the user should able to upload file successfully " >> {
     Post("/uploadFile", multipartForm) ~>
       RawHeader("X-Auth-Roles", NeboUpload.name) ~> RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-        responseAs[String] shouldEqual """Posted to DRT with status List((lhr,202 Accepted))"""
+        responseAs[String] shouldEqual """[{"flightCount":3,"portCode":"lhr","statusCode":"202 Accepted"}]"""
       }
   }
 

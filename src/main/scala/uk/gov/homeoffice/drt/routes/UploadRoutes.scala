@@ -1,7 +1,6 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCode }
-import akka.http.scaladsl.model.StatusCodes.{ BadRequest, Forbidden, InternalServerError, MethodNotAllowed }
+import akka.http.scaladsl.model.StatusCodes.{ Forbidden, InternalServerError, MethodNotAllowed }
 import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
 import akka.http.scaladsl.server.directives.FileInfo
 import akka.http.scaladsl.server.{ Route, _ }
@@ -11,11 +10,12 @@ import akka.util.ByteString
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.slf4j.{ Logger, LoggerFactory }
+import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
-import uk.gov.homeoffice.drt.HttpClient
 import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
+import uk.gov.homeoffice.drt.{ HttpClient, JsonSupport }
 
 import scala.concurrent.{ ExecutionContextExecutor, Future }
 
@@ -23,7 +23,9 @@ case class Row(urnReference: String, associatedText: String, flightCode: String,
 
 case class FlightData(portCode: String, flightCode: String, scheduled: MillisSinceEpoch, paxCount: Int)
 
-object UploadRoutes {
+case class FeedStatus(portCode: String, flightCount: Int, statusCode: String)
+
+object UploadRoutes extends JsonSupport {
 
   type MillisSinceEpoch = Long
 
@@ -52,17 +54,10 @@ object UploadRoutes {
 
   def apply(prefix: String, neboPortCodes: List[String], httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Route = {
     val route: Route =
-      authByRole(NeboUpload) {
-        pathPrefix(prefix) {
+      pathPrefix(prefix) {
+        authByRole(NeboUpload) {
           post {
-            fileUpload("csv") {
-              case (metadata, byteSource) =>
-                onSuccess(
-                  Future.sequence(
-                    neboPortCodes
-                      .map(sendFlightDataToPort(
-                        convertByteSourceToFlightData(metadata, byteSource), _, httpClient))))(response => complete(s"Posted to DRT with status ${response.map(r => r._1 -> r._2)}"))
-            }
+            fileUploadCSV(neboPortCodes, httpClient)
           }
         }
       }
@@ -70,16 +65,29 @@ object UploadRoutes {
     handleRejections(rejectionHandler)(route)
   }
 
-  def sendFlightDataToPort(flightData: Future[List[FlightData]], portCode: String, httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[(String, StatusCode)] = {
-    flightData.flatMap { fd =>
-      val httpRequest = httpClient
-        .createDrtNeboRequest(
-          fd.filter(_.portCode.toLowerCase == portCode.toLowerCase), s"${drtUriForPortCode(portCode)}$drtRoutePath")
-      httpClient.send(httpRequest)
-    }.map(r => portCode -> r.status)
+  def fileUploadCSV(neboPortCodes: List[String], httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Route = {
+    fileUpload("csv") {
+      case (metadata, byteSource) =>
+        onSuccess(
+          Future.sequence(
+            neboPortCodes
+              .map(sendFlightDataToPort(
+                convertByteSourceToFlightData(metadata, byteSource), _, httpClient))))(feedStatus => complete(feedStatus.toJson))
+    }
   }
 
-  def convertByteSourceToFlightData(metadata: FileInfo, byteSource: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, mat: Materializer) = {
+  def sendFlightDataToPort(flightData: Future[List[FlightData]], portCode: String, httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[FeedStatus] = {
+    flightData.flatMap { fd =>
+      val filterLHR = fd.filter(_.portCode.toLowerCase == portCode.toLowerCase)
+      val httpRequest = httpClient
+        .createDrtNeboRequest(
+          filterLHR, s"${drtUriForPortCode(portCode)}$drtRoutePath")
+      httpClient.send(httpRequest)
+        .map(r => FeedStatus(portCode, filterLHR.size, r.status.toString()))
+    }
+  }
+
+  def convertByteSourceToFlightData(metadata: FileInfo, byteSource: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[List[FlightData]] = {
     byteSource.via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 2048, allowTruncation = true))
       .map(convertByteStringToRow)
       .runFold(List.empty[Row]) { (r, n) => r :+ n }
@@ -104,9 +112,13 @@ object UploadRoutes {
     val dataRows: Seq[Row] = rows.tail.filterNot(_.flightCode.isEmpty)
     log.info(s"Processing ${dataRows.size} rows from the file name `${metadata.fileName}`")
     dataRows.groupBy(_.arrivalPort)
-      .flatMap { arrivalPort =>
-        arrivalPort._2.groupBy(_.flightCode)
-          .map(flightCode => FlightData(arrivalPort._1, flightCode._1, covertDateTime(flightCode._2.head.date), flightCode._2.size))
+      .flatMap {
+        case (arrivalPort, portRows) =>
+          portRows.groupBy(_.flightCode)
+            .map {
+              case (flightCode, flightRows) =>
+                FlightData(arrivalPort, flightCode, covertDateTime(flightRows.head.date), flightRows.size)
+            }
       }.toList
   }
 

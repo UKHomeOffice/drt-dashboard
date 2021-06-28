@@ -15,13 +15,13 @@ case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route
   val route: Route =
     concat(
       path("") {
-        indexRouteDirectives()
+        indexRouteDirectives
       },
       path("alerts") {
-        indexRouteDirectives("alerts")
+        indexRouteDirectives
       },
       path("upload") {
-        indexRouteDirectives("upload")
+        uploadRoutesDirectives
       },
       (get & pathPrefix("")) {
         directoryResource
@@ -30,13 +30,10 @@ case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route
         staticResourceDirectory
       })
 
-  def indexRouteDirectives(path: String = ""): Route = {
+  def indexRouteDirectives: Route = {
     parameterMap { params =>
       optionalHeaderValueByName("X-Auth-Roles") { maybeRoles =>
         (params.get("fromPort").flatMap(urls.portCodeFromUrl), maybeRoles) match {
-          case (_, Some(rolesStr)) if rolesStr == NeboUpload.name && path != "upload" =>
-            log.info(s"Redirecting to upload url only role user has nebo upload")
-            redirect("upload", StatusCodes.TemporaryRedirect)
           case (Some(portCode), Some(rolesStr)) =>
             val user = User.fromRoles("", rolesStr)
             if (user.accessiblePorts.contains(portCode)) {
@@ -53,5 +50,21 @@ case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route
         }
       }
     }
+  }
+
+  def uploadRoutesDirectives = {
+    parameterMap { params =>
+      optionalHeaderValueByName("X-Auth-Roles") { maybeRoles =>
+        (params.get("fromPort").flatMap(urls.portCodeFromUrl), maybeRoles) match {
+          case (_, Some(rolesStr)) if rolesStr == NeboUpload.name =>
+            log.info(s"Redirecting to upload url only role user has nebo upload")
+            redirect("upload", StatusCodes.TemporaryRedirect)
+          case _ =>
+            log.info(s"Presenting application to user with roles ($maybeRoles)")
+            indexResource
+        }
+      }
+    }
+
   }
 }

@@ -53,7 +53,7 @@ class FileUpload extends React.Component<IProps, IState> {
             if (this.state.hasError) {
                 this.setState({displayMessage: this.state.selectedFile.name + ' failed to upload. Check your file, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.'});
             } else {
-                this.setState({displayMessage: this.state.selectedFile.name + ' file is processed . You can upload new file .'});
+                this.setState({displayMessage: 'Thank you! Arrivals have been updated.'});
             }
 
             this.setState({selectedFile: null});

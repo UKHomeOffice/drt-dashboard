@@ -85,21 +85,21 @@ export default class App extends React.Component<IProps, IState> {
 
                     <div id="global-header-bar"/>
                     <Route exact path="/">
-                        {this.state.config === undefined || this.state.user === undefined ?
-                            <Loading/> :
-                            <Home config={this.state.config !!} user={this.state.user !!}/>
+                        {this.state.config && this.state.user ?
+                          <Home config={this.state.config} user={this.state.user}/> :
+                          <Loading/>
                         }
                     </Route>
                     <Route exact path="/alerts">
-                        {this.state.user === undefined ?
-                            <Loading/> :
-                            <Alerts user={this.state.user}/>
+                        {this.state.user ?
+                            <Alerts user={this.state.user}/> :
+                            <Loading/>
                         }
                     </Route>
                     <Route exact path="/upload">
-                        {this.state.user === undefined ?
-                            <Loading/> :
-                            <FileUpload user={this.state.user}/>
+                        {this.state.user ?
+                            <FileUpload user={this.state.user}/> :
+                            <Loading/>
                         }
                     </Route>
                 </Router>
