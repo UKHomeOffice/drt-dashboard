@@ -1,23 +1,23 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.StatusCodes.{ Forbidden, InternalServerError, MethodNotAllowed }
-import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
+import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError, MethodNotAllowed}
+import akka.http.scaladsl.server.Directives.{complete, fileUpload, onSuccess, pathPrefix, post, _}
 import akka.http.scaladsl.server.directives.FileInfo
-import akka.http.scaladsl.server.{ Route, _ }
+import akka.http.scaladsl.server.{Route, _}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Framing, Source }
+import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.slf4j.{ Logger, LoggerFactory }
+import org.joda.time.{DateTime, DateTimeZone}
+import org.slf4j.{Logger, LoggerFactory}
 import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
 import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
-import uk.gov.homeoffice.drt.{ HttpClient, JsonSupport }
+import uk.gov.homeoffice.drt.{HttpClient, JsonSupport}
 
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 case class Row(urnReference: String, associatedText: String, flightCode: String, arrivalPort: String, date: String)
 
@@ -78,12 +78,11 @@ object UploadRoutes extends JsonSupport {
 
   def sendFlightDataToPort(flightData: Future[List[FlightData]], portCode: String, httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[FeedStatus] = {
     flightData.flatMap { fd =>
-      val filterLHR = fd.filter(_.portCode.toLowerCase == portCode.toLowerCase)
-      val httpRequest = httpClient
-        .createDrtNeboRequest(
-          filterLHR, s"${drtUriForPortCode(portCode)}$drtRoutePath")
+      val filterPortFlight = fd.filter(_.portCode.toLowerCase == portCode.toLowerCase)
+      val httpRequest = httpClient.createDrtNeboRequest(
+        filterPortFlight, s"${drtUriForPortCode(portCode)}$drtRoutePath")
       httpClient.send(httpRequest)
-        .map(r => FeedStatus(portCode, filterLHR.size, r.status.toString()))
+        .map(r => FeedStatus(portCode, filterPortFlight.size, r.status.toString()))
     }
   }
 
