@@ -1,23 +1,24 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.StatusCodes.{ Forbidden, InternalServerError, MethodNotAllowed }
-import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
+import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError, MethodNotAllowed}
+import akka.http.scaladsl.server.Directives.{complete, fileUpload, onSuccess, pathPrefix, post, _}
 import akka.http.scaladsl.server.directives.FileInfo
-import akka.http.scaladsl.server.{ Route, _ }
+import akka.http.scaladsl.server.{Route, _}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Framing, Source }
+import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.slf4j.{ Logger, LoggerFactory }
+import org.joda.time.{DateTime, DateTimeZone}
+import org.slf4j.{Logger, LoggerFactory}
 import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
-import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
+import uk.gov.homeoffice.drt.auth.Roles
+import uk.gov.homeoffice.drt.auth.Roles.{NeboUpload, PortAccess, Role}
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
-import uk.gov.homeoffice.drt.{ HttpClient, JsonSupport }
+import uk.gov.homeoffice.drt.{HttpClient, JsonSupport}
 
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 case class Row(urnReference: String, associatedText: String, flightCode: String, arrivalPort: String, date: String)
 
@@ -80,7 +81,7 @@ object UploadRoutes extends JsonSupport {
     flightData.flatMap { fd =>
       val filterPortFlight = fd.filter(_.portCode.toLowerCase == portCode.toLowerCase)
       val httpRequest = httpClient.createDrtNeboRequest(
-        filterPortFlight, s"${drtUriForPortCode(portCode)}$drtRoutePath")
+        filterPortFlight, s"${drtUriForPortCode(portCode)}$drtRoutePath", portAccessRole(portCode))
       httpClient.send(httpRequest)
         .map(r => FeedStatus(portCode, filterPortFlight.size, r.status.toString()))
     }
@@ -119,6 +120,28 @@ object UploadRoutes extends JsonSupport {
                 FlightData(arrivalPort, flightCode, covertDateTime(flightRows.head.date), flightRows.size)
             }
       }.toList
+  }
+
+  private def portAccessRole(portCode: String): PortAccess = {
+    portCode.toUpperCase match {
+      case Roles.MAN.name => Roles.MAN
+      case Roles.BHD.name => Roles.BHD
+      case Roles.BHX.name => Roles.BHX
+      case Roles.BRS.name => Roles.BRS
+      case Roles.EDI.name => Roles.EDI
+      case Roles.EMA.name => Roles.EMA
+      case Roles.GLA.name => Roles.GLA
+      case Roles.LCY.name => Roles.LCY
+      case Roles.LGW.name => Roles.LGW
+      case Roles.LHR.name => Roles.LHR
+      case Roles.LPL.name => Roles.LPL
+      case Roles.LTN.name => Roles.LTN
+      case Roles.MAN.name => Roles.MAN
+      case Roles.NCL.name => Roles.NCL
+      case Roles.STN.name => Roles.STN
+      case Roles.TEST.name => Roles.TEST
+      case Roles.TEST2.name => Roles.TEST2
+    }
   }
 
   val covertDateTime: String => MillisSinceEpoch = date => if (date.isEmpty) 0 else DateTime
