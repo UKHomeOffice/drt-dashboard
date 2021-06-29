@@ -21,7 +21,7 @@ trait HttpClient extends JsonSupport {
     HttpRequest(
       method = HttpMethods.POST,
       uri = uri,
-      headers = rolesToRoleHeader(List(Roles.NeboUpload)),
+      headers = rolesToRoleHeader(List(Roles.NeboUpload, Roles.LHR)),
       entity = HttpEntity(ContentTypes.`application/json`, data.toJson.toString()))
   }
 }
