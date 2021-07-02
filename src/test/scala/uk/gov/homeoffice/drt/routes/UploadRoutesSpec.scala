@@ -10,6 +10,8 @@ import akka.http.scaladsl.testkit.Specs2RouteTest
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.format.DateTimeFormat
 import org.specs2.mutable.Specification
 import uk.gov.homeoffice.drt.HttpClient
 import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
@@ -92,6 +94,17 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
     val flightDataResult: Seq[FlightData] = Await.result(flightDataF, 1 seconds)
 
     flightDataResult must containAllOf(exceptedResult)
+  }
+
+  "covertDateTime should convert String date format to BST and then UTC" >> {
+    val date = "03/07/2021 17:05"
+    val bstDate = DateTime.parse(date, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm"))
+      .withZone(DateTimeZone.forID("Europe/London"))
+    val utcDate = DateTime.parse(date, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm"))
+      .withZone(DateTimeZone.UTC)
+    val utcFromBst = bstDate.withZone(DateTimeZone.UTC)
+    utcFromBst mustEqual utcDate
+    utcFromBst.getMillis mustEqual covertDateTime(date)
   }
 }
 
