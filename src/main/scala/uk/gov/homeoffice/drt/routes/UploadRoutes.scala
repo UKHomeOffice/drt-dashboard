@@ -7,8 +7,8 @@ import akka.http.scaladsl.server.{ Route, _ }
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Framing, Source }
 import akka.util.ByteString
+import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.{ DateTime, DateTimeZone }
 import org.slf4j.{ Logger, LoggerFactory }
 import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
@@ -134,10 +134,7 @@ object UploadRoutes extends JsonSupport {
       }.toList
   }
 
-  val covertDateTime: String => MillisSinceEpoch = date => if (date.isEmpty) 0 else DateTime
-    .parse(date, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm"))
-    .withZone(DateTimeZone.forID("Europe/London"))
-    .withZone(DateTimeZone.UTC)
-    .getMillis
+  val covertDateTime: String => MillisSinceEpoch = date => if (date.isEmpty) 0 else
+    DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").withZone(DateTimeZone.forID("Europe/London")).parseDateTime(date).getMillis
 
 }
