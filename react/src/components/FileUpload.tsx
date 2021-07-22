@@ -30,7 +30,7 @@ class FileUpload extends React.Component<IProps, IState> {
         this.state = {
             selectedFile: null,
             fileInput: React.createRef(),
-            displayMessage: [''],
+            displayMessage: [],
             hasError: false,
             errorMessage: '',
             showUploadButton: false
@@ -41,7 +41,7 @@ class FileUpload extends React.Component<IProps, IState> {
         if (event.target.files && event.target.files.length > 0) {
             this.setState({selectedFile: event.target.files[0]});
             this.setState({showUploadButton: true});
-            this.setState({displayMessage: ['']});
+            this.setState({displayMessage: []});
             this.setState({hasError: false});
         }
     };
