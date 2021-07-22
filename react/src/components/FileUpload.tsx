@@ -1,10 +1,12 @@
 import React, {Component} from 'react';
 import UserLike from "../model/User";
+import ConfigLike from "../model/Config";
 import ApiClient from "../services/ApiClient";
 import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 
 interface IProps {
     user: UserLike;
+    config: ConfigLike;
 }
 
 interface IState {
@@ -14,7 +16,6 @@ interface IState {
     hasError: boolean;
     errorMessage: string;
     showUploadButton: boolean;
-
 }
 
 interface FeedStatus {
@@ -77,10 +78,14 @@ class FileUpload extends React.Component<IProps, IState> {
             .catch(t => this.setState(() => ({
                 hasError: true,
                 errorMessage: t,
-                displayMessage: [...this.state.displayMessage, this.state.selectedFile.name + ' failed to upload. Check your file, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.']
+                displayMessage: [...this.state.displayMessage, this.state.selectedFile.name + ' failed to upload. There was a problem processing your file, try again or contact us at '+ this.props.config.teamEmail+' if it persists']
             })))
             .then(afterPost)
     }
+
+   generateMessage(portCode:string ,fileName:String, message:string) {
+        return 'For port ' + portCode + ', ' + fileName + message ;
+   }
 
     responseData = (response: AxiosResponse) => {
         const feedStatusArray = response.data as FeedStatus[];
@@ -88,17 +93,17 @@ class FileUpload extends React.Component<IProps, IState> {
             if (feedStatus.statusCode != '202 Accepted') {
                 this.setState({hasError: true});
                 this.setState({
-                    displayMessage: [...this.state.displayMessage, 'For port ' + feedStatus.portCode + ', ' + this.state.selectedFile.name + ' failed to upload. Check your file, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.']
+                    displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' failed to upload. Please contact us at '+ this.props.config.teamEmail)]
                 });
             } else {
                 if (feedStatus.flightCount == '0') {
                     this.setState({hasError: true});
                     this.setState({
-                        displayMessage: [...this.state.displayMessage, 'For port ' + feedStatus.portCode + ', ' + this.state.selectedFile.name + ' failed to upload. Check your file as no lines are parsed, try again later or contact us at drtpoiseteam@homeoffice.gov.uk.']
+                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' failed to upload. Check your file as no lines are parsed, try again later or contact us at '+ this.props.config.teamEmail)]
                     });
                 } else {
                     this.setState({
-                        displayMessage: [...this.state.displayMessage, 'For port ' + feedStatus.portCode + ', ' + 'Arrivals have been updated. Thank you!']
+                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' Arrivals have been updated. Thank you!')]
                     });
                 }
             }
