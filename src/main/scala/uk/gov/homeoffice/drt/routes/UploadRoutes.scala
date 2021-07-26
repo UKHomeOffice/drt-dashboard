@@ -1,24 +1,24 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError, MethodNotAllowed}
-import akka.http.scaladsl.server.Directives.{complete, fileUpload, onSuccess, pathPrefix, post, _}
+import akka.http.scaladsl.model.StatusCodes.{ Forbidden, InternalServerError, MethodNotAllowed }
+import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
 import akka.http.scaladsl.server.directives.FileInfo
-import akka.http.scaladsl.server.{Route, _}
+import akka.http.scaladsl.server.{ Route, _ }
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Framing, Source}
+import akka.stream.scaladsl.{ Framing, Source }
 import akka.util.ByteString
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
-import uk.gov.homeoffice.drt.{HttpClient, JsonSupport}
+import uk.gov.homeoffice.drt.{ HttpClient, JsonSupport }
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 case class Row(urnReference: String, associatedText: String, flightCode: String, arrivalPort: String, arrivalDate: String, arrivalTime: String, departureDate: Option[String], departureTime: Option[String], embarkPort: Option[String], departurePort: Option[String])
 
@@ -110,7 +110,7 @@ object UploadRoutes extends JsonSupport {
       departureDate = emptyColumnCheck(indexMapRow.getOrElse(6, "")),
       departureTime = emptyColumnCheck(indexMapRow.getOrElse(7, "")),
       embarkPort = emptyColumnCheck(indexMapRow.getOrElse(8, "")),
-      departurePort = emptyColumnCheck(indexMapRow.getOrElse(8, "")))
+      departurePort = emptyColumnCheck(indexMapRow.getOrElse(9, "")))
   }
 
   val emptyColumnCheck: String => Option[String] = column => if (column.isEmpty) None else Option(column)
