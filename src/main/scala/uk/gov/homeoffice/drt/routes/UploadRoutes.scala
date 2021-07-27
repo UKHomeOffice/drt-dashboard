@@ -107,13 +107,13 @@ object UploadRoutes extends JsonSupport {
       arrivalPort = indexMapRow.getOrElse(3, "").trim,
       arrivalDate = indexMapRow.getOrElse(4, "").trim,
       arrivalTime = indexMapRow.getOrElse(5, "").trim,
-      departureDate = emptyColumnCheck(indexMapRow.getOrElse(6, "")),
-      departureTime = emptyColumnCheck(indexMapRow.getOrElse(7, "")),
-      embarkPort = emptyColumnCheck(indexMapRow.getOrElse(8, "")),
-      departurePort = emptyColumnCheck(indexMapRow.getOrElse(9, "")))
+      departureDate = maybeColumnContent(indexMapRow.getOrElse(6, "")),
+      departureTime = maybeColumnContent(indexMapRow.getOrElse(7, "")),
+      embarkPort = maybeColumnContent(indexMapRow.getOrElse(8, "")),
+      departurePort = maybeColumnContent(indexMapRow.getOrElse(9, "")))
   }
 
-  val emptyColumnCheck: String => Option[String] = column => if (column.isEmpty) None else Option(column)
+  val maybeColumnContent: String => Option[String] = column => if (column.isEmpty) None else Option(column)
 
   private def rowToJson(rows: List[Row], metadata: FileInfo): List[FlightData] = {
     val dataRows: Seq[Row] = rows.filterNot(_.flightCode.isEmpty).filterNot(_.flightCode == "Flight Code")
