@@ -99,13 +99,13 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
     val metaFile = FileInfo(fieldName = "csv", fileName = "test.csv", contentType = ContentTypes.`text/plain(UTF-8)`)
     val flightDataF: Future[List[FlightData]] = UploadRoutes.convertByteSourceToFlightData(metaFile, Source.single(ByteString(test2FileData)))
     val exceptedResult = Seq(
-      FlightData("LHR", "IB3166", covertDateTime("03/07/2021 17:05"), Option(covertDateTime("03/07/2021 15:45")), Option("MAD"), Option("PTY"), 1),
-      FlightData("LHR", "AF1680", covertDateTime("03/07/2021 07:55"), Option(covertDateTime("03/07/2021 07:30")), Option("CDG"), Option("JNB"), 1),
-      FlightData("LHR", "SQ0306", covertDateTime("02/07/2021 07:45"), Option(covertDateTime("02/07/2021 01:10")), Option("SIN"), Option("CRK"), 1),
-      FlightData("LHR", "LH0914", covertDateTime("02/07/2021 16:40"), Option(covertDateTime("02/07/2021 16:00")), Option("FRA"), Option("SJO"), 1),
-      FlightData("LHR", "LH0922", covertDateTime("02/07/2021 22:10"), Option(covertDateTime("02/07/2021 21:30")), Option("FRA"), Option("BOG"), 1),
-      FlightData("LHR", "KL1007", covertDateTime("02/07/2021 09:00"), Option(covertDateTime("02/07/2021 08:40")), Option("AMS"), Option("NBO"), 2),
-      FlightData("LHR", "KL1007", covertDateTime("03/07/2021 09:00"), Option(covertDateTime("02/07/2021 08:40")), Option("AMS"), Option("NBO"), 1))
+      FlightData("LHR", "IB3166", parseDateToMillis("03/07/2021 17:05"), Option(parseDateToMillis("03/07/2021 15:45")), Option("MAD"), Option("PTY"), 1),
+      FlightData("LHR", "AF1680", parseDateToMillis("03/07/2021 07:55"), Option(parseDateToMillis("03/07/2021 07:30")), Option("CDG"), Option("JNB"), 1),
+      FlightData("LHR", "SQ0306", parseDateToMillis("02/07/2021 07:45"), Option(parseDateToMillis("02/07/2021 01:10")), Option("SIN"), Option("CRK"), 1),
+      FlightData("LHR", "LH0914", parseDateToMillis("02/07/2021 16:40"), Option(parseDateToMillis("02/07/2021 16:00")), Option("FRA"), Option("SJO"), 1),
+      FlightData("LHR", "LH0922", parseDateToMillis("02/07/2021 22:10"), Option(parseDateToMillis("02/07/2021 21:30")), Option("FRA"), Option("BOG"), 1),
+      FlightData("LHR", "KL1007", parseDateToMillis("02/07/2021 09:00"), Option(parseDateToMillis("02/07/2021 08:40")), Option("AMS"), Option("NBO"), 2),
+      FlightData("LHR", "KL1007", parseDateToMillis("03/07/2021 09:00"), Option(parseDateToMillis("02/07/2021 08:40")), Option("AMS"), Option("NBO"), 1))
     val flightDataResult: Seq[FlightData] = Await.result(flightDataF, 1 seconds)
 
     flightDataResult must containAllOf(exceptedResult)
@@ -115,13 +115,13 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
     val metaFile = FileInfo(fieldName = "csv", fileName = "test.csv", contentType = ContentTypes.`text/plain(UTF-8)`)
     val flightDataF: Future[List[FlightData]] = UploadRoutes.convertByteSourceToFlightData(metaFile, Source.single(ByteString(test3FileDataWithoutDepartureDetails)))
     val exceptedResult = Seq(
-      FlightData("LHR", "IB3166", covertDateTime("03/07/2021 17:05"), None, None, None, 1),
-      FlightData("LHR", "AF1680", covertDateTime("03/07/2021 07:55"), None, None, None, 1),
-      FlightData("LHR", "SQ0306", covertDateTime("02/07/2021 07:45"), None, None, None, 1),
-      FlightData("LHR", "LH0914", covertDateTime("02/07/2021 16:40"), None, None, None, 1),
-      FlightData("LHR", "LH0922", covertDateTime("02/07/2021 22:10"), None, None, None, 1),
-      FlightData("LHR", "KL1007", covertDateTime("02/07/2021 09:00"), None, None, None, 2),
-      FlightData("LHR", "KL1007", covertDateTime("03/07/2021 09:00"), None, None, None, 1))
+      FlightData("LHR", "IB3166", parseDateToMillis("03/07/2021 17:05"), None, None, None, 1),
+      FlightData("LHR", "AF1680", parseDateToMillis("03/07/2021 07:55"), None, None, None, 1),
+      FlightData("LHR", "SQ0306", parseDateToMillis("02/07/2021 07:45"), None, None, None, 1),
+      FlightData("LHR", "LH0914", parseDateToMillis("02/07/2021 16:40"), None, None, None, 1),
+      FlightData("LHR", "LH0922", parseDateToMillis("02/07/2021 22:10"), None, None, None, 1),
+      FlightData("LHR", "KL1007", parseDateToMillis("02/07/2021 09:00"), None, None, None, 2),
+      FlightData("LHR", "KL1007", parseDateToMillis("03/07/2021 09:00"), None, None, None, 1))
     val flightDataResult: Seq[FlightData] = Await.result(flightDataF, 1 seconds)
 
     flightDataResult must containAllOf(exceptedResult)
@@ -130,7 +130,7 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   "covertDateTime should convert String date format to millis as expected" >> {
     val date = "03/07/2021 17:05"
     val millisDate = 1625328300000L
-    millisDate mustEqual covertDateTime(date)
+    millisDate mustEqual parseDateToMillis(date)
   }
 }
 

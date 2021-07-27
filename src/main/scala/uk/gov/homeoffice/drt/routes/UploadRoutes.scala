@@ -129,8 +129,8 @@ object UploadRoutes extends JsonSupport {
                     FlightData(
                       portCode = arrivalPort,
                       flightCode = flightCode,
-                      scheduled = covertDateTime(arrivalDateTime),
-                      scheduledDeparture = flightRowsByArrival.head.departureDate.flatMap(dd => flightRowsByArrival.head.departureTime.map(dt => covertDateTime(s"$dd $dt"))),
+                      scheduled = parseDateToMillis(arrivalDateTime),
+                      scheduledDeparture = flightRowsByArrival.head.departureDate.flatMap(dd => flightRowsByArrival.head.departureTime.map(dt => parseDateToMillis(s"$dd $dt"))),
                       departurePort = flightRowsByArrival.head.departurePort.map(_.trim),
                       embarkPort = flightRowsByArrival.head.embarkPort.map(_.trim),
                       flightRowsByArrival.size)
@@ -139,7 +139,7 @@ object UploadRoutes extends JsonSupport {
       }.toList
   }
 
-  val covertDateTime: String => MillisSinceEpoch = date =>
+  val parseDateToMillis: String => MillisSinceEpoch = date =>
     DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").withZone(DateTimeZone.forID("Europe/London")).parseDateTime(date).getMillis
 
 }
