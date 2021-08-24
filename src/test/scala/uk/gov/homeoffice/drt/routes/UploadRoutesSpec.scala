@@ -16,7 +16,7 @@ import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.UploadRoutes._
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 
 class UploadRoutesSpec extends Specification with Specs2RouteTest {
 
@@ -37,14 +37,14 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   val test2FileData =
     """
       |Reference (URN),AssociatedText ,Flight Code ,Arrival Port ,DATE,Arrival Time,Departure Date,Departure Time,Embark Port,"Departure Port"
-      |CRI/IOI/0107E/3,Passenger in transit from Costa Rica. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST914,LHR,02/07/2021,16:40,02/07/2021,16:00,SJO,FRA
-      |PHL/IOI/0107E/4,Passenger in transit from Philippines. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST306,LHR,02/07/2021,07:45,02/07/2021,01:10,CRK,SIN
-      |PAN/IOI/0107E/12,Passenger in transit from Panama. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST316,LHR,03/07/2021,17:05,03/07/2021,15:45,PTY,MAD
-      |KEN/IOI/0107E/18,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,02/07/2021,09:00,02/07/2021,08:40,NBO,AMS
-      |KEN/IOI/0107E/19,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,02/07/2021,09:00,02/07/2021,08:40,NBO,AMS
-      |KEN/IOI/0107E/20,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,03/07/2021,09:00,02/07/2021,08:40,NBO,AMS
-      |COL/IOI/0107E/23,Passenger in transit from Colombia. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST922,LHR,02/07/2021,22:10,02/07/2021,21:30,BOG,FRA
-      |ZAF/IOI/0107E/24,Passenger in transit from South Africa. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1681,LHR,03/07/2021,07:55,03/07/2021,07:30,JNB,CDG
+      |CRI/IOI/0107E/3,Passenger in transit from testCountry1.,TEST914,LHR,02/07/2021,16:40,02/07/2021,16:00,SJO,FRA
+      |PHL/IOI/0107E/4,Passenger in transit from testCountry2.,TEST306,LHR,02/07/2021,07:45,02/07/2021,01:10,CRK,SIN
+      |PAN/IOI/0107E/12,Passenger in transit from testCountry3.,TEST316,LHR,03/07/2021,17:05,03/07/2021,15:45,PTY,MAD
+      |KEN/IOI/0107E/18,Passenger in transit from testCountry4.,TEST1007,LHR,02/07/2021,09:00,02/07/2021,08:40,NBO,AMS
+      |KEN/IOI/0107E/19,Passenger in transit from testCountry4.,TEST1007,LHR,02/07/2021,09:00,02/07/2021,08:40,NBO,AMS
+      |KEN/IOI/0107E/20,Passenger in transit from testCountry4.,TEST1007,LHR,03/07/2021,09:00,02/07/2021,08:40,NBO,AMS
+      |COL/IOI/0107E/23,Passenger in transit from testCountry5.,TEST922,LHR,02/07/2021,22:10,02/07/2021,21:30,BOG,FRA
+      |ZAF/IOI/0107E/24,Passenger in transit from testCountry6.,TEST1681,LHR,03/07/2021,07:55,03/07/2021,07:30,JNB,CDG
       |,,,,,,,,,
       |,,,,,,,,,
       |,,,,,,,,,
@@ -54,20 +54,20 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   val test1FileData =
     """
       |
-      |CRI/IOI/0107E/3,Passenger in transit from Costa Rica.,TEST914,LHR,02/07/2021,16:40,02/07/2021,16:00,SJO,FRA
+      |CRI/IOI/0107E/3,Passenger in transit from testCountry1.,TEST914,LHR,02/07/2021,16:40,02/07/2021,16:00,SJO,FRA
       |""".stripMargin
 
   val test3FileDataWithoutDepartureDetails =
     """
       |Reference (URN),AssociatedText ,Flight Code ,Arrival Port ,DATE,Arrival Time,Departure Date,Departure Time,Embark Port,"Departure Port"
-      |CRI/IOI/0107E/3,Passenger in transit from Costa Rica. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST914,LHR,02/07/2021,16:40
-      |PHL/IOI/0107E/4,Passenger in transit from Philippines. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST306,LHR,02/07/2021,07:45
-      |PAN/IOI/0107E/12,Passenger in transit from Panama. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST316,LHR,03/07/2021,17:05
-      |KEN/IOI/0107E/18,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,02/07/2021,09:00
-      |KEN/IOI/0107E/19,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,02/07/2021,09:00
-      |KEN/IOI/0107E/20,Passenger in transit from Kenya. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1007,LHR,03/07/2021,09:00
-      |COL/IOI/0107E/23,Passenger in transit from Colombia. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST922,LHR,02/07/2021,22:10
-      |ZAF/IOI/0107E/24,Passenger in transit from South Africa. Please refer to Operational Instructions (IOI 24-21 IOI 29 -21 IOI 48-21 IOI 60-21 IOI 66-21 IOI 73-21 IOI 92-21 IOI 99-21) for further instructions,TEST1681,LHR,03/07/2021,07:55
+      |CRI/IOI/0107E/3,Passenger in transit from testCountry1.,TEST914,LHR,02/07/2021,16:40
+      |PHL/IOI/0107E/4,Passenger in transit from testCountry2.,TEST306,LHR,02/07/2021,07:45
+      |PAN/IOI/0107E/12,Passenger in transit from testCountry3.,TEST316,LHR,03/07/2021,17:05
+      |KEN/IOI/0107E/18,Passenger in transit from testCountry4.,TEST1007,LHR,02/07/2021,09:00
+      |KEN/IOI/0107E/19,Passenger in transit from testCountry4.,TEST1007,LHR,02/07/2021,09:00
+      |KEN/IOI/0107E/20,Passenger in transit from testCountry4.,TEST1007,LHR,03/07/2021,09:00
+      |COL/IOI/0107E/23,Passenger in transit from testCountry5.,TEST922,LHR,02/07/2021,22:10
+      |ZAF/IOI/0107E/24,Passenger in transit from testCountry6.,TEST1681,LHR,03/07/2021,07:55
       |,,,,,,,,,
       |,,,,,,,,,
       |,,,,,,,,,
@@ -82,11 +82,11 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
       |Date","Arrival
       |time",Departure Date,Departure Time,Embark Port,"Departure
       |Port"
-      |MDV/IOI/2308L/7,Passenger in transit from Maldives. Please refer to Operational Instructions (IOI 121-21) for further instructions,TEST124,LHR,24/08/2021,06:15,24/08/2021,01:00,MLE,BAH
-      |PAK/IOI/2308L/8,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
-      |PAK/IOI/2308L/9,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
-      |PAK/IOI/2308L/10,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
-      |PAK/IOI/2308L/11,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |MDV/IOI/2308L/7,Passenger in transit from testCountry7.,TEST124,LHR,24/08/2021,06:15,24/08/2021,01:00,MLE,BAH
+      |PAK/IOI/2308L/8,Passenger in transit from testCountry8.,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/9,Passenger in transit from testCountry8.,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/10,Passenger in transit from testCountry8.,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/11,Passenger in transit from testCountry8.,TEST007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
       |""".stripMargin
 
   val multipartForm =
@@ -98,16 +98,16 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   "Given a correct permission to users, the user should able to upload file successfully " >> {
     Post("/uploadFile", multipartForm) ~>
       RawHeader("X-Auth-Roles", NeboUpload.name) ~> RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-      responseAs[String] shouldEqual """[{"flightCount":1,"portCode":"lhr","statusCode":"202 Accepted"}]"""
-    }
+        responseAs[String] shouldEqual """[{"flightCount":1,"portCode":"lhr","statusCode":"202 Accepted"}]"""
+      }
   }
 
   "Given a incorrect permission to users, the user is forbidden to upload" >> {
     Post("/uploadFile", multipartForm) ~>
       RawHeader("X-Auth-Roles", "random") ~> RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-      status shouldEqual StatusCodes.Forbidden
-      responseAs[String] shouldEqual """You are not authorized to upload!"""
-    }
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[String] shouldEqual """You are not authorized to upload!"""
+      }
   }
 
   "convertByteSourceToFlightData should convert file data byteString to FlightData case class with expected conversion" >> {
