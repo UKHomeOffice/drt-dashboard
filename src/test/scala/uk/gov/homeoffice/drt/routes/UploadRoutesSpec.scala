@@ -142,7 +142,7 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
     flightDataResult must containAllOf(exceptedResult)
   }
 
-  "convertByteSourceToFlightData should convert file data byteString to FlightData case class with expected conversion without departure details" >> {
+  "convertByteSourceToFlightData should convert file data to FlightData while field data contain newline character" >> {
     val metaFile = FileInfo(fieldName = "csv", fileName = "test.csv", contentType = ContentTypes.`text/plain(UTF-8)`)
     val flightDataF: Future[List[FlightData]] = UploadRoutes.convertByteSourceToFlightData(metaFile, Source.single(ByteString(test4FileDataWithNewlineCharInFields)))
     val exceptedResult = Seq(
