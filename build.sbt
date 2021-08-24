@@ -37,9 +37,9 @@ lazy val root = (project in file(".")).
       "uk.gov.homeoffice" %% "drt-lib" % drtLibVersion,
       "ch.qos.logback.contrib" % "logback-json-classic" % logBackJsonVersion,
       "ch.qos.logback.contrib" % "logback-jackson" % logBackJsonVersion,
+      "com.github.tototoshi" %% "scala-csv" % "1.3.8",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.11.2",
       "uk.gov.service.notify" % "notifications-java-client" % "3.17.0-RELEASE",
-
       "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
       "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,

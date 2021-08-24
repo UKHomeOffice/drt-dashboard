@@ -16,7 +16,7 @@ import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.UploadRoutes._
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 
 class UploadRoutesSpec extends Specification with Specs2RouteTest {
 
@@ -74,6 +74,21 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
       |,,,,,,,,,
       |""".stripMargin
 
+  val test4FileDataWithNewlineCharInFields =
+    """
+      |Reference (URN),AssociatedText ,"Flight
+      |Code ","Arrival
+      |Port ","Arrival
+      |Date","Arrival
+      |time",Departure Date,Departure Time,Embark Port,"Departure
+      |Port"
+      |MDV/IOI/2308L/7,Passenger in transit from Maldives. Please refer to Operational Instructions (IOI 121-21) for further instructions,BA0124,LHR,24/08/2021,06:15,24/08/2021,01:00,MLE,BAH
+      |PAK/IOI/2308L/8,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,GF0007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/9,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,GF0007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/10,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,GF0007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |PAK/IOI/2308L/11,Passenger in transit from Pakistan. Please refer to Operational Instructions (IOI 121-21) for further instructions,GF0007,LHR,24/08/2021,06:55,24/08/2021,02:00,SKT,BAH
+      |""".stripMargin
+
   val multipartForm =
     Multipart.FormData(Multipart.FormData.BodyPart.Strict(
       "csv",
@@ -83,16 +98,16 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
   "Given a correct permission to users, the user should able to upload file successfully " >> {
     Post("/uploadFile", multipartForm) ~>
       RawHeader("X-Auth-Roles", NeboUpload.name) ~> RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-      responseAs[String] shouldEqual """[{"flightCount":1,"portCode":"lhr","statusCode":"202 Accepted"}]"""
-    }
+        responseAs[String] shouldEqual """[{"flightCount":1,"portCode":"lhr","statusCode":"202 Accepted"}]"""
+      }
   }
 
   "Given a incorrect permission to users, the user is forbidden to upload" >> {
     Post("/uploadFile", multipartForm) ~>
       RawHeader("X-Auth-Roles", "random") ~> RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-      status shouldEqual StatusCodes.Forbidden
-      responseAs[String] shouldEqual """You are not authorized to upload!"""
-    }
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[String] shouldEqual """You are not authorized to upload!"""
+      }
   }
 
   "convertByteSourceToFlightData should convert file data byteString to FlightData case class with expected conversion" >> {
@@ -127,10 +142,22 @@ class UploadRoutesSpec extends Specification with Specs2RouteTest {
     flightDataResult must containAllOf(exceptedResult)
   }
 
+  "convertByteSourceToFlightData should convert file data byteString to FlightData case class with expected conversion without departure details" >> {
+    val metaFile = FileInfo(fieldName = "csv", fileName = "test.csv", contentType = ContentTypes.`text/plain(UTF-8)`)
+    val flightDataF: Future[List[FlightData]] = UploadRoutes.convertByteSourceToFlightData(metaFile, Source.single(ByteString(test4FileDataWithNewlineCharInFields)))
+    val exceptedResult = Seq(
+      FlightData("LHR", "BA0124", parseDateToMillis("24/08/2021 06:15"), Option(parseDateToMillis("24/08/2021 01:00")), Some("BAH"), Some("MLE"), 1),
+      FlightData("LHR", "GF0007", parseDateToMillis("24/08/2021 06:55"), Option(parseDateToMillis("24/08/2021 02:00")), Some("BAH"), Some("SKT"), 4))
+    val flightDataResult: Seq[FlightData] = Await.result(flightDataF, 1 seconds)
+
+    flightDataResult must containAllOf(exceptedResult)
+  }
+
   "covertDateTime should convert String date format to millis as expected" >> {
     val date = "03/07/2021 17:05"
     val millisDate = 1625328300000L
     millisDate mustEqual parseDateToMillis(date)
   }
+
 }
 
