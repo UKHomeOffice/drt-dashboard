@@ -99,7 +99,7 @@ class FileUpload extends React.Component<IProps, IState> {
                 if (feedStatus.flightCount == '0') {
                     this.setState({hasError: true});
                     this.setState({
-                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' failed to upload. Check your file as no lines are parsed, try again later or contact us at '+ this.props.config.teamEmail)]
+                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' has no lines to parse')]
                     });
                 } else {
                     this.setState({
@@ -115,6 +115,8 @@ class FileUpload extends React.Component<IProps, IState> {
     displayMessageWithCss(message: string) {
         if (message.includes("failed")) {
             return <div className="upload-error">{message}</div>
+        } else if (message.includes("no lines")) {
+            return <div className="upload-warning">{message}</div>
         } else {
             return <div className="upload-success">{message}</div>
         }
