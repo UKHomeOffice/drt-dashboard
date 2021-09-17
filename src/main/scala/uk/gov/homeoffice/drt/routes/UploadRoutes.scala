@@ -1,25 +1,25 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError, MethodNotAllowed}
-import akka.http.scaladsl.server.Directives.{complete, fileUpload, onSuccess, pathPrefix, post, _}
+import akka.http.scaladsl.model.StatusCodes.{ Forbidden, InternalServerError, MethodNotAllowed }
+import akka.http.scaladsl.server.Directives.{ complete, fileUpload, onSuccess, pathPrefix, post, _ }
 import akka.http.scaladsl.server.directives.FileInfo
-import akka.http.scaladsl.server.{Route, _}
+import akka.http.scaladsl.server.{ Route, _ }
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Framing, Source}
+import akka.stream.scaladsl.{ Framing, Source }
 import akka.util.ByteString
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import spray.json._
 import uk.gov.homeoffice.drt.Dashboard._
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles.NeboUpload
 import uk.gov.homeoffice.drt.routes.ApiRoutes.authByRole
 import uk.gov.homeoffice.drt.routes.UploadRoutes.MillisSinceEpoch
-import uk.gov.homeoffice.drt.{HttpClient, JsonSupport}
+import uk.gov.homeoffice.drt.{ HttpClient, JsonSupport }
 import com.github.tototoshi.csv._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 case class Row(urnReference: String, associatedText: String, flightCode: String, arrivalPort: String, arrivalDate: String, arrivalTime: String, departureDate: Option[String], departureTime: Option[String], embarkPort: Option[String], departurePort: Option[String])
 
@@ -95,7 +95,7 @@ object UploadRoutes extends JsonSupport {
   def convertByteSourceToFlightData(metadata: FileInfo, byteSource: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, mat: Materializer): Future[List[FlightData]] = {
     byteSource.via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 2048, allowTruncation = true))
       .map(convertByteStringToRow)
-      .runFold(List.empty[Row]) { (r, n) => r :+ n}
+      .runFold(List.empty[Row]) { (r, n) => r :+ n }
       .map(rowToJson(_, metadata))
   }
 
@@ -139,8 +139,7 @@ object UploadRoutes extends JsonSupport {
                         scheduledDeparture = flightRowsByArrival.head.departureDate.flatMap(dd => flightRowsByArrival.head.departureTime.map(dt => parseDateToMillis(s"$dd $dt"))),
                         departurePort = flightRowsByArrival.head.departurePort.map(_.trim),
                         embarkPort = flightRowsByArrival.head.embarkPort.map(_.trim),
-                        flightRowsByArrival.size
-                      )
+                        flightRowsByArrival.size)
                   }
             }
       }.toList

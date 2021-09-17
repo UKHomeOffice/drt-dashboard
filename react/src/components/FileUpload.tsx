@@ -89,27 +89,16 @@ class FileUpload extends React.Component<IProps, IState> {
 
     responseData = (response: AxiosResponse) => {
         const feedStatusArray = response.data as FeedStatus[];
-        var failedPorts: string = ' ';
-        feedStatusArray.map(feedStatus => {
-            if (feedStatus.statusCode != '202 Accepted') {
-                this.setState({hasError: true});
-                failedPorts = failedPorts + feedStatus.portCode + ', '
-            } else {
-                if (feedStatus.flightCount == '0') {
-                    this.setState({hasError: true});
-                    failedPorts = failedPorts + feedStatus.portCode + ', '
-                } else {
-                    console.log('response feed ' + feedStatus.portCode + ' ' + feedStatus.flightCount + ' ' + feedStatus.statusCode);
-                }
-            }
-            console.log('response feed ' + feedStatus.portCode + ' ' + feedStatus.flightCount + ' ' + feedStatus.statusCode);
-        });
+        const failedStatuses = feedStatusArray.filter(s => s.statusCode != '202 Accepted' || s.flightCount == '0')
+        const failedPorts = failedStatuses.map(s => s.portCode).join(', ')
+        feedStatusArray.map(s => console.log('response feed ' + s.portCode + ' ' + s.flightCount + ' ' + s.statusCode))
+        if (failedStatuses.length > 0) this.setState({hasError: true})
 
         if (this.state.hasError) {
-            let m = 'The file has been uploaded, but there was a problem with ' + failedPorts.substring(0, failedPorts.length - 2) + ' ports. Please contact the DRT team for further information.';
+            const m = 'The file has been uploaded, but there was a problem with ' + failedPorts + ' ports. Please contact the DRT team for further information.';
             this.setState({displayMessage: m})
         } else {
-            let m = this.state.selectedFile.name + ' uploaded file successfully';
+            const m = this.state.selectedFile.name + ' uploaded file successfully';
             this.setState({displayMessage: m})
         }
         console.log('response from post ' + response);
