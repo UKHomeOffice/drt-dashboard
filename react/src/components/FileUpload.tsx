@@ -12,7 +12,7 @@ interface IProps {
 interface IState {
     selectedFile: any;
     fileInput: any;
-    displayMessage: string[];
+    displayMessage: string;
     hasError: boolean;
     errorMessage: string;
     showUploadButton: boolean;
@@ -31,7 +31,7 @@ class FileUpload extends React.Component<IProps, IState> {
         this.state = {
             selectedFile: null,
             fileInput: React.createRef(),
-            displayMessage: [],
+            displayMessage: '',
             hasError: false,
             errorMessage: '',
             showUploadButton: false
@@ -42,7 +42,7 @@ class FileUpload extends React.Component<IProps, IState> {
         if (event.target.files && event.target.files.length > 0) {
             this.setState({selectedFile: event.target.files[0]});
             this.setState({showUploadButton: true});
-            this.setState({displayMessage: []});
+            this.setState({displayMessage: ''});
             this.setState({hasError: false});
         }
     };
@@ -78,44 +78,47 @@ class FileUpload extends React.Component<IProps, IState> {
             .catch(t => this.setState(() => ({
                 hasError: true,
                 errorMessage: t,
-                displayMessage: [...this.state.displayMessage, this.state.selectedFile.name + ' failed to upload. There was a problem processing your file, try again or contact us at '+ this.props.config.teamEmail+' if it persists']
+                displayMessage: 'There was a problem reading the file. Please check the column names & data formatting. If you can\'t see a problem then please send a copy to ' + this.props.config.teamEmail + '.'
             })))
             .then(afterPost)
     }
 
-   generateMessage(portCode:string ,fileName:String, message:string) {
-        return 'For port ' + portCode + ', ' + fileName + message ;
-   }
+    generateMessage(portCode: string, fileName: String, message: string) {
+        return 'For port ' + portCode + ', ' + fileName + message;
+    }
 
     responseData = (response: AxiosResponse) => {
         const feedStatusArray = response.data as FeedStatus[];
+        var failedPorts: string = ' ';
         feedStatusArray.map(feedStatus => {
             if (feedStatus.statusCode != '202 Accepted') {
                 this.setState({hasError: true});
-                this.setState({
-                    displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' failed to upload. Please contact us at '+ this.props.config.teamEmail)]
-                });
+                failedPorts = failedPorts + feedStatus.portCode + ', '
             } else {
                 if (feedStatus.flightCount == '0') {
                     this.setState({hasError: true});
-                    this.setState({
-                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' has no lines to parse')]
-                    });
+                    failedPorts = failedPorts + feedStatus.portCode + ', '
                 } else {
-                    this.setState({
-                        displayMessage: [...this.state.displayMessage, this.generateMessage(feedStatus.portCode,this.state.selectedFile.name,' Arrivals have been updated. Thank you!')]
-                    });
+                    console.log('response feed ' + feedStatus.portCode + ' ' + feedStatus.flightCount + ' ' + feedStatus.statusCode);
                 }
             }
             console.log('response feed ' + feedStatus.portCode + ' ' + feedStatus.flightCount + ' ' + feedStatus.statusCode);
         });
+
+        if (this.state.hasError) {
+            let m = 'The file has been uploaded, but there was a problem with ' + failedPorts.substring(0, failedPorts.length - 2) + ' ports. Please contact the DRT team for further information.';
+            this.setState({displayMessage: m})
+        } else {
+            let m = this.state.selectedFile.name + ' uploaded file successfully';
+            this.setState({displayMessage: m})
+        }
         console.log('response from post ' + response);
     }
 
     displayMessageWithCss(message: string) {
-        if (message.includes("failed")) {
+        if (message.includes("problem reading")) {
             return <div className="upload-error">{message}</div>
-        } else if (message.includes("no lines")) {
+        } else if (message.includes("problem")) {
             return <div className="upload-warning">{message}</div>
         } else {
             return <div className="upload-success">{message}</div>
@@ -138,7 +141,7 @@ class FileUpload extends React.Component<IProps, IState> {
                 </div>
             );
         } else {
-            var dm = this.state.displayMessage.map(m => this.displayMessageWithCss(m));
+            var dm = this.displayMessageWithCss(this.state.displayMessage)
             message = <h4>{dm}</h4>;
             return (
                 <div>
