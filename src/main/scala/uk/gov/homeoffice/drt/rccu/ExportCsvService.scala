@@ -3,6 +3,8 @@ package uk.gov.homeoffice.drt.rccu
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.stream.Materializer
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.format.DateTimeFormat
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.{ Dashboard, HttpClient }
@@ -40,6 +42,27 @@ class ExportCsvService(httpClient: HttpClient) {
           log.error(s"Error while requesting drt for $uri", e)
           Future.successful(None)
       }
+  }
+
+  val formattedStringDate: DateTime => String = dateTime => DateTimeFormat.forPattern("yyyyMMddHHmmss").print(dateTime)
+
+  val getCurrentTimeString: () => String = () => formattedStringDate(DateTime.now())
+
+  val stringToDate: String => DateTime = dateTimeString => DateTimeFormat.forPattern("yyyy-MM-dd")
+    .withZone(DateTimeZone.forID("Europe/London"))
+    .parseDateTime(dateTimeString)
+
+  def makeFileName(start: String, end: String, portRegion: String): String = {
+    val startDateTime: DateTime = stringToDate(start)
+    val endDateTime: DateTime = stringToDate(end)
+    val endDate = if (endDateTime.minusDays(1).isAfter(startDateTime))
+      f"-to-${
+        end
+      }"
+    else ""
+
+    f"$portRegion-${getCurrentTimeString()}-" +
+      f"$start" + endDate + ".csv"
   }
 
 }

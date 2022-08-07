@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.common.{ CsvEntityStreamingSupport, EntityStreamingSupport }
+import akka.http.scaladsl.common.{CsvEntityStreamingSupport, EntityStreamingSupport}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.Materializer
@@ -8,12 +8,12 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.homeoffice.drt.HttpClient
 
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class ExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest {
   implicit val mat: Materializer = Materializer(system)
 
-  implicit val streamingSupport: CsvEntityStreamingSupport = EntityStreamingSupport.csv().withContentType(ContentTypes.`text/plain(UTF-8)`)
+  implicit val streamingSupport: CsvEntityStreamingSupport = EntityStreamingSupport.csv().withContentType(ContentTypes.`text/csv(UTF-8)`)
 
   "Request heathrow arrival export" should {
     "collate all terminal arrivals" in {

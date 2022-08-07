@@ -33,8 +33,7 @@ object Server {
     useHttps: Boolean,
     notifyServiceApiKey: String,
     accessRequestEmails: List[String],
-    neboPortCodes: Array[String],
-    fileStorePath: String) {
+    neboPortCodes: Array[String]) {
     val portCodes: Iterable[PortCode] = portRegions.flatMap(_.ports)
     val portIataCodes: Iterable[String] = portCodes.map(_.iata)
     val clientConfig: ClientConfig = ClientConfig(portRegions, rootDomain, teamEmail)
