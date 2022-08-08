@@ -5,6 +5,7 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import Button from '@mui/material/Button';
 import format from 'date-fns/format';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 interface IProps {
     region: string;
@@ -18,7 +19,7 @@ export default function ExportDatePicker(props: IProps) {
     const determineDisplay = () => {
         if (fromValue && toValue) {
             return <div align="center">
-                <Button target="_blank"
+                <Button startIcon={<FileDownloadIcon/>} target="_blank"
                         href={"/export/" + props.region + "/" + formattedDate(fromValue) + "/" + formattedDate(toValue)}>Download</Button>
             </div>
         }

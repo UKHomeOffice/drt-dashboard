@@ -17,17 +17,17 @@ export const RegionalPort = (props: IProps) => {
         {props.user.roles.includes("rcc:view") ?
             <div>
                 <Box>
-                    <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                    <Typography align="left" id="modal-modal-title" variant="h6" component="h2">
                         {props.region} region dashboard
                     </Typography>
+                    <p> This is a new page on DRT. You can download an arrivals export covering all port terminals in this region.</p>
+                    <div align="center"><ArrivalExport region={props.region}/></div>
                     <Typography id="modal-modal-description" sx={{mt: 2}}>
-                        <p> This is a new page on DRT. You can download an arrivals export covering all port terminals
-                            in this region. A member of the team will be in touch to get your thoughts about how this
+                        <p> A member of the team will be in touch to get your thoughts about how this
                             page could be more useful. You can also get in touch with the team by email at
-                            drtpoiseteam@homeoffice.gov.uk.</p>
+                            <a href="mailto:drtpoiseteam@homeoffice.gov.uk"> drtpoiseteam@homeoffice.gov.uk</a>.</p>
                     </Typography>
                 </Box>
-                <div align="center"><ArrivalExport region={props.region}/></div>
                 <Button style={{float: 'right'}} href="/">back</Button>
             </div> :
             <div>

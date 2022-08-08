@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import ExportDatePicker from "./ExportDatePicker";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -28,7 +29,7 @@ export default function ArrivalExport(props: IProps) {
 
     return (
         <div>
-            <Button style={{float: 'center'}} onClick={handleOpen}>{props.region} region Export</Button>
+            <Button startIcon={<FileDownloadIcon/>} style={{float: 'center'}} onClick={handleOpen}>{props.region} region Export</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
