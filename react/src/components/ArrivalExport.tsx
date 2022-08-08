@@ -28,7 +28,7 @@ export default function ArrivalExport(props: IProps) {
 
     return (
         <div>
-            <Button onClick={handleOpen}>{props.region}</Button>
+            <Button style={{float: 'center'}} onClick={handleOpen}>{props.region}</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -36,10 +36,10 @@ export default function ArrivalExport(props: IProps) {
                 aria-describedby="modal-modal-description">
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        {props.region} Arrival Export
+                        {props.region} region arrivals
                     </Typography>
                     <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                        Choose dates and click on download to get arrival exports.
+                        Choose dates and download arrivals.
                     </Typography>
                     <br/>
                     <ExportDatePicker region={props.region}/>

@@ -8,9 +8,16 @@ import Icon from "@mui/icons-material/FlightLand";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import React from "react";
-import ArrivalExport from "./ArrivalExport"
+import Button from '@mui/material/Button';
+import {styled} from "@mui/material/styles";
+import {UserProfile} from "../model/User";
 
-export const PortListByRegion = (props: { regions: PortRegion[], drtDomain: string }) => {
+const Region = styled('p')(() => ({
+    fontSize: '21px',
+    fontWeight: 'bold',
+}));
+
+export const PortListByRegion = (props: { user: UserProfile, regions: PortRegion[], drtDomain: string }) => {
     return <Box sx={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -23,7 +30,10 @@ export const PortListByRegion = (props: { regions: PortRegion[], drtDomain: stri
                 minWidth: '200px',
                 marginRight: '50px'
             }}>
-                <ArrivalExport region={region.name}/>
+                {props.user.roles.includes("rcc:view") ?
+                    <Button href={'export?region=' + region.name}>{region.name}</Button> :
+                    <Region>{region.name}</Region>
+                }
                 <List>
                     {sortedPorts.map((portCode) => {
                         let portCodeLC = portCode.toLowerCase();

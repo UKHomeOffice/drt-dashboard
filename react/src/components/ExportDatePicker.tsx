@@ -18,7 +18,8 @@ export default function ExportDatePicker(props: IProps) {
     const determineDisplay = () => {
         if (fromValue && toValue) {
             return <div align="center">
-                <Button target="_blank" href={"/export/" + props.region + "/" + formattedDate(fromValue) + "/" + formattedDate(toValue)}>Download</Button>
+                <Button target="_blank"
+                        href={"/export/" + props.region + "/" + formattedDate(fromValue) + "/" + formattedDate(toValue)}>Download</Button>
             </div>
         }
     };
