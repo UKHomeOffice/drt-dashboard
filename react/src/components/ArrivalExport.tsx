@@ -28,7 +28,7 @@ export default function ArrivalExport(props: IProps) {
 
     return (
         <div>
-            <Button style={{float: 'center'}} onClick={handleOpen}>{props.region}</Button>
+            <Button style={{float: 'center'}} onClick={handleOpen}>{props.region} region Export</Button>
             <Modal
                 open={open}
                 onClose={handleClose}

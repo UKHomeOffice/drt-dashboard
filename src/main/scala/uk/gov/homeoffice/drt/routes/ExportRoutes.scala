@@ -1,9 +1,9 @@
 package uk.gov.homeoffice.drt.routes
 
 import akka.http.scaladsl.common.{ CsvEntityStreamingSupport, EntityStreamingSupport }
+import akka.http.scaladsl.model.ContentTypes
 import akka.http.scaladsl.model.headers.ContentDispositionTypes.attachment
 import akka.http.scaladsl.model.headers.`Content-Disposition`
-import akka.http.scaladsl.model.{ ContentTypes, StatusCodes }
 import akka.http.scaladsl.server.Directives.{ complete, _ }
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer

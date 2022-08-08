@@ -1,4 +1,3 @@
-// import {styled} from "@mui/material/styles";
 import {PortRegion} from "../model/Config";
 import {Box} from "@mui/material";
 import List from "@mui/material/List";
@@ -31,7 +30,7 @@ export const PortListByRegion = (props: { user: UserProfile, regions: PortRegion
                 marginRight: '50px'
             }}>
                 {props.user.roles.includes("rcc:view") ?
-                    <Button href={'export?region=' + region.name}>{region.name}</Button> :
+                    <Button href={'/region?regionName=' + region.name}>{region.name}</Button> :
                     <Region>{region.name}</Region>
                 }
                 <List>
