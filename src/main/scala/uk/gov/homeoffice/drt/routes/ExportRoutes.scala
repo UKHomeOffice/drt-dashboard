@@ -39,10 +39,11 @@ object ExportRoutes {
                         _
                           .utf8String
                           .split("\n")
-                          .map(line => s"${region.name},${pr.port},${pr.terminal},$line")
                           .filterNot(_.contains("ICAO"))
+                          .map(line => s"${region.name},${pr.port},${pr.terminal},$line")
                           .mkString("\n")
                       }).getOrElse(Source.empty)
+                      .filterNot(_.isEmpty)
                   }
             }.prepend(Source.single(rccHeadings)))
         }
