@@ -29,24 +29,29 @@ export default function ArrivalExport(props: IProps) {
 
     return (
         <div>
-            <Button startIcon={<FileDownloadIcon/>} style={{float: 'center'}} onClick={handleOpen}>{props.region} region Export</Button>
-            <Modal
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description">
-                <Box sx={style}>
-                    <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        {props.region} region arrivals
-                    </Typography>
-                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                        Choose dates and download arrivals.
-                    </Typography>
-                    <br/>
-                    <ExportDatePicker region={props.region}/>
-                    <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
-                </Box>
-            </Modal>
+            <div>
+                <Button startIcon={<FileDownloadIcon/>} style={{float: 'center'}}
+                        onClick={handleOpen}>{props.region} region Export</Button>
+            </div>
+            <div>
+                <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description">
+                    <Box sx={style}>
+                        <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                            {props.region} region arrivals
+                        </Typography>
+                        <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                            Choose dates and download arrivals.
+                        </Typography>
+                        <br/>
+                        <ExportDatePicker region={props.region}/>
+                        <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                    </Box>
+                </Modal>
+            </div>
         </div>
     );
 }
