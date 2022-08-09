@@ -28,7 +28,7 @@ export default function ArrivalExport(props: IProps) {
     const handleClose = () => setOpen(false);
 
     return (
-        <div>
+        <div class="flex-container">
             <div>
                 <Button startIcon={<FileDownloadIcon/>} style={{float: 'center'}}
                         onClick={handleOpen}>{props.region} region Export</Button>
@@ -46,7 +46,6 @@ export default function ArrivalExport(props: IProps) {
                         <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
                             Choose dates and download arrivals.
                         </Typography>
-                        <br/>
                         <ExportDatePicker region={props.region}/>
                         <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
                     </Box>

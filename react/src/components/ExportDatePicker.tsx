@@ -16,7 +16,7 @@ export default function ExportDatePicker(props: IProps) {
     const [toValue, setToValue] = React.useState<Date | null>(null);
     const formattedDate = (date: Date) => format(date as Date, "yyyy-MM-dd")
 
-    const determineDisplay = () => {
+    const renderDownloadButton = () => {
         if (fromValue && toValue) {
             return <div align="center">
                 <Button startIcon={<FileDownloadIcon/>} target="_blank"
@@ -27,27 +27,29 @@ export default function ExportDatePicker(props: IProps) {
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-                label="From Date"
-                value={fromValue}
-                onChange={(newValue) => {
-                    setFromValue(newValue);
-                }}
-                renderInput={(params) => <TextField {...params} />}
-            />
-            <span>&nbsp;&nbsp;</span>
-            <DatePicker
-                label="To Date"
-                value={toValue}
-                onChange={(newValue) => {
-                    setToValue(newValue);
-                }}
-                renderInput={(params) => <TextField {...params} />}
-            />
-            <br/>
-            <br/>
-            <br/>
-            {determineDisplay()}
+            <div class="flex-container">
+                <div>
+                    <DatePicker
+                        label="From Date"
+                        value={fromValue}
+                        onChange={(newValue) => {
+                            setFromValue(newValue);
+                        }}
+                        renderInput={(params) => <TextField {...params} />}
+                    />
+                </div>
+                <div>
+                    <DatePicker
+                        label="To Date"
+                        value={toValue}
+                        onChange={(newValue) => {
+                            setToValue(newValue);
+                        }}
+                        renderInput={(params) => <TextField {...params} />}
+                    />
+                </div>
+            </div>
+            {renderDownloadButton()}
         </LocalizationProvider>
     );
 }

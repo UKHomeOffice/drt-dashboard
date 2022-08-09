@@ -8,13 +8,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import React from "react";
 import Button from '@mui/material/Button';
-import {styled} from "@mui/material/styles";
 import {UserProfile} from "../model/User";
-
-const Region = styled('p')(() => ({
-    fontSize: '21px',
-    fontWeight: 'bold',
-}));
 
 export const PortListByRegion = (props: { user: UserProfile, regions: PortRegion[], drtDomain: string }) => {
     return <Box sx={{
@@ -29,9 +23,10 @@ export const PortListByRegion = (props: { user: UserProfile, regions: PortRegion
                 minWidth: '200px',
                 marginRight: '50px'
             }}>
-                {props.user.roles.includes("rcc:view") ?
-                    <Button href={'/region?regionName=' + region.name}>{region.name}</Button> :
-                    <Region>{region.name}</Region>
+                {props.user.roles.includes("rcc:" + region.name.toLowerCase()) ?
+                    <Button style={{fontSize: '18px'}}
+                            href={'/region?regionName=' + region.name}>{region.name}</Button> :
+                    <Button style={{fontSize: '18px', color: 'black'}} disabled="true">{region.name}</Button>
                 }
                 <List>
                     {sortedPorts.map((portCode) => {

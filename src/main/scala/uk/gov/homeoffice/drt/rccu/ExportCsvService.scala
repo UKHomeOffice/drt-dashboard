@@ -21,7 +21,7 @@ class ExportCsvService(httpClient: HttpClient) {
 
   val drtExportCsvRoutePath = "export/arrivals"
 
-  def getPortRegion(region: String): PortRegion = PortRegion.regions.filter(_.name == region).head
+  def getPortRegion(region: String) = PortRegion.regions.find(_.name == region)
 
   def getUri(portCode: String, start: String, end: String, terminal: String): String =
     s"${Dashboard.drtUriForPortCode(portCode)}/${drtExportCsvRoutePath}/$start/$end/$terminal"

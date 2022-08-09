@@ -5,10 +5,11 @@ import akka.http.scaladsl.model.ContentTypes
 import akka.http.scaladsl.model.headers.ContentDispositionTypes.attachment
 import akka.http.scaladsl.model.headers.`Content-Disposition`
 import akka.http.scaladsl.server.Directives.{ complete, _ }
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{ Route, ValidationRejection }
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import uk.gov.homeoffice.drt.HttpClient
+import uk.gov.homeoffice.drt.arrivals.ArrivalsHeadings.rccHeadings
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.ports.config.AirportConfigs
 import uk.gov.homeoffice.drt.rccu.ExportCsvService
@@ -20,34 +21,34 @@ object ExportRoutes {
   def apply(httpClient: HttpClient)(implicit ec: ExecutionContextExecutor, mat: Materializer): Route = {
     lazy val exportCsvService = new ExportCsvService(httpClient)
     path("export" / Segment / Segment / Segment) { (region, startDate, endDate) =>
-      val portRegion: PortRegion = exportCsvService.getPortRegion(region)
       val fileName = exportCsvService.makeFileName(startDate, endDate, region)
-      val portCsvHeadings = "IATA,ICAO,Origin,Gate/Stand,Status,Scheduled,Est Arrival,Act Arrival,Est Chox,Act Chox,Minutes off scheduled,Est PCP,Total Pax,PCP Pax,Invalid API,API e-Gates,API EEA,API Non-EEA,API Fast Track,Historical e-Gates,Historical EEA,Historical Non-EEA,Historical Fast Track,Terminal Average e-Gates,Terminal Average EEA,Terminal Average Non-EEA,Terminal Average Fast Track,API Actual - EEA Machine Readable to e-Gates,API Actual - EEA Machine Readable to EEA,API Actual - EEA Non-Machine Readable to EEA,API Actual - EEA Child to EEA,API Actual - GBR National to e-Gates,API Actual - GBR National to EEA,API Actual - GBR National Child to EEA,API Actual - B5J+ National to e-Gates,API Actual - B5J+ National to EEA,API Actual - B5J+ Child to EEA,API Actual - Visa National to Non-EEA,API Actual - Non-Visa National to Non-EEA,API Actual - Visa National to Fast Track,API Actual - Non-Visa National to Fast Track,Nationalities,Ages"
-      val headings = "Region,Port,Terminal," + portCsvHeadings
-      respondWithHeader(`Content-Disposition`(attachment, Map("filename" -> fileName))) {
-        complete(Source(portRegion.ports.toList)
-          .map { port =>
-            AirportConfigs.confByPort.get(port).map(config => (port.iata, config.terminals))
-          }
-          .mapConcat {
-            case Some((portStr, terminals)) => terminals.map(t => (portStr, t))
-          }.flatMapConcat {
-            case (port, terminal) =>
-              Source.future(exportCsvService.getPortResponseForTerminal(startDate, endDate, portRegion.name, port, terminal.toString))
-                .flatMapConcat { portResponse =>
-                  portResponse.map(pr => pr.httpResponse.entity.dataBytes
-                    .map {
-                      _
-                        .utf8String
-                        .split("\n")
-                        .filterNot(_.contains("ICAO"))
-                        .map(line => s"${region.name},${pr.port},${pr.terminal},$line")
-                        .mkString("\n")
-                    }).getOrElse(Source.empty)
-                }
-          }.prepend(Source.single(headings)))
-      }
+      exportCsvService.getPortRegion(region).map { portRegion: PortRegion =>
+        respondWithHeader(`Content-Disposition`(attachment, Map("filename" -> fileName))) {
+          complete(Source(portRegion.ports.toList)
+            .map { port =>
+              AirportConfigs.confByPort.get(port).map(config => (port.iata, config.terminals))
+            }
+            .mapConcat {
+              case Some((portStr, terminals)) => terminals.map(t => (portStr, t))
+            }.flatMapConcat {
+              case (port, terminal) =>
+                Source.future(exportCsvService.getPortResponseForTerminal(startDate, endDate, portRegion.name, port, terminal.toString))
+                  .flatMapConcat { portResponse =>
+                    portResponse.map(pr => pr.httpResponse.entity.dataBytes
+                      .map {
+                        _
+                          .utf8String
+                          .split("\n")
+                          .map(line => s"${region.name},${pr.port},${pr.terminal},$line")
+                          .filterNot(_.contains("ICAO"))
+                          .mkString("\n")
+                      }).getOrElse(Source.empty)
+                  }
+            }.prepend(Source.single(rccHeadings)))
+        }
+      }.getOrElse(reject(ValidationRejection("Region not found.")))
     }
+
   }
 
   val contentType = ContentTypes.`text/plain(UTF-8)`

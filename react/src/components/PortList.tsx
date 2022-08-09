@@ -18,9 +18,13 @@ export const PortList = (props: IProps) => {
         return {...region, ports: userPorts} as PortRegion
     }).filter(r => r.ports.length > 0)
 
+    const checkRccRoles = () => {
+        return props.user.roles.includes("rcc:central") || props.user.roles.includes("rcc:heathrow") || props.user.roles.includes("rcc:north") || props.user.roles.includes("rcc:south")
+    }
+
     return <Box sx={{width: '100%'}}>
         <h1>Welcome to DRT</h1>
-        {props.user.roles.includes("rcc:view") ?
+        {checkRccRoles() ?
             <p>Click on your region or ports</p> :
             <p>Select your destination</p>
         }

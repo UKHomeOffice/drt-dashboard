@@ -13,8 +13,8 @@ interface IProps {
 }
 
 export const RegionalPort = (props: IProps) => {
-    return <div>
-        {props.user.roles.includes("rcc:view") ?
+    return <div class="flex-container">
+        {props.user.roles.includes("rcc:" + props.region.toLowerCase()) ?
             <div>
                 <Box>
                     <Typography align="left" variant="h6" component="h2">
@@ -25,14 +25,14 @@ export const RegionalPort = (props: IProps) => {
                     <div align="left"><ArrivalExport region={props.region}/></div>
                     <p> A member of the team will be in touch to get your thoughts about how this
                         page could be more useful. You can also get in touch with the team by email at
-                        <a href="mailto:drtpoiseteam@homeoffice.gov.uk"> drtpoiseteam@homeoffice.gov.uk</a>.</p>
+                        <a href={"mailto:" + props.config.teamEmail}> {props.config.teamEmail}</a>.</p>
                 </Box>
                 <Button style={{float: 'right'}} href="/">back</Button>
             </div> :
             <div>
                 <Box>
-                    <p> You don't have relevant permission to view the page. If you like to have permission for the page
-                        then you can get in touch with the team by email at drtpoiseteam@homeoffice.gov.uk.</p>
+                    <p> You don't have access to this page. To request access please get in touch with the team at <a
+                        href={"mailto:" + props.config.teamEmail}> {props.config.teamEmail}</a>.</p>
                 </Box>
             </div>
         }

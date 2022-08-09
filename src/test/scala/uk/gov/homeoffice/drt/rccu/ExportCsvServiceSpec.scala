@@ -20,7 +20,7 @@ class ExportCsvServiceSpec extends Specification {
   "Given a string of region" should {
     "get the portRegion mapped to name" in {
       val region = exportCsvService.getPortRegion("Heathrow")
-      PortRegion.Heathrow === region
+      region must beSome(PortRegion.Heathrow)
     }
   }
 
