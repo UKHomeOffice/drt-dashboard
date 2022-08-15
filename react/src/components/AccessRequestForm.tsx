@@ -90,10 +90,6 @@ export default function AccessRequestForm(props: IProps) {
                                              selectedPorts={selectedPorts}/>
                 </ListItem>
                 <Divider/>
-                <p>Please select the rccu region you require access to</p>
-                <RccuByRegionAccess regions={props.regions} setSelectedRccuRegions={setSelectedRccuRegions}
-                                    selectedRccuRegions={selectedRccuRegions}/>
-                <Divider/>
                 <ListItem
                     button
                     key={'staffing'}
@@ -105,7 +101,8 @@ export default function AccessRequestForm(props: IProps) {
                             checked={state.staffing}
                         />
                     </ListItemIcon>
-                    <ListItemText id="staffing" primary="I require staffing access as my role includes planning"/>
+                    <ListItemText id="staffing"
+                                  primary="I require access to enter staffing figures as my role includes planning"/>
                 </ListItem>
                 <ListItem key={'line-manager'}>
                     <FormControl fullWidth>
@@ -118,8 +115,12 @@ export default function AccessRequestForm(props: IProps) {
                         />
                     </FormControl>
                 </ListItem>
-
             </List>
+            <Divider/>
+            <p>Please select the RCCU region you require access to</p>
+            <RccuByRegionAccess regions={props.regions} setSelectedRccuRegions={setSelectedRccuRegions}
+                                selectedRccuRegions={selectedRccuRegions}/>
+            <Divider/>
             <ListItem>
                 <Declaration>
                     <StyledTypography>Declaration</StyledTypography>
