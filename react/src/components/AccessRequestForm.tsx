@@ -10,9 +10,9 @@ import ListItemText from "@mui/material/ListItemText";
 import {Box, Button, Divider, FormControl, TextField, Typography} from "@mui/material";
 import {PortRegion, PortRegionHelper} from "../model/Config";
 import {PortsByRegionCheckboxes} from "./PortsByRegionCheckboxes";
-import {RccuByRegionAccess} from "./RccuByRegionAccess";
-import _ from "lodash/fp";
+import InitialRequestForm from "./InitialRequestForm";
 
+import _ from "lodash/fp";
 
 const Declaration = styled('div')(({theme}) => ({
     textAlign: "left",
@@ -45,12 +45,12 @@ interface IState {
     lineManager: string;
     agreeDeclaration: boolean;
     requestSubmitted: boolean;
+    rccOption: string
 }
 
 export default function AccessRequestForm(props: IProps) {
     const [selectedPorts, setSelectedPorts]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
     const [selectedRccuRegions, setSelectedRccuRegions]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
-
     const [state, setState]: [IState, ((value: (((prevState: IState) => IState) | IState)) => void)] = React.useState(
         {
             portsRequested: [],
@@ -59,11 +59,16 @@ export default function AccessRequestForm(props: IProps) {
             lineManager: "",
             agreeDeclaration: false,
             requestSubmitted: false,
+            rccOption: "port",
         } as IState);
 
     const handleLineManagerChange = (state: IState, newValue: string) => {
         return {...state, lineManager: newValue};
     };
+
+    const handleCallback = (childData) => {
+        setState({...state, rccOption: childData})
+    }
 
     const setRequestFinished = () => setState({...state, requestSubmitted: true});
 
@@ -80,14 +85,27 @@ export default function AccessRequestForm(props: IProps) {
             .then(() => console.log("User has been logged out."))
     }
 
+    const pageMessage = () => {
+        if (state.rccOption === "rccu")
+            return "Please select the RCCU region you require access to"
+        else
+            return "Please select the ports you require access to"
+    }
+
     function form() {
         return <Box sx={{width: '100%'}}>
             <h1>Welcome to DRT</h1>
-            <p>Please select the ports you require access to</p>
+            <InitialRequestForm rccAccess={state.rccOption} parentCallback={handleCallback}/>
+            <Divider/>
+            <p>{pageMessage()}</p>
             <List>
                 <ListItem>
-                    <PortsByRegionCheckboxes regions={props.regions} setPorts={setSelectedPorts}
-                                             selectedPorts={selectedPorts}/>
+                    <PortsByRegionCheckboxes portDisabled={state.rccOption === "rccu"}
+                                             regions={props.regions}
+                                             setPorts={setSelectedPorts}
+                                             selectedPorts={selectedPorts}
+                                             setSelectedRccuRegions={setSelectedRccuRegions}
+                                             selectedRccuRegions={selectedRccuRegions}/>
                 </ListItem>
                 <Divider/>
                 <ListItem
@@ -116,10 +134,6 @@ export default function AccessRequestForm(props: IProps) {
                     </FormControl>
                 </ListItem>
             </List>
-            <Divider/>
-            <p>Please select the RCCU region you require access to</p>
-            <RccuByRegionAccess regions={props.regions} setSelectedRccuRegions={setSelectedRccuRegions}
-                                selectedRccuRegions={selectedRccuRegions}/>
             <Divider/>
             <ListItem>
                 <Declaration>
