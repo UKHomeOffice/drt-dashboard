@@ -7,33 +7,31 @@ import ListItemText from "@mui/material/ListItemText";
 import React from "react";
 import {PortRegion} from "../model/Config";
 
-
 interface IProps {
     portDisabled: boolean
     regions: PortRegion[]
     selectedPorts: string[]
     setPorts: ((value: (((prevState: string[]) => string[]) | string[])) => void)
-    selectedRccuRegions: string[]
-    setSelectedRccuRegions: ((value: (((prevState: string[]) => string[]) | string[])) => void)
+    selectedRegions: string[]
+    setSelectedRegions: ((value: (((prevState: string[]) => string[]) | string[])) => void)
 }
 
 export const PortsByRegionCheckboxes = (props: IProps) => {
     const updatePortSelection = (port: string) => {
         const requested: string[] = props.selectedPorts.includes(port) ?
             props.selectedPorts.filter(value => value !== port) : [...props.selectedPorts, port]
-
         props.setPorts(requested);
     };
 
     const allPorts = props.regions.map(r => r.ports).reduce((a, b) => a.concat(b))
     const allPortsCount = props.regions.reduce((a, b) => a + b.ports.length, 0)
     const allPortsSelected = props.selectedPorts.length === allPortsCount
+    const allRegions = props.regions.map(r => r.name)
 
-    const updateRccuByRegionSelection = (region: string) => {
-        const requested: string[] = props.selectedRccuRegions.includes(region) ?
-            props.selectedRccuRegions.filter(value => value !== region) : [...props.selectedRccuRegions, region]
-
-        props.setSelectedRccuRegions(requested);
+    const updateByRegionSelection = (region: string) => {
+        const requested: string[] = props.selectedRegions.includes(region) ?
+            props.selectedRegions.filter(value => value !== region) : [...props.selectedRegions, region]
+        props.setSelectedRegions(requested);
     };
 
     return <Box sx={{
@@ -45,8 +43,13 @@ export const PortsByRegionCheckboxes = (props: IProps) => {
         <List>
             <ListItem
                 onClick={() => {
-                    if (!allPortsSelected) props.setPorts(allPorts)
-                    else props.setPorts([])
+                    if (!allPortsSelected) {
+                        props.setPorts(allPorts)
+                        props.setSelectedRegions(allRegions)
+                    } else {
+                        props.setSelectedRegions([])
+                        props.setPorts([])
+                    }
                 }}>
                 <ListItemIcon>
                     <Checkbox
@@ -67,10 +70,7 @@ export const PortsByRegionCheckboxes = (props: IProps) => {
                     const regionPartiallySelected = sortedPorts.some(p => props.selectedPorts.includes(p)) && !regionSelected
 
                     function toggleRegionPorts(regionName: string) {
-                        if (props.portDisabled) {
-                            updateRccuByRegionSelection(regionName)
-                        }
-
+                        updateByRegionSelection(regionName)
                         if (!regionSelected) props.setPorts(props.selectedPorts.concat(sortedPorts))
                         else props.setPorts(props.selectedPorts.filter(p => !sortedPorts.includes(p)))
                     }
@@ -90,7 +90,7 @@ export const PortsByRegionCheckboxes = (props: IProps) => {
                                     <Checkbox
                                         inputProps={{'aria-labelledby': region.name}}
                                         name={region.name}
-                                        checked={regionSelected}
+                                        checked={props.selectedRegions.includes(region.name)}
                                         indeterminate={regionPartiallySelected}
                                     />
                                 </ListItemIcon>

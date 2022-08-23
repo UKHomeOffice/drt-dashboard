@@ -30,7 +30,7 @@ class AccessRequestSpec extends Specification with Specs2RouteTest with AccessRe
       portsRequested = Set("bhx", "lhr"),
       allPorts = true,
       staffing = true,
-      rccuRegionsRequested = Set("North", "South"),
+      regionsRequested = Set("North", "South"),
       lineManager = "someone@somewhere.com",
       agreeDeclaration = true)
 

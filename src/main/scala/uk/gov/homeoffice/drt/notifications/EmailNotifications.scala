@@ -20,7 +20,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
 
     val portsRequested = if (accessRequest.allPorts) "all ports" else accessRequest.portsRequested.mkString(", ").toUpperCase
 
-    val rccuRegionsRequested = accessRequest.rccuRegionsRequested.mkString(", ").toUpperCase
+    val rccuRegionsRequested = if (accessRequest.rccOption == "rccu") accessRequest.regionsRequested.mkString(", ").toUpperCase else ""
 
     val personalisation: util.Map[String, String] = Map(
       "requester" -> requester,
@@ -28,7 +28,9 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
       "rccuRegion" -> rccuRegionsRequested,
       "staffing" -> staffing,
       "lineManager" -> manager,
-      "agreeDeclaration" -> agreeDeclaration).asJava
+      "agreeDeclaration" -> agreeDeclaration,
+      "portOrRegionText" -> accessRequest.portOrRegionText,
+      "staffText" -> accessRequest.staffText).asJava
 
     accessRequestEmails.map { accessRequestEmail =>
       val maybeResponse = Try(client.sendEmail(

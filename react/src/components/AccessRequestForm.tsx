@@ -11,7 +11,7 @@ import {Box, Button, Divider, FormControl, TextField, Typography} from "@mui/mat
 import {PortRegion, PortRegionHelper} from "../model/Config";
 import {PortsByRegionCheckboxes} from "./PortsByRegionCheckboxes";
 import InitialRequestForm from "./InitialRequestForm";
-
+import AccessRequestFormModal from "./AccessRequestFormModal";
 import _ from "lodash/fp";
 
 const Declaration = styled('div')(({theme}) => ({
@@ -41,25 +41,32 @@ interface IProps {
 interface IState {
     portsRequested: string[];
     staffing: boolean;
-    rccuRegionsRequested: string[];
+    regionsRequested: string[];
     lineManager: string;
     agreeDeclaration: boolean;
     requestSubmitted: boolean;
-    rccOption: string
+    rccOption: string;
+    portOrRegionText: string;
+    staffText: string;
 }
 
 export default function AccessRequestForm(props: IProps) {
     const [selectedPorts, setSelectedPorts]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
-    const [selectedRccuRegions, setSelectedRccuRegions]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
+    const [selectedRegions, setSelectedRegions]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
+    const [portOrRegionText, setPortOrRegionText]: [string, ((value: (((prevState: string) => string) | string)) => void)] = React.useState<string>("")
+    const [staffText, setStaffText]: [string, ((value: (((prevState: string) => string) | string)) => void)] = React.useState<string>("")
+
     const [state, setState]: [IState, ((value: (((prevState: IState) => IState) | IState)) => void)] = React.useState(
         {
             portsRequested: [],
             staffing: false,
-            rccuRegionsRequested: [],
+            regionsRequested: [],
             lineManager: "",
             agreeDeclaration: false,
             requestSubmitted: false,
             rccOption: "port",
+            portOrRegionText: "",
+            staffText: ""
         } as IState);
 
     const handleLineManagerChange = (state: IState, newValue: string) => {
@@ -67,6 +74,18 @@ export default function AccessRequestForm(props: IProps) {
     };
 
     const handleCallback = (childData) => {
+        setState({
+            ...state,
+            portsRequested: [],
+            staffing: false,
+            lineManager: "",
+            regionsRequested: [],
+            agreeDeclaration: false
+        })
+        setSelectedPorts([])
+        setSelectedRegions([])
+        setPortOrRegionText("")
+        setStaffText("")
         setState({...state, rccOption: childData})
     }
 
@@ -77,13 +96,16 @@ export default function AccessRequestForm(props: IProps) {
         axios.post(ApiClient.requestAccessEndPoint, {
             ...state,
             portsRequested: selectedPorts,
-            rccuRegionsRequested: selectedRccuRegions,
+            regionsRequested: selectedRegions,
+            portOrRegionText: portOrRegionText,
+            staffText: staffText,
             allPorts: allPortsRequested
         })
             .then(setRequestFinished)
             .then(() => axios.get(ApiClient.logoutEndPoint))
             .then(() => console.log("User has been logged out."))
     }
+
 
     const pageMessage = () => {
         if (state.rccOption === "rccu")
@@ -104,8 +126,8 @@ export default function AccessRequestForm(props: IProps) {
                                              regions={props.regions}
                                              setPorts={setSelectedPorts}
                                              selectedPorts={selectedPorts}
-                                             setSelectedRccuRegions={setSelectedRccuRegions}
-                                             selectedRccuRegions={selectedRccuRegions}/>
+                                             setSelectedRegions={setSelectedRegions}
+                                             selectedRegions={selectedRegions}/>
                 </ListItem>
                 <Divider/>
                 <ListItem
@@ -127,7 +149,7 @@ export default function AccessRequestForm(props: IProps) {
                         <TextField
                             id="outlined-helperText"
                             label="Line manager's email address"
-                            helperText="Optional (this may be helpful if we need to query your request)"
+                            helperText="Required (we need to query your request)"
                             variant="outlined"
                             onChange={event => setState(handleLineManagerChange(state, event.target.value))}
                         />
@@ -165,15 +187,28 @@ export default function AccessRequestForm(props: IProps) {
                 </ListItemIcon>
                 <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
             </ListItem>
+            {(((selectedPorts.length > 1 && state.rccOption === "port") || selectedRegions.length > 1) ||
+                (state.staffing && (selectedPorts.length > 0 || selectedRegions.length > 1))) && state.agreeDeclaration ?
+                <AccessRequestFormModal rccOption={state.rccOption === "rccu"}
+                                        rccRegions={selectedRegions}
+                                        ports={selectedPorts}
+                                        manageStaff={state.staffing}
+                                        portOrRegionText={portOrRegionText}
+                                        setPortOrRegionText={setPortOrRegionText}
+                                        staffText={staffText}
+                                        setStaffText={setStaffText}
+                                        saveCallback={save}
+                /> :
+                <Button
+                    disabled={!(((selectedPorts.length === 1) || (selectedRegions.length === 1) || (state.lineManager.length > 1)) && state.agreeDeclaration)}
+                    onClick={save}
+                    variant="contained"
+                    color="primary"
+                >
+                    Request access
+                </Button>
+            }
 
-            <Button
-                disabled={(selectedPorts.length === 0) && (selectedRccuRegions.length === 0) || !state.agreeDeclaration}
-                onClick={save}
-                variant="contained"
-                color="primary"
-            >
-                Request access
-            </Button>
         </Box>;
     }
 
