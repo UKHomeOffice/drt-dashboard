@@ -4,6 +4,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -51,8 +53,8 @@ export default function AccessRequestFormModal(props: IProps) {
     return (
         <div class="flex-container">
             <div>
-                <Button style={{float: 'center'}}
-                        onClick={handleOpen}>Request access new</Button>
+                <Button style={{float: 'center'}} variant="contained"
+                        onClick={handleOpen}>More Info</Button>
             </div>
             <div>
                 <Modal
@@ -62,54 +64,62 @@ export default function AccessRequestFormModal(props: IProps) {
                     aria-describedby="modal-modal-description">
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                            More information about request
+                            More information about the request
                         </Typography>
-                        {(props.rccOption && props.rccRegions.length > 1) ?
-                            <div><Typography align="center" id="modal-modal-title">
-                                Please say why you have requested access to more than one region:
-                            </Typography>
-                                <TextField style={{width: "100%"}} id="outlined-basic" label="Outlined"
-                                           variant="outlined" helperText="Required (we need to query your request)"
-                                           value={props.portOrRegionText} onChange={handlePortOrRegionTextChange}/>
+                        <List sx={{width: '100%', bgcolor: 'background.paper'}}>
+                            <ListItem alignItems="flex-start">
+                                {(props.rccOption && props.rccRegions.length > 1) ?
+                                    <Typography align="center" id="modal-modal-title">
+                                        Please say why you have requested access to more than one region.
+                                        <TextField style={{width: "100%"}}
+                                                   id="outlined-basic"
+                                                   label="Enter text"
+                                                   variant="outlined"
+                                                   value={props.portOrRegionText}
+                                                   onChange={handlePortOrRegionTextChange}/>
+                                    </Typography>
+                                    : <span/>
+                                }
+                            </ListItem>
+                            <ListItem alignItems="flex-start">
+                                {(!props.rccOption && props.ports.length > 1) ?
+                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                                        Please say why you have requested access to more than one port dashboard.
+                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
+                                                   variant="outlined" value={props.portOrRegionText}
+                                                   onChange={handlePortOrRegionTextChange}
+                                        />
+                                    </Typography>
+                                    : <span/>
+                                }
+                            </ListItem>
+                            <ListItem alignItems="flex-start">
+                                {(!props.rccOption && props.ports.length > 0 && props.manageStaff) ?
+                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                                        Please say why you have requested permission to manage staff.
+                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
+                                                   variant="outlined" value={props.staffText}
+                                                   onChange={handleStaffTextChange}/>
+                                    </Typography>
+                                    : <span/>
+                                }
+                            </ListItem>
+                            <ListItem alignItems="flex-start">
+                                {(props.rccOption && props.manageStaff) ?
+                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                                        Please say why you have requested permission to manage staff.
+                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
+                                                   variant="outlined" value={props.staffText}
+                                                   onChange={handleStaffTextChange}/>
+                                    </Typography>
+                                    : <span/>
+                                }
+                            </ListItem>
+                            <div align="center">
+                                <Button variant="contained" onClick={handleEvent}>Request submit</Button>
                             </div>
-                            : <span/>
-                        }
-
-
-                        {(!props.rccOption && props.ports.length > 1) ?
-                            <div>
-                                <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                    Please say why you have requested access to more than one port dashboard.
-                                </Typography>
-                                <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                           variant="outlined" value={props.portOrRegionText}
-                                           onChange={handlePortOrRegionTextChange}
-                                />
-                            </div>
-                            : <span/>
-                        }
-                        {(!props.rccOption && props.ports.length > 0 && props.manageStaff) ?
-                            <div>
-                                <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                    Please say why you have requested permission to manage staff.
-                                </Typography>
-                                <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                           variant="outlined" value={props.staffText} onChange={handleStaffTextChange}/>
-                            </div>
-                            : <span/>
-                        }
-                        {(props.rccOption && props.manageStaff) ?
-                            <div>
-                                <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                    Please say why you have requested permission to manage staff.
-                                </Typography>
-                                <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                           variant="outlined" value={props.staffText} onChange={handleStaffTextChange}/>
-                            </div>
-                            : <span/>
-                        }
-                        <Button style={{float: 'right'}} onClick={handleEvent}>Request submit</Button>
-                        <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                            <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                        </List>
                     </Box>
                 </Modal>
             </div>

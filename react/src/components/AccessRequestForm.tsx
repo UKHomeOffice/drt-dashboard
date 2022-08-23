@@ -106,7 +106,6 @@ export default function AccessRequestForm(props: IProps) {
             .then(() => console.log("User has been logged out."))
     }
 
-
     const pageMessage = () => {
         if (state.rccOption === "rccu")
             return "Please select the RCCU region you require access to"
@@ -187,8 +186,12 @@ export default function AccessRequestForm(props: IProps) {
                 </ListItemIcon>
                 <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
             </ListItem>
-            {(((selectedPorts.length > 1 && state.rccOption === "port") || selectedRegions.length > 1) ||
-                (state.staffing && (selectedPorts.length > 0 || selectedRegions.length > 1))) && state.agreeDeclaration ?
+            {(((selectedPorts.length > 1 && state.rccOption === "port") ||
+                (selectedPorts.length > 0 && state.rccOption === "port" && state.staffing) ||
+                (selectedRegions.length > 1 && state.rccOption === "rccu") ||
+                (selectedRegions.length > 0 && state.rccOption === "rccu" && state.staffing))) &&
+            state.agreeDeclaration &&
+            state.lineManager.length > 4 ?
                 <AccessRequestFormModal rccOption={state.rccOption === "rccu"}
                                         rccRegions={selectedRegions}
                                         ports={selectedPorts}
@@ -200,7 +203,10 @@ export default function AccessRequestForm(props: IProps) {
                                         saveCallback={save}
                 /> :
                 <Button
-                    disabled={!(((selectedPorts.length === 1) || (selectedRegions.length === 1) || (state.lineManager.length > 1)) && state.agreeDeclaration)}
+                    disabled={!(((selectedPorts.length === 1 && state.rccOption === "port") ||
+                        (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
+                        (state.lineManager.length > 4) &&
+                        state.agreeDeclaration)}
                     onClick={save}
                     variant="contained"
                     color="primary"
@@ -208,7 +214,6 @@ export default function AccessRequestForm(props: IProps) {
                     Request access
                 </Button>
             }
-
         </Box>;
     }
 
