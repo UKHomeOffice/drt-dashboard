@@ -50,11 +50,94 @@ export default function AccessRequestFormModal(props: IProps) {
         props.setStaffText(event.target.value);
     };
 
+
+    const rccOptionQuestions = () => {
+        return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
+
+            <ListItem alignItems="flex-start">
+                {(props.rccRegions.length > 1) ?
+                    <Typography align="center" id="modal-modal-title">
+                        Please provide why you have requested access to more than one region?
+                        <TextField style={{width: "100%"}}
+                                   id="outlined-basic"
+                                   label="Enter text"
+                                   variant="outlined"
+                                   required
+                                   value={props.portOrRegionText}
+                                   onChange={handlePortOrRegionTextChange}/>
+                    </Typography>
+                    : <span/>
+                }
+            </ListItem>
+
+            <ListItem alignItems="flex-start">
+                {(props.manageStaff) ?
+                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                        Please provide why you have requested permission to manage staff ?
+                        <TextField style={{width: "100%"}}
+                                   id="outlined-basic"
+                                   label="Enter text"
+                                   variant="outlined"
+                                   required
+                                   value={props.staffText}
+                                   onChange={handleStaffTextChange}/>
+                    </Typography>
+                    : <span/>
+                }
+            </ListItem>
+        </List>
+    }
+
+    const portOptionQuestions = () => {
+        return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
+            <ListItem alignItems="flex-start">
+                {(props.ports.length > 1) ?
+                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                        Please provide why you have requested access to more than one port dashboard?
+                        <TextField style={{width: "100%"}}
+                                   id="outlined-basic"
+                                   label="Enter text"
+                                   variant="outlined"
+                                   required
+                                   value={props.portOrRegionText}
+                                   onChange={handlePortOrRegionTextChange}
+                        />
+                    </Typography>
+                    : <span/>
+                }
+            </ListItem>
+            <ListItem alignItems="flex-start">
+                {(props.ports.length > 0 && props.manageStaff) ?
+                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                        Please provide why you have requested permission to manage staff ?
+                        <TextField style={{width: "100%"}}
+                                   id="outlined-basic"
+                                   label="Enter text"
+                                   variant="outlined"
+                                   required
+                                   value={props.staffText}
+                                   onChange={handleStaffTextChange}/>
+                    </Typography>
+                    : <span/>
+                }
+            </ListItem>
+        </List>
+    }
+
+    const enableSubmitRequest = () => {
+        if (((props.rccOption && props.rccRegions.length > 1) || (!props.rccOption && props.ports.length > 1)) && props.manageStaff)
+            return props.portOrRegionText.length > 1 && props.staffText.length > 1
+        else if (props.manageStaff)
+            return props.staffText.length > 1
+        else if (props.rccRegions.length > 1 || props.ports.length > 1)
+            return props.portOrRegionText.length > 1
+    }
+
     return (
         <div class="flex-container">
             <div>
                 <Button style={{float: 'center'}} variant="contained"
-                        onClick={handleOpen}>More Info</Button>
+                        onClick={handleOpen}>Submit</Button>
             </div>
             <div>
                 <Modal
@@ -64,62 +147,16 @@ export default function AccessRequestFormModal(props: IProps) {
                     aria-describedby="modal-modal-description">
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                            More information about the request
+                            Provide more information about the request
                         </Typography>
-                        <List sx={{width: '100%', bgcolor: 'background.paper'}}>
-                            <ListItem alignItems="flex-start">
-                                {(props.rccOption && props.rccRegions.length > 1) ?
-                                    <Typography align="center" id="modal-modal-title">
-                                        Please say why you have requested access to more than one region.
-                                        <TextField style={{width: "100%"}}
-                                                   id="outlined-basic"
-                                                   label="Enter text"
-                                                   variant="outlined"
-                                                   value={props.portOrRegionText}
-                                                   onChange={handlePortOrRegionTextChange}/>
-                                    </Typography>
-                                    : <span/>
-                                }
-                            </ListItem>
-                            <ListItem alignItems="flex-start">
-                                {(!props.rccOption && props.ports.length > 1) ?
-                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                        Please say why you have requested access to more than one port dashboard.
-                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                                   variant="outlined" value={props.portOrRegionText}
-                                                   onChange={handlePortOrRegionTextChange}
-                                        />
-                                    </Typography>
-                                    : <span/>
-                                }
-                            </ListItem>
-                            <ListItem alignItems="flex-start">
-                                {(!props.rccOption && props.ports.length > 0 && props.manageStaff) ?
-                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                        Please say why you have requested permission to manage staff.
-                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                                   variant="outlined" value={props.staffText}
-                                                   onChange={handleStaffTextChange}/>
-                                    </Typography>
-                                    : <span/>
-                                }
-                            </ListItem>
-                            <ListItem alignItems="flex-start">
-                                {(props.rccOption && props.manageStaff) ?
-                                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
-                                        Please say why you have requested permission to manage staff.
-                                        <TextField style={{width: "100%"}} id="outlined-basic" label="Enter text"
-                                                   variant="outlined" value={props.staffText}
-                                                   onChange={handleStaffTextChange}/>
-                                    </Typography>
-                                    : <span/>
-                                }
-                            </ListItem>
-                            <div align="center">
-                                <Button variant="contained" onClick={handleEvent}>Request submit</Button>
-                            </div>
-                            <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
-                        </List>
+                        {props.rccOption ? rccOptionQuestions() : portOptionQuestions()}
+                        <div align="center">
+                            <Button variant="contained"
+                                    disabled={!enableSubmitRequest()}
+                                    onClick={handleEvent}>Request submit</Button>
+                        </div>
+                        <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+
                     </Box>
                 </Modal>
             </div>

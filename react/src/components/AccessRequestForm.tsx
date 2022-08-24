@@ -113,6 +113,13 @@ export default function AccessRequestForm(props: IProps) {
             return "Please select the ports you require access to"
     }
 
+    const moreInfoConditionCheck = () => {
+        return (((selectedPorts.length > 1 && state.rccOption === "port") ||
+            (selectedPorts.length > 0 && state.rccOption === "port" && state.staffing) ||
+            (selectedRegions.length > 1 && state.rccOption === "rccu") ||
+            (selectedRegions.length > 0 && state.rccOption === "rccu" && state.staffing)))
+    }
+
     function form() {
         return <Box sx={{width: '100%'}}>
             <h1>Welcome to DRT</h1>
@@ -149,71 +156,67 @@ export default function AccessRequestForm(props: IProps) {
                             id="outlined-helperText"
                             label="Line manager's email address"
                             helperText="Required (we need to query your request)"
+                            required={moreInfoConditionCheck()}
                             variant="outlined"
                             onChange={event => setState(handleLineManagerChange(state, event.target.value))}
                         />
                     </FormControl>
                 </ListItem>
+                <Divider/>
+                <ListItem>
+                    <Declaration>
+                        <StyledTypography>Declaration</StyledTypography>
+                        <Typography>I understand that:</Typography>
+                        <DeclarationUl>
+                            <li>data contained in DRT is marked as OFFICIAL-SENSITIVE</li>
+                        </DeclarationUl>
+                        <Typography>I confirm that:</Typography>
+                        <DeclarationUl>
+                            <li>I will not share any DRT data with any third party</li>
+                            <li>I will contact the DRT team at <a href="mailto:props.teamEmail">{props.teamEmail}</a> if
+                                I'm
+                                asked to
+                                share any data
+                            </li>
+                        </DeclarationUl>
+                    </Declaration>
+                </ListItem>
+                <ListItem
+                    button
+                    key={'agreeDeclaration'}
+                    onClick={() => setState({...state, agreeDeclaration: !state.agreeDeclaration})}>
+                    <ListItemIcon>
+                        <Checkbox
+                            inputProps={{'aria-labelledby': "agreeDeclaration"}}
+                            name="agreeDeclaration"
+                            checked={state.agreeDeclaration}
+                        />
+                    </ListItemIcon>
+                    <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
+                </ListItem>
+                {moreInfoConditionCheck() && state.lineManager.length > 4 && state.agreeDeclaration ?
+                    <AccessRequestFormModal rccOption={state.rccOption === "rccu"}
+                                            rccRegions={selectedRegions}
+                                            ports={selectedPorts}
+                                            manageStaff={state.staffing}
+                                            portOrRegionText={portOrRegionText}
+                                            setPortOrRegionText={setPortOrRegionText}
+                                            staffText={staffText}
+                                            setStaffText={setStaffText}
+                                            saveCallback={save}
+                    /> :
+                    <Button
+                        disabled={!(((selectedPorts.length === 1 && state.rccOption === "port") ||
+                            (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
+                            state.agreeDeclaration && !state.staffing)}
+                        onClick={save}
+                        variant="contained"
+                        color="primary"
+                    >
+                        Request access
+                    </Button>
+                }
             </List>
-            <Divider/>
-            <ListItem>
-                <Declaration>
-                    <StyledTypography>Declaration</StyledTypography>
-                    <Typography>I understand that:</Typography>
-                    <DeclarationUl>
-                        <li>data contained in DRT is marked as OFFICIAL-SENSITIVE</li>
-                    </DeclarationUl>
-                    <Typography>I confirm that:</Typography>
-                    <DeclarationUl>
-                        <li>I will not share any DRT data with any third party</li>
-                        <li>I will contact the DRT team at <a href="mailto:props.teamEmail">{props.teamEmail}</a> if I'm
-                            asked to
-                            share any data
-                        </li>
-                    </DeclarationUl>
-                </Declaration>
-            </ListItem>
-            <ListItem
-                button
-                key={'agreeDeclaration'}
-                onClick={() => setState({...state, agreeDeclaration: !state.agreeDeclaration})}>
-                <ListItemIcon>
-                    <Checkbox
-                        inputProps={{'aria-labelledby': "agreeDeclaration"}}
-                        name="agreeDeclaration"
-                        checked={state.agreeDeclaration}
-                    />
-                </ListItemIcon>
-                <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
-            </ListItem>
-            {(((selectedPorts.length > 1 && state.rccOption === "port") ||
-                (selectedPorts.length > 0 && state.rccOption === "port" && state.staffing) ||
-                (selectedRegions.length > 1 && state.rccOption === "rccu") ||
-                (selectedRegions.length > 0 && state.rccOption === "rccu" && state.staffing))) &&
-            state.agreeDeclaration &&
-            state.lineManager.length > 4 ?
-                <AccessRequestFormModal rccOption={state.rccOption === "rccu"}
-                                        rccRegions={selectedRegions}
-                                        ports={selectedPorts}
-                                        manageStaff={state.staffing}
-                                        portOrRegionText={portOrRegionText}
-                                        setPortOrRegionText={setPortOrRegionText}
-                                        staffText={staffText}
-                                        setStaffText={setStaffText}
-                                        saveCallback={save}
-                /> :
-                <Button
-                    disabled={!(((selectedPorts.length === 1 && state.rccOption === "port") ||
-                        (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
-                        (state.lineManager.length > 4) &&
-                        state.agreeDeclaration)}
-                    onClick={save}
-                    variant="contained"
-                    color="primary"
-                >
-                    Request access
-                </Button>
-            }
         </Box>;
     }
 
