@@ -32,8 +32,7 @@ interface IProps {
 }
 
 export default function AccessRequestAdditionalInformationForm(props: IProps) {
-    const [open, setOpen] = React.useState(false);
-    const handleOpen = () => setOpen(true);
+    const [open, setOpen] = React.useState(true);
     const handleClose = () => setOpen(false);
 
     const handleEvent = () => {
@@ -130,10 +129,6 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
 
     return (
         <div class="flex-container">
-            <div>
-                <Button style={{float: 'center'}} variant="contained"
-                        onClick={handleOpen}>Submit</Button>
-            </div>
             <div>
                 <Modal
                     open={open}

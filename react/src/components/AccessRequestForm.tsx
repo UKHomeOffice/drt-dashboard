@@ -60,6 +60,7 @@ export default function AccessRequestForm(props: IProps) {
     const [staffText, setStaffText]: [string, ((value: (((prevState: string) => string) | string)) => void)] = React.useState<string>("")
     const [isValid, setIsValid] = React.useState(false);
     const [dirty, setDirty] = React.useState(false);
+    const [openModal, setOpenModal]: [boolean, ((value: (((prevState: boolean) => boolean) | boolean)) => void)] = React.useState<boolean>(false);
 
     const [state, setState]: [IState, ((value: (((prevState: IState) => IState) | IState)) => void)] = React.useState(
         {
@@ -121,6 +122,27 @@ export default function AccessRequestForm(props: IProps) {
             (selectedRegions.length > 0 && state.rccOption === "rccu" && state.staffing)))
     }
 
+    const enableRequestForModal = () => {
+        return (moreInfoRequired() && isValid && state.agreeDeclaration) ||
+            (((selectedPorts.length === 1 && state.rccOption === "port") ||
+                (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
+                state.agreeDeclaration && !state.staffing)
+    }
+
+    const singlePortOrRegion = () => {
+        return (((selectedPorts.length === 1 && state.rccOption === "port") ||
+            (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
+            state.agreeDeclaration && !state.staffing)
+    }
+
+    const saveOrModal = () => {
+        if (singlePortOrRegion()) {
+            save()
+        } else {
+            setOpenModal(true);
+        }
+    }
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (isEmail(event.target.value)) {
             setIsValid(true);
@@ -162,14 +184,15 @@ export default function AccessRequestForm(props: IProps) {
                 </ListItem>
                 <ListItem key={'line-manager'}>
                     <FormControl fullWidth>
-                        <InputLabel htmlFor="component-outlined">Line manager's email address</InputLabel>
+                        <InputLabel error={moreInfoRequired() && !isValid} htmlFor="component-outlined">Line manager's
+                            email address</InputLabel>
                         <OutlinedInput
                             id="component-outlined"
-                            error={dirty && isValid === false}
+                            error={dirty && !isValid}
                             onBlur={() => setDirty(true)}
                             onChange={handleChange}
                             label="Line manager's email address"
-                            size={'small'}
+                            size={'medium'}
                             value={state.lineManager}
                             InputLabelProps={{
                                 shrink: true,
@@ -207,28 +230,23 @@ export default function AccessRequestForm(props: IProps) {
                     </ListItemIcon>
                     <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
                 </ListItem>
-                {moreInfoRequired() && state.lineManager.length > 4 && state.agreeDeclaration ?
-                    <AccessRequestAdditionalInformationForm rccOption={state.rccOption === "rccu"}
-                                                            rccRegions={selectedRegions}
-                                                            ports={selectedPorts}
-                                                            manageStaff={state.staffing}
-                                                            portOrRegionText={portOrRegionText}
-                                                            setPortOrRegionText={setPortOrRegionText}
-                                                            staffText={staffText}
-                                                            setStaffText={setStaffText}
-                                                            saveCallback={save}
-                    /> :
-                    <Button
-                        disabled={!(((selectedPorts.length === 1 && state.rccOption === "port") ||
-                            (selectedRegions.length === 1 && state.rccOption === "rccu")) &&
-                            state.agreeDeclaration && !state.staffing)}
-                        onClick={save}
-                        variant="contained"
-                        color="primary"
-                    >
-                        Request access
-                    </Button>
+                {(openModal) ? <AccessRequestAdditionalInformationForm rccOption={state.rccOption === "rccu"}
+                                                                       rccRegions={selectedRegions}
+                                                                       ports={selectedPorts}
+                                                                       manageStaff={state.staffing}
+                                                                       portOrRegionText={portOrRegionText}
+                                                                       setPortOrRegionText={setPortOrRegionText}
+                                                                       staffText={staffText}
+                                                                       setStaffText={setStaffText}
+                                                                       saveCallback={save}/> : <span/>
                 }
+                <Button
+                    disabled={!enableRequestForModal()}
+                    onClick={saveOrModal}
+                    variant="contained"
+                    color="primary"
+                > Request access
+                </Button>
             </List>
         </Box>;
     }
