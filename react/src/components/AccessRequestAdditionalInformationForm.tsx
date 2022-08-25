@@ -20,6 +20,8 @@ const style = {
 };
 
 interface IProps {
+    openModal: boolean;
+    setOpenModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     rccOption: boolean;
     rccRegions: string[];
     ports: string[];
@@ -33,7 +35,10 @@ interface IProps {
 
 export default function AccessRequestAdditionalInformationForm(props: IProps) {
     const [open, setOpen] = React.useState(true);
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        props.setOpenModal(false);
+        setOpen(false);
+    }
 
     const handleEvent = () => {
         props.saveCallback();

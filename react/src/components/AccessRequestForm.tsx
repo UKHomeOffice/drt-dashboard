@@ -230,7 +230,9 @@ export default function AccessRequestForm(props: IProps) {
                     </ListItemIcon>
                     <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
                 </ListItem>
-                {(openModal) ? <AccessRequestAdditionalInformationForm rccOption={state.rccOption === "rccu"}
+                {(openModal) ? <AccessRequestAdditionalInformationForm openModal={openModal}
+                                                                       setOpenModal={setOpenModal}
+                                                                       rccOption={state.rccOption === "rccu"}
                                                                        rccRegions={selectedRegions}
                                                                        ports={selectedPorts}
                                                                        manageStaff={state.staffing}
