@@ -28,7 +28,7 @@ export const PortsByRegionCheckboxes = (props: IProps) => {
     const allPortsSelected = props.selectedPorts.length === allPortsCount
     const allRegions = props.regions.map(r => r.name)
 
-    const updateByRegionSelection = (region: string) => {
+    const updateRegionSelection = (region: string) => {
         const requested: string[] = props.selectedRegions.includes(region) ?
             props.selectedRegions.filter(value => value !== region) : [...props.selectedRegions, region]
         props.setSelectedRegions(requested);
@@ -70,7 +70,7 @@ export const PortsByRegionCheckboxes = (props: IProps) => {
                     const regionPartiallySelected = sortedPorts.some(p => props.selectedPorts.includes(p)) && !regionSelected
 
                     function toggleRegionPorts(regionName: string) {
-                        updateByRegionSelection(regionName)
+                        updateRegionSelection(regionName)
                         if (!regionSelected) props.setPorts(props.selectedPorts.concat(sortedPorts))
                         else props.setPorts(props.selectedPorts.filter(p => !sortedPorts.includes(p)))
                     }

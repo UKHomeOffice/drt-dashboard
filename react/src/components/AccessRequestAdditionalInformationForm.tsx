@@ -31,7 +31,7 @@ interface IProps {
     saveCallback: () => void;
 }
 
-export default function AccessRequestFormModal(props: IProps) {
+export default function AccessRequestAdditionalInformationForm(props: IProps) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);

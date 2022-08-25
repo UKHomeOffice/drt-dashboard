@@ -7,12 +7,15 @@ import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
-import {Box, Button, Divider, FormControl, TextField, Typography} from "@mui/material";
+import {Box, Button, Divider, FormControl, Typography} from "@mui/material";
 import {PortRegion, PortRegionHelper} from "../model/Config";
 import {PortsByRegionCheckboxes} from "./PortsByRegionCheckboxes";
 import InitialRequestForm from "./InitialRequestForm";
-import AccessRequestFormModal from "./AccessRequestFormModal";
+import AccessRequestAdditionalInformationForm from "./AccessRequestAdditionalInformationForm";
 import _ from "lodash/fp";
+import isEmail from 'validator/lib/isEmail';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from "@mui/material/OutlinedInput";
 
 const Declaration = styled('div')(({theme}) => ({
     textAlign: "left",
@@ -55,6 +58,8 @@ export default function AccessRequestForm(props: IProps) {
     const [selectedRegions, setSelectedRegions]: [string[], ((value: (((prevState: string[]) => string[]) | string[])) => void)] = React.useState<string[]>([])
     const [portOrRegionText, setPortOrRegionText]: [string, ((value: (((prevState: string) => string) | string)) => void)] = React.useState<string>("")
     const [staffText, setStaffText]: [string, ((value: (((prevState: string) => string) | string)) => void)] = React.useState<string>("")
+    const [isValid, setIsValid] = React.useState(false);
+    const [dirty, setDirty] = React.useState(false);
 
     const [state, setState]: [IState, ((value: (((prevState: IState) => IState) | IState)) => void)] = React.useState(
         {
@@ -68,10 +73,6 @@ export default function AccessRequestForm(props: IProps) {
             portOrRegionText: "",
             staffText: ""
         } as IState);
-
-    const handleLineManagerChange = (state: IState, newValue: string) => {
-        return {...state, lineManager: newValue};
-    };
 
     const handleRccOption = (childData) => {
         setState({
@@ -113,12 +114,21 @@ export default function AccessRequestForm(props: IProps) {
             return "Please select the ports you require access to"
     }
 
-    const moreInfoConditionCheck = () => {
+    const moreInfoRequired = () => {
         return (((selectedPorts.length > 1 && state.rccOption === "port") ||
             (selectedPorts.length > 0 && state.rccOption === "port" && state.staffing) ||
             (selectedRegions.length > 1 && state.rccOption === "rccu") ||
             (selectedRegions.length > 0 && state.rccOption === "rccu" && state.staffing)))
     }
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (isEmail(event.target.value)) {
+            setIsValid(true);
+        } else {
+            setIsValid(false);
+        }
+        setState({...state, lineManager: event.target.value});
+    };
 
     function form() {
         return <Box sx={{width: '100%'}}>
@@ -152,13 +162,18 @@ export default function AccessRequestForm(props: IProps) {
                 </ListItem>
                 <ListItem key={'line-manager'}>
                     <FormControl fullWidth>
-                        <TextField
-                            id="outlined-helperText"
+                        <InputLabel htmlFor="component-outlined">Line manager's email address</InputLabel>
+                        <OutlinedInput
+                            id="component-outlined"
+                            error={dirty && isValid === false}
+                            onBlur={() => setDirty(true)}
+                            onChange={handleChange}
                             label="Line manager's email address"
-                            helperText={moreInfoConditionCheck() ? "Required (we need to query your request)" : "Optional (this may be helpful if we need to query your request)"}
-                            required={moreInfoConditionCheck()}
-                            variant="outlined"
-                            onChange={event => setState(handleLineManagerChange(state, event.target.value))}
+                            size={'small'}
+                            value={state.lineManager}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
                         />
                     </FormControl>
                 </ListItem>
@@ -192,16 +207,16 @@ export default function AccessRequestForm(props: IProps) {
                     </ListItemIcon>
                     <ListItemText id="agreeDeclaration" primary="I understand and agree with the above declarations"/>
                 </ListItem>
-                {moreInfoConditionCheck() && state.lineManager.length > 4 && state.agreeDeclaration ?
-                    <AccessRequestFormModal rccOption={state.rccOption === "rccu"}
-                                            rccRegions={selectedRegions}
-                                            ports={selectedPorts}
-                                            manageStaff={state.staffing}
-                                            portOrRegionText={portOrRegionText}
-                                            setPortOrRegionText={setPortOrRegionText}
-                                            staffText={staffText}
-                                            setStaffText={setStaffText}
-                                            saveCallback={save}
+                {moreInfoRequired() && state.lineManager.length > 4 && state.agreeDeclaration ?
+                    <AccessRequestAdditionalInformationForm rccOption={state.rccOption === "rccu"}
+                                                            rccRegions={selectedRegions}
+                                                            ports={selectedPorts}
+                                                            manageStaff={state.staffing}
+                                                            portOrRegionText={portOrRegionText}
+                                                            setPortOrRegionText={setPortOrRegionText}
+                                                            staffText={staffText}
+                                                            setStaffText={setStaffText}
+                                                            saveCallback={save}
                     /> :
                     <Button
                         disabled={!(((selectedPorts.length === 1 && state.rccOption === "port") ||
