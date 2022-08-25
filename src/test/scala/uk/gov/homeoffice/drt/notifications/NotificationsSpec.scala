@@ -38,7 +38,7 @@ class NotificationsSpec extends Specification {
       }
     }
 
-    "Given email with @ and . in address" >> {
+    "Given email with '.' in address" >> {
       "Then First name with capitalise from email pattern" >> {
         val firstName = notifications.getFirstName("firstName.lastName@test.com")
         firstName === "Firstname"

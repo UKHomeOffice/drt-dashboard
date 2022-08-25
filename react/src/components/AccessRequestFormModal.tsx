@@ -41,19 +41,15 @@ export default function AccessRequestFormModal(props: IProps) {
     };
 
     const handlePortOrRegionTextChange = (event) => {
-        console.log('props.setPortOrRegionText ' + event.target.value)
         props.setPortOrRegionText(event.target.value);
     };
 
     const handleStaffTextChange = (event) => {
-        console.log('props.setStaffText ' + event.target.value)
         props.setStaffText(event.target.value);
     };
 
-
     const rccOptionQuestions = () => {
         return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
-
             <ListItem alignItems="flex-start">
                 {(props.rccRegions.length > 1) ?
                     <Typography align="center" id="modal-modal-title">
@@ -69,7 +65,6 @@ export default function AccessRequestFormModal(props: IProps) {
                     : <span/>
                 }
             </ListItem>
-
             <ListItem alignItems="flex-start">
                 {(props.manageStaff) ?
                     <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
@@ -143,10 +138,10 @@ export default function AccessRequestFormModal(props: IProps) {
                 <Modal
                     open={open}
                     onClose={handleClose}
-                    aria-labelledby="modal-modal-title"
-                    aria-describedby="modal-modal-description">
+                    aria-labelledby="form-modal-title"
+                    aria-describedby="form-modal-description">
                     <Box sx={style}>
-                        <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                        <Typography align="center" id="form-modal-title" variant="h6" component="h2">
                             Provide more information about the request
                         </Typography>
                         {props.rccOption ? rccOptionQuestions() : portOptionQuestions()}
@@ -156,7 +151,6 @@ export default function AccessRequestFormModal(props: IProps) {
                                     onClick={handleEvent}>Request submit</Button>
                         </div>
                         <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
-
                     </Box>
                 </Modal>
             </div>

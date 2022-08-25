@@ -73,7 +73,7 @@ export default function AccessRequestForm(props: IProps) {
         return {...state, lineManager: newValue};
     };
 
-    const handleCallback = (childData) => {
+    const handleRccOption = (childData) => {
         setState({
             ...state,
             portsRequested: [],
@@ -123,7 +123,7 @@ export default function AccessRequestForm(props: IProps) {
     function form() {
         return <Box sx={{width: '100%'}}>
             <h1>Welcome to DRT</h1>
-            <InitialRequestForm rccAccess={state.rccOption} parentCallback={handleCallback}/>
+            <InitialRequestForm rccAccess={state.rccOption} handleRccOptionCallback={handleRccOption}/>
             <Divider/>
             <p>{pageMessage()}</p>
             <List>
@@ -155,7 +155,7 @@ export default function AccessRequestForm(props: IProps) {
                         <TextField
                             id="outlined-helperText"
                             label="Line manager's email address"
-                            helperText="Required (we need to query your request)"
+                            helperText={moreInfoConditionCheck() ? "Required (we need to query your request)" : "Optional (this may be helpful if we need to query your request)"}
                             required={moreInfoConditionCheck()}
                             variant="outlined"
                             onChange={event => setState(handleLineManagerChange(state, event.target.value))}
@@ -174,9 +174,7 @@ export default function AccessRequestForm(props: IProps) {
                         <DeclarationUl>
                             <li>I will not share any DRT data with any third party</li>
                             <li>I will contact the DRT team at <a href="mailto:props.teamEmail">{props.teamEmail}</a> if
-                                I'm
-                                asked to
-                                share any data
+                                I'm asked to share any data
                             </li>
                         </DeclarationUl>
                     </Declaration>
@@ -225,9 +223,7 @@ export default function AccessRequestForm(props: IProps) {
             <Declaration>
                 <h1>Thank you</h1>
                 <p>You'll be notified by email when your request has been processed. This usually happens within a
-                    couple
-                    of
-                    hours, but may take longer outside core working hours (Monday to Friday, 9am to 5pm).</p>
+                    couple of hours, but may take longer outside core working hours (Monday to Friday, 9am to 5pm).</p>
             </Declaration>
         </ThankYouBox> :
         form();

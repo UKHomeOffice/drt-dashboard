@@ -8,13 +8,13 @@ import {Box} from "@mui/material";
 
 interface IProps {
     rccAccess: string;
-    parentCallback: (string) => void;
+    handleRccOptionCallback: (string) => void;
 }
 
 export default function InitialRequestForm(props: IProps) {
     const handleEvent = (event) => {
-        props.parentCallback(event.target.value);
-    };
+        props.handleRccOptionCallback(event.target.value)
+    }
 
     return (
         <Box sx={{width: '100%'}}>

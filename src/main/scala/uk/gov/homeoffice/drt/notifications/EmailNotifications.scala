@@ -12,7 +12,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
   val client = new NotificationClient(apiKey)
 
   def getFirstName(email: String): String = {
-    Try(email.split("@").head.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
+    Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
   }
 
   def sendRequest(requester: String, accessRequest: AccessRequest): List[(String, Try[SendEmailResponse])] = {
