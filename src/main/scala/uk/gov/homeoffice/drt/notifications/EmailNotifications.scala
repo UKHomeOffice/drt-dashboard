@@ -3,13 +3,17 @@ package uk.gov.homeoffice.drt.notifications
 import java.util
 
 import uk.gov.homeoffice.drt.authentication.AccessRequest
-import uk.gov.service.notify.{ NotificationClient, SendEmailResponse }
+import uk.gov.service.notify.{NotificationClient, SendEmailResponse}
 
 import scala.collection.JavaConverters.mapAsJavaMapConverter
 import scala.util.Try
 
 case class EmailNotifications(apiKey: String, accessRequestEmails: List[String]) {
   val client = new NotificationClient(apiKey)
+
+  val accessRequestEmailTemplateId = "5f34d7bb-293f-481c-826b-62661ba8a736"
+
+  val accessRequestLineManagerNotificationEmailTemplateId = "c80595c3-957a-4310-a419-b2f254df3909"
 
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
@@ -45,7 +49,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
 
     accessRequestEmails.map { accessRequestEmail =>
       val maybeResponse: Try[SendEmailResponse] = Try(client.sendEmail(
-        "5f34d7bb-293f-481c-826b-62661ba8a736",
+        accessRequestEmailTemplateId,
         accessRequestEmail,
         personalisation,
         ""))
@@ -53,7 +57,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
     }.flatMap { accessEmailResponse =>
       if (accessRequest.lineManager.nonEmpty) {
         val managerAccessEmailResponse: Try[SendEmailResponse] = Try(client.sendEmail(
-          "c80595c3-957a-4310-a419-b2f254df3909",
+          accessRequestLineManagerNotificationEmailTemplateId,
           manager,
           personalisation,
           ""))
