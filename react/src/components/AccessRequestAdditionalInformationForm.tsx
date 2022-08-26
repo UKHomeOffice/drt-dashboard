@@ -57,7 +57,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             <ListItem alignItems="flex-start">
                 {(props.rccRegions.length > 1) ?
                     <Typography align="left" id="modal-modal-title">
-                        Please let us know why you need access to more than one region ?
+                        Please let us know why you need access to more than one region
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
                                    label="Enter text"
@@ -72,7 +72,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             <ListItem alignItems="flex-start">
                 {(props.manageStaff) ?
                     <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
-                        Please let us know why you need to edit staffing ?
+                        Please let us know why you need to edit staffing
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
                                    label="Enter text"
@@ -92,7 +92,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             <ListItem alignItems="flex-start">
                 {(props.ports.length > 1) ?
                     <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
-                        Please let us know why you need access to more than one port ?
+                        Please let us know why you need access to more than one port
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
                                    label="Enter text"
@@ -108,7 +108,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             <ListItem alignItems="flex-start">
                 {(props.ports.length > 0 && props.manageStaff) ?
                     <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
-                        Please let us know why you need to edit staffing ?
+                        Please let us know why you need to edit staffing
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
                                    label="Enter text"
