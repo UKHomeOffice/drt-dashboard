@@ -143,7 +143,7 @@ export default function AccessRequestForm(props: IProps) {
         }
     }
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (isEmail(event.target.value)) {
             setIsValid(true);
         } else {
@@ -190,7 +190,7 @@ export default function AccessRequestForm(props: IProps) {
                             id="component-outlined"
                             error={dirty && !isValid}
                             onBlur={() => setDirty(true)}
-                            onChange={handleChange}
+                            onChange={handleEmailChange}
                             label="Line manager's email address"
                             size={'medium'}
                             value={state.lineManager}

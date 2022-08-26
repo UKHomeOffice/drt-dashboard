@@ -56,7 +56,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
         return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
             <ListItem alignItems="flex-start">
                 {(props.rccRegions.length > 1) ?
-                    <Typography align="center" id="modal-modal-title">
+                    <Typography align="left" id="modal-modal-title">
                         Please provide why you have requested access to more than one region?
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
@@ -71,7 +71,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             </ListItem>
             <ListItem alignItems="flex-start">
                 {(props.manageStaff) ?
-                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                    <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
                         Please provide why you have requested permission to manage staff ?
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
@@ -91,7 +91,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
         return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
             <ListItem alignItems="flex-start">
                 {(props.ports.length > 1) ?
-                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                    <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
                         Please provide why you have requested access to more than one port dashboard?
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
@@ -107,7 +107,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
             </ListItem>
             <ListItem alignItems="flex-start">
                 {(props.ports.length > 0 && props.manageStaff) ?
-                    <Typography align="center" id="modal-modal-description" sx={{mt: 2}}>
+                    <Typography align="left" id="modal-modal-description" sx={{mt: 2}}>
                         Please provide why you have requested permission to manage staff ?
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
@@ -141,16 +141,16 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
                     aria-labelledby="form-modal-title"
                     aria-describedby="form-modal-description">
                     <Box sx={style}>
-                        <Typography align="center" id="form-modal-title" variant="h6" component="h2">
+                        <Typography align="left" id="form-modal-title" variant="h6" component="h2">
                             Provide more information about the request
                         </Typography>
                         {props.rccOption ? rccOptionQuestions() : portOptionQuestions()}
-                        <div align="center">
+                        <div align="left">
                             <Button variant="contained"
                                     disabled={!enableSubmitRequest()}
-                                    onClick={handleEvent}>Request submit</Button>
+                                    onClick={handleEvent}>Submit request</Button>
                         </div>
-                        <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                        <Button style={{float: 'right'}} onClick={handleClose}>Cancel</Button>
                     </Box>
                 </Modal>
             </div>
