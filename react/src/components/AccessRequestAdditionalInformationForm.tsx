@@ -56,7 +56,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
         return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
             <ListItem alignItems="flex-start">
                 {(props.rccRegions.length > 1) ?
-                    <Typography align="left" id="modal-modal-title">
+                    <Typography align="left" id="modal-modal-title" sx={{mt: 2}}>
                         Please let us know why you need access to more than one region
                         <TextField style={{width: "100%"}}
                                    id="outlined-basic"
