@@ -16,6 +16,7 @@ import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.redlist.{ RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate }
 import uk.gov.homeoffice.drt._
+import uk.gov.homeoffice.drt.services.UserRequestService
 
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ ExecutionContextExecutor, Future }
@@ -63,6 +64,7 @@ object ApiRoutes extends JsonSupport
         (post & path("request-access")) {
           headerValueByName("X-Auth-Email") { userEmail =>
             entity(as[AccessRequest]) { accessRequest =>
+              UserRequestService.saveUserRequest(userEmail, accessRequest)
               val failures = notifications.sendRequest(userEmail, accessRequest).foldLeft(List[(String, Throwable)]()) {
                 case (exceptions, (_, Success(_))) => exceptions
                 case (exceptions, (requestAddress, Failure(newException))) => (requestAddress, newException) :: exceptions
