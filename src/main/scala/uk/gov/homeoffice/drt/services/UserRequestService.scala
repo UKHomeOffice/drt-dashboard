@@ -6,6 +6,7 @@ import uk.gov.homeoffice.drt.authentication.AccessRequest
 import uk.gov.homeoffice.drt.db.UserAccessRequestDao
 
 import java.sql.Timestamp
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object UserRequestService {
   val log: Logger = LoggerFactory.getLogger(getClass)
@@ -14,5 +15,9 @@ object UserRequestService {
     log.info(s"request for access $email $accessRequest")
     val userAccessRequest = UserAccessRequestDao.getUserAccessRequest(email, accessRequest, new Timestamp(DateTime.now().getMillis), "requested")
     UserAccessRequestDao.insert(userAccessRequest)
+  }
+
+  def getUserRequest() = {
+    UserAccessRequestDao.selectAll
   }
 }

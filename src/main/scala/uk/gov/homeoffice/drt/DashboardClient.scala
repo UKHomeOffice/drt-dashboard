@@ -14,6 +14,22 @@ object DashboardClient {
     Http().singleRequest(HttpRequest(HttpMethods.GET, uri))
   }
 
+  def postWithRolesAndKeycloakToken(uri: String, roles: Iterable[Role], keyCloakToken: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
+    val keyCloakHeader = HttpHeader.parse("X-Auth-Token", keyCloakToken) match {
+      case Ok(header, _) => Option(header)
+      case _ => None
+    }
+    Http().singleRequest(Post(uri).withHeaders(keyCloakHeader.toList ::: rolesToRoleHeader(roles)))
+  }
+
+  def getWithRolesAndKeycloakToken(uri: String, roles: Iterable[Role], keyCloakToken: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
+    val keyCloakHeader = HttpHeader.parse("X-Auth-Token", keyCloakToken) match {
+      case Ok(header, _) => Option(header)
+      case _ => None
+    }
+    Http().singleRequest(Get(uri).withHeaders(keyCloakHeader.toList ::: rolesToRoleHeader(roles)))
+  }
+
   def getWithRoles(uri: String, roles: Iterable[Role])(implicit system: ClassicActorSystemProvider): Future[HttpResponse] =
     Http().singleRequest(Get(uri).withHeaders(rolesToRoleHeader(roles)))
 
@@ -32,4 +48,5 @@ object DashboardClient {
       }
     roleHeader.toList
   }
+
 }

@@ -13,6 +13,8 @@ export default class ApiClient implements IApiClient {
   public static alertsEndPoint = "/api/alerts";
   public static neboFileUpload = "/api/nebo-upload";
   public static redListUpdates = "/api/red-list-updates";
+  public static userDetailsEndpoint = "/api/userDetails";
+  public static addUserToGroupEndpoint = "/api/addUserToGroup";
 
   public fetchData(userEndPoint: string, handleResponse: (r: AxiosResponse) => void) {
     axios

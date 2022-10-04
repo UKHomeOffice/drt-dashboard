@@ -1,6 +1,7 @@
 package uk.gov.homeoffice.drt.routes
 
 import akka.actor.typed.ActorSystem
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, StatusCodes }
 import akka.http.scaladsl.server.Directives.{ complete, pathPrefix, _ }
 import akka.http.scaladsl.server.directives.MethodDirectives.get
@@ -11,11 +12,12 @@ import spray.json._
 import uk.gov.homeoffice.drt.alerts.{ Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport }
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles._
-import uk.gov.homeoffice.drt.authentication.{ AccessRequest, AccessRequestJsonSupport, User, UserJsonSupport }
+import uk.gov.homeoffice.drt.authentication.{ AccessRequest, AccessRequestJsonSupport, ClientUserAccessDataJsonSupport, ClientUserRequestedAccessData, KeyCloakUser, KeyCloakUserJsonSupport, User, UserJsonSupport }
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.redlist.{ RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate }
 import uk.gov.homeoffice.drt._
+import uk.gov.homeoffice.drt.db.UserAccessRequestJsonSupport
 import uk.gov.homeoffice.drt.services.UserRequestService
 
 import scala.compat.java8.OptionConverters._
@@ -29,7 +31,11 @@ object ApiRoutes extends JsonSupport
   with RedListJsonFormats
   with AccessRequestJsonSupport
   with UserJsonSupport
-  with ClientConfigJsonFormats {
+  with ClientConfigJsonFormats
+  with UserAccessRequestJsonSupport
+  with KeyCloakUserJsonSupport
+  with ClientUserAccessDataJsonSupport {
+
   val log: Logger = LoggerFactory.getLogger(getClass)
 
   def authByRole(role: Role): Directive0 = authorize(ctx => {
@@ -77,6 +83,15 @@ object ApiRoutes extends JsonSupport
                 }
                 complete(StatusCodes.InternalServerError)
               } else complete(StatusCodes.OK)
+            }
+          }
+        },
+        (get & path("request-access")) {
+          headerValueByName("X-Auth-Roles") { _ =>
+            onComplete(UserRequestService.getUserRequest()) {
+              case Success(value) =>
+                complete(value.toJson)
+              case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
             }
           }
         },
@@ -162,6 +177,53 @@ object ApiRoutes extends JsonSupport
                 val eventualValue = Future.sequence(futurePortAlerts).map(_.toJson)
 
                 complete(eventualValue)
+              }
+            }
+          }
+        },
+        (get & path("userDetails" / Segment)) { userEmail =>
+          authByRole(CreateAlerts) {
+            headerValueByName("X-Auth-Roles") { rolesStr =>
+              headerValueByName("X-Auth-Email") { email =>
+                headerValueByName("X-Auth-Token") { xAuthToken =>
+                  log.info(s"request to get user details ${Dashboard.drtUriForPortCode("LHR")}/data/userDetails/$userEmail}")
+                  val user = User.fromRoles(email, rolesStr)
+                  val keyCloakUser: Future[KeyCloakUser] = DashboardClient
+                    .getWithRolesAndKeycloakToken(s"${Dashboard.drtUriForPortCode("LHR")}/data/userDetails/$userEmail", user.roles, xAuthToken)
+                    .flatMap { res =>
+                      Unmarshal[HttpEntity](res.entity.withContentType(ContentTypes.`application/json`))
+                        .to[KeyCloakUser]
+                        .recover {
+                          case e: Throwable =>
+                            log.error(s"Failed at ${Dashboard.drtUriForPortCode("LHR")}/data/userDetails/$userEmail}", e)
+                            KeyCloakUser("", "", false, false, "", "", "")
+                        }
+                    }
+                  complete(keyCloakUser)
+                }
+              }
+            }
+          }
+        },
+        (post & path("addUserToGroup" / Segment)) { id =>
+          authByRole(CreateAlerts) {
+            headerValueByName("X-Auth-Roles") { rolesStr =>
+              headerValueByName("X-Auth-Email") { email =>
+                headerValueByName("X-Auth-Token") { xAuthToken =>
+                  entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
+                    val user = User.fromRoles(email, rolesStr)
+                    if (userRequestedAccessData.portsRequested.nonEmpty) {
+                      val a = Future.sequence(userRequestedAccessData.portsRequested.split(",").toList.map { port =>
+                        log.info(s".........${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port")
+                        DashboardClient
+                          .postWithRolesAndKeycloakToken(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port", user.roles, xAuthToken)
+                      })
+                      complete(s"User ${userRequestedAccessData.email} update port ${userRequestedAccessData.portOrRegionText} $a")
+                    } else {
+                      complete("No port or region requested")
+                    }
+                  }
+                }
               }
             }
           }

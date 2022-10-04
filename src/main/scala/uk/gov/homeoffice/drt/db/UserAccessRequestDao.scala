@@ -1,23 +1,52 @@
 package uk.gov.homeoffice.drt.db
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import org.joda.time.DateTime
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.Tag
+import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError}
 import uk.gov.homeoffice.drt.authentication.AccessRequest
 import uk.gov.homeoffice.drt.services.UserRequestService.log
 
+import java.sql.Timestamp
+import scala.concurrent.ExecutionContext
+
+trait UserAccessRequestJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+  implicit object DateTimeFormat extends JsonFormat[Timestamp] {
+    override def write(obj: Timestamp): JsValue = JsString(obj.toString)
+
+    override def read(json: JsValue): Timestamp = json match {
+      case JsString(rawDate) => {
+        try {
+          DateTime.parse(rawDate)
+        } catch {
+          case iae: IllegalArgumentException => deserializationError("Invalid date format")
+          case _: Exception => None
+        }
+      } match {
+        case dateTime: Timestamp => dateTime
+        case None => deserializationError(s"Couldn't parse date time, got $rawDate")
+      }
+
+    }
+  }
+
+  implicit val userAccessRequestFormatParser: RootJsonFormat[UserAccessRequest] = jsonFormat12(UserAccessRequest)
+}
+
 case class UserAccessRequest(
-  email: String,
-  portsRequested: String,
-  allPorts: Boolean,
-  regionsRequested: String,
-  staffing: Boolean,
-  lineManager: String,
-  agreeDeclaration: Boolean,
-  rccOption: Boolean,
-  portOrRegionText: String,
-  staffText: String,
-  status: String,
-  requestTime: java.sql.Timestamp)
+                              email: String,
+                              portsRequested: String,
+                              allPorts: Boolean,
+                              regionsRequested: String,
+                              staffing: Boolean,
+                              lineManager: String,
+                              agreeDeclaration: Boolean,
+                              rccOption: Boolean,
+                              portOrRegionText: String,
+                              staffText: String,
+                              status: String,
+                              requestTime: java.sql.Timestamp)
 
 class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "user_access_requests") {
 
@@ -49,6 +78,8 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 }
 
 object UserAccessRequestDao {
+  val db = Database.forConfig("postgresDB")
+
   val userAccessRequests = TableQuery[UserAccessRequestsTable]
 
   def getUserAccessRequest(email: String, accessRequest: AccessRequest, timestamp: java.sql.Timestamp, status: String) = {
@@ -69,10 +100,14 @@ object UserAccessRequestDao {
 
   def insert(userAccessRequest: UserAccessRequest) = {
     log.info(s"userAccessRequest $userAccessRequest")
-    userAccessRequests insertOrUpdate userAccessRequest
+    db.run(userAccessRequests insertOrUpdate userAccessRequest)
   }
 
-  def select(email: String) = {
-    userAccessRequests.filter(_.email === email)
+  def selectAll()(implicit executionContext: ExecutionContext) = {
+    db.run(userAccessRequests.result).mapTo[Seq[UserAccessRequest]]
+  }
+
+  def selectEmail(email: String) = {
+    db.run(userAccessRequests.filter(_.email === email).result)
   }
 }
