@@ -63,6 +63,7 @@ export default function UserRequestDetails(props: IProps) {
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                             User Request Details
+                            {console.log('rowDetails' + props.rowDetails.rccOption)}
                         </Typography>
                         <TableContainer component={Paper}>
                             <Table sx={{minWidth: 500}} size="small" aria-label="a dense table">
@@ -83,7 +84,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>All ports requested</TableCell>
-                                        <TableCell>{props.rowDetails.allPorts}</TableCell>
+                                        <TableCell>{String(props.rowDetails.allPorts)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Time Requested</TableCell>
@@ -99,7 +100,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Staffing Requested</TableCell>
-                                        <TableCell>{props.rowDetails.staffing}</TableCell>
+                                        <TableCell>{String(props.rowDetails.staffing)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Ports / Region Request reason</TableCell>
@@ -111,7 +112,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Rcc request</TableCell>
-                                        <TableCell>{props.rowDetails.rccOption}</TableCell>
+                                        <TableCell>{String(props.rowDetails.rccOption)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Request Status</TableCell>
@@ -119,7 +120,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Agree Declaration</TableCell>
-                                        <TableCell>{props.rowDetails.agreeDeclaration}</TableCell>
+                                        <TableCell>{String(props.rowDetails.agreeDeclaration)}</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>

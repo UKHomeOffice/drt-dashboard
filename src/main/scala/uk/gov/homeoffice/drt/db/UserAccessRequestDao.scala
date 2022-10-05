@@ -98,7 +98,7 @@ object UserAccessRequestDao {
       requestTime = timestamp)
   }
 
-  def insert(userAccessRequest: UserAccessRequest) = {
+  def insertOrUpdate(userAccessRequest: UserAccessRequest) = {
     log.info(s"userAccessRequest $userAccessRequest")
     db.run(userAccessRequests insertOrUpdate userAccessRequest)
   }

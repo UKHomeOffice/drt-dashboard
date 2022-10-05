@@ -15,8 +15,20 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
 
   val accessRequestLineManagerNotificationEmailTemplateId = "c80595c3-957a-4310-a419-b2f254df3909"
 
+  val accessGrantedTemplateId = "12e36257-c485-4e13-af4f-2293d2dd34a6"
+
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
+  }
+
+  def sendAccessGranted(requester: String) = {
+    val personalisation: util.Map[String, String] =
+      Map("requesterUsername" -> getFirstName(requester)).asJava
+    Try(client.sendEmail(
+      accessGrantedTemplateId,
+      requester,
+      personalisation,
+      "access granted"))
   }
 
   def sendRequest(requester: String, accessRequest: AccessRequest): List[(String, Try[SendEmailResponse])] = {

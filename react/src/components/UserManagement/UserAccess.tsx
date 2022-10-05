@@ -7,13 +7,13 @@ import UserRequestDetails, {UserRequestedAccessData} from "./UserRequestDetails"
 import {Button} from "@mui/material";
 
 interface KeyCloakUser {
-             id: String,
-             username: String,
-             enabled: Boolean,
-             emailVerified: Boolean,
-             firstName: String,
-             lastName: String,
-             email: String
+             id: string,
+             username: string,
+             enabled: boolean,
+             emailVerified: boolean,
+             firstName: string,
+             lastName: string,
+             email: string
  }
 
 const columns: GridColDef[] = [
@@ -77,23 +77,30 @@ export default function UserAccess() {
     }
 
     const updateUserDetails = (response: AxiosResponse) => {
-        setUserDetails(response.data as KeyCloakUser)
-        console.log('userDetails ' + userDetails.id)
+        console.log(response.data as KeyCloakUser)
+        setUserDetails([...userDetails,response.data as KeyCloakUser]);
+        console.log('userDetails ' + userDetails.map(id => id))
     }
 
-    const updateKeyCloakDetails = (id,userRequestedAccessData) => {
-            console.log( 'updateKeyCloakDetails id ' + ApiClient.userDetailsEndpoint+'/'+id)
-            axios.post(ApiClient.addUserToGroupEndpoint+'/'+id,userRequestedAccessData)
-            .then(response => console.log("User addUserToGroupEndpoint" + response))
-            .then(() => console.log("User request response"))
+    const updateKeyCloakDetails = (email,userRequestedAccessData) => {
+            let ud = findUserDetail(email) as KeyCloakUser
+            if(ud){
+            console.log( 'updateKeyCloakDetails id ' + ApiClient.userDetailsEndpoint+'/'+ud.id)
+                axios.post(ApiClient.addUserToGroupEndpoint+'/'+ud.id,userRequestedAccessData)
+                .then(response => console.log("User addUserToGroupEndpoint" + response))
+                .then(() => console.log("User request response"))
+            }else {
+                console.log('Id not defined')
+            }
+
     }
 
     const useKeyCloakDetails = (email,userRequestedAccessData) => {
             console.log( 'useKeyCloakDetails email ' + ApiClient.userDetailsEndpoint+'/'+email)
             axios.get(ApiClient.userDetailsEndpoint+'/'+email)
             .then(response => updateUserDetails(response))
-            .then(() => updateKeyCloakDetails(userDetails.id,userRequestedAccessData))
-            .then(() => console.log('after update keycloak userId= '+ userDetails.id + ' userRequestedAccessData= ' + userRequestedAccessData))
+            .then(() => updateKeyCloakDetails(email,userRequestedAccessData))
+            .then(() => console.log('after update keycloak userId= '+ userDetails.map(ud => ud.id) + ' userRequestedAccessData= ' + userRequestedAccessData))
     }
 
     const userRequested = () => {
@@ -102,6 +109,14 @@ export default function UserAccess() {
         axios.get(ApiClient.requestAccessEndPoint)
             .then(response => updateFlightsData(response))
             .then(() => console.log("User request response"))
+    }
+
+   const findUserDetail = (email: string) => {
+        let item = userDetails.find(obj => {
+            console.log('findUserDetail for email '+ email)
+            return obj.email.trim() == email
+        });
+        return item;
     }
 
     const findEmail = (requestTime: string) => {
@@ -117,7 +132,8 @@ export default function UserAccess() {
     }
 
     const addUserToGroups = () => {
-        let fond  = selectedRows.map ( s => findEmail(s)) ;
+        setUserDetails([])
+        let fond  = selectedRows.map ( s => findEmail(s))
         console.log('addUserToGroups ' +  selectedRows)
         console.log('addUserToGroups fond rows ' + fond.map(i => i.email) + ' ' + fond.map(i => useKeyCloakDetails(i.email,i)))
 
@@ -155,9 +171,13 @@ export default function UserAccess() {
                                                setOpenModal={setOpenModal}
                                                rowDetails={rowDetails}/> : <span/>
             }
-
+            <div align="left">
+            </div>
+            <div align="left">
+                <Button variant="outlined" color="primary" onClick="">View Approved</Button>
+            </div>
             <div align="center">
-             <Button variant="outlined" color="primary" onClick={addUserToGroups}>Approve</Button>
+                <Button variant="outlined" color="primary" onClick={addUserToGroups}>Approve</Button>
             </div>
         </Box>
 

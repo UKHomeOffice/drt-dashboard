@@ -1,8 +1,8 @@
 package uk.gov.homeoffice.drt.services
 
 import org.joda.time.DateTime
-import org.slf4j.{ Logger, LoggerFactory }
-import uk.gov.homeoffice.drt.authentication.AccessRequest
+import org.slf4j.{Logger, LoggerFactory}
+import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
 import uk.gov.homeoffice.drt.db.UserAccessRequestDao
 
 import java.sql.Timestamp
@@ -14,7 +14,11 @@ object UserRequestService {
   def saveUserRequest(email: String, accessRequest: AccessRequest) = {
     log.info(s"request for access $email $accessRequest")
     val userAccessRequest = UserAccessRequestDao.getUserAccessRequest(email, accessRequest, new Timestamp(DateTime.now().getMillis), "requested")
-    UserAccessRequestDao.insert(userAccessRequest)
+    UserAccessRequestDao.insertOrUpdate(userAccessRequest)
+  }
+
+  def updateUserRequest(clientUserRequestedAccessData: ClientUserRequestedAccessData, status: String) = {
+    UserAccessRequestDao.insertOrUpdate(clientUserRequestedAccessData.convertUserAccessRequest.copy(status = status))
   }
 
   def getUserRequest() = {
