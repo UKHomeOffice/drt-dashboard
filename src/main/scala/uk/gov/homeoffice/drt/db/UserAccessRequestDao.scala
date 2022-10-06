@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.Tag
-import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError}
+import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError }
 import uk.gov.homeoffice.drt.authentication.AccessRequest
 import uk.gov.homeoffice.drt.services.UserRequestService.log
 
@@ -35,18 +35,18 @@ trait UserAccessRequestJsonSupport extends SprayJsonSupport with DefaultJsonProt
 }
 
 case class UserAccessRequest(
-                              email: String,
-                              portsRequested: String,
-                              allPorts: Boolean,
-                              regionsRequested: String,
-                              staffing: Boolean,
-                              lineManager: String,
-                              agreeDeclaration: Boolean,
-                              rccOption: Boolean,
-                              portOrRegionText: String,
-                              staffText: String,
-                              status: String,
-                              requestTime: java.sql.Timestamp)
+  email: String,
+  portsRequested: String,
+  allPorts: Boolean,
+  regionsRequested: String,
+  staffing: Boolean,
+  lineManager: String,
+  agreeDeclaration: Boolean,
+  rccOption: Boolean,
+  portOrRegionText: String,
+  staffText: String,
+  status: String,
+  requestTime: java.sql.Timestamp)
 
 class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "user_access_requests") {
 
@@ -107,7 +107,7 @@ object UserAccessRequestDao {
     db.run(userAccessRequests.result).mapTo[Seq[UserAccessRequest]]
   }
 
-  def selectEmail(email: String) = {
-    db.run(userAccessRequests.filter(_.email === email).result)
+  def selectForStatus(status: String) = {
+    db.run(userAccessRequests.filter(_.status === status).result)
   }
 }

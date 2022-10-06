@@ -87,11 +87,13 @@ object ApiRoutes extends JsonSupport
           }
         },
         (get & path("request-access")) {
-          headerValueByName("X-Auth-Roles") { _ =>
-            onComplete(UserRequestService.getUserRequest()) {
-              case Success(value) =>
-                complete(value.toJson)
-              case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+          parameters("status") { status =>
+            headerValueByName("X-Auth-Roles") { _ =>
+              onComplete(UserRequestService.getUserRequest(status)) {
+                case Success(value) =>
+                  complete(value.toJson)
+                case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+              }
             }
           }
         },

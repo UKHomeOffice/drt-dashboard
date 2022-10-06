@@ -3,7 +3,7 @@ package uk.gov.homeoffice.drt.authentication
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError}
+import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError }
 import uk.gov.homeoffice.drt.db.UserAccessRequest
 
 import java.sql.Timestamp
@@ -32,18 +32,18 @@ trait ClientUserAccessDataJsonSupport extends SprayJsonSupport with DefaultJsonP
 }
 
 case class ClientUserRequestedAccessData(
-                                          agreeDeclaration: Boolean,
-                                          allPorts: Boolean,
-                                          email: String,
-                                          lineManager: String,
-                                          portOrRegionText: String,
-                                          portsRequested: String,
-                                          rccOption: Boolean,
-                                          regionsRequested: String,
-                                          requestTime: String,
-                                          staffText: String,
-                                          staffing: Boolean,
-                                          status: String) {
+  agreeDeclaration: Boolean,
+  allPorts: Boolean,
+  email: String,
+  lineManager: String,
+  portOrRegionText: String,
+  portsRequested: String,
+  rccOption: Boolean,
+  regionsRequested: String,
+  requestTime: String,
+  staffText: String,
+  staffing: Boolean,
+  status: String) {
   def getListOfPortOrRegion = {
     if (rccOption && regionsRequested.nonEmpty) {
       regionsRequested.split(",").toList.map("RCC%20" + _)
