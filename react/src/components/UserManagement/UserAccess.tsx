@@ -82,30 +82,14 @@ export default function UserAccess() {
     }
 
     const updateUserDetails = (response: AxiosResponse) => {
-        console.log(response.data as KeyCloakUser)
         setUserDetails([...userDetails, response.data as KeyCloakUser]);
-        console.log('userDetails ' + userDetails.map(id => id))
     }
 
-    const updateKeyCloakDetails = (email, userRequestedAccessData) => {
-        let ud = findUserDetail(email) as KeyCloakUser
-        if (ud) {
-            console.log('updateKeyCloakDetails id ' + ApiClient.userDetailsEndpoint + '/' + ud.id)
-            axios.post(ApiClient.addUserToGroupEndpoint + '/' + ud.id, userRequestedAccessData)
-                .then(response => console.log("User addUserToGroupEndpoint" + response))
-                .then(() => setRequestPosted(true))
-        } else {
-            console.log('Id not defined')
-        }
 
-    }
-
-    const useKeyCloakDetails = (email, userRequestedAccessData) => {
+    const useKeyCloakDetails = (email) => {
         console.log('useKeyCloakDetails email ' + ApiClient.userDetailsEndpoint + '/' + email)
         axios.get(ApiClient.userDetailsEndpoint + '/' + email)
             .then(response => updateUserDetails(response))
-            .then(() => updateKeyCloakDetails(email, userRequestedAccessData))
-            .then(() => console.log('after update keycloak userId= ' + userDetails.map(ud => ud.id) + ' userRequestedAccessData= ' + userRequestedAccessData))
     }
 
     const userRequested = () => {
@@ -113,15 +97,6 @@ export default function UserAccess() {
         console.log(ApiClient.requestAccessEndPoint + '?status=Requested')
         axios.get(ApiClient.requestAccessEndPoint + '?status=Requested')
             .then(response => getAccessRequest(response))
-            .then(() => console.log("User request response"))
-    }
-
-    const findUserDetail = (email: string) => {
-        let item = userDetails.find(obj => {
-            console.log('findUserDetail for email ' + email)
-            return obj.email.trim() == email
-        });
-        return item;
     }
 
     const findEmail = (requestTime: string) => {
@@ -137,11 +112,9 @@ export default function UserAccess() {
     }
 
     const addUserToGroups = () => {
-        setUserDetails([])
+        setUserDetails([]);
         let fond = selectedRows.map(s => findEmail(s))
-        console.log('addUserToGroups ' + selectedRows)
-        console.log('addUserToGroups fond rows ' + fond.map(i => i.email) + ' ' + fond.map(i => useKeyCloakDetails(i.email, i)))
-
+        fond.map(i => useKeyCloakDetails(i.email))
     }
 
     const addSelectedRows = (ids) => {
@@ -149,6 +122,9 @@ export default function UserAccess() {
         setSelectedRows(ids)
     }
 
+    const getRow = (email) => {
+        return userRequestList.find(sr => sr.email == email)
+    }
     const viewApprovedUserRequest = () => {
         setApprovedUserRequest(true)
     }
@@ -157,7 +133,13 @@ export default function UserAccess() {
         if (count == 0) {
             userRequested();
         }
-    });
+
+        userDetails.map(ud =>
+            axios.post(ApiClient.addUserToGroupEndpoint + '/' + ud.id, getRow(ud.email))
+                .then(response => console.log("User addUserToGroupEndpoint" + response))
+                .then(() => setRequestPosted(true))
+        )
+    }, [userDetails]);
 
     const viewSelectAccessRequest = () => {
         return <Box sx={{height: 400, width: '100%'}}>
