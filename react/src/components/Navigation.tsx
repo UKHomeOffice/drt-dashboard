@@ -44,7 +44,7 @@ export default function Navigation(props: IProps) {
                 onClose={handleClose}
             >
                 <MenuItem onClick={handleClose}><Link to="/">Home</Link></MenuItem>
-                {props.user.roles.includes("create-alerts") ?
+                {props.user.roles.includes("manage-users") ?
                     <MenuItem onClick={handleClose}><Link to="/userManagement">User Management</Link></MenuItem> : ""}
                 {props.user.roles.includes("create-alerts") ?
                     <MenuItem onClick={handleClose}><Link to="/alerts">Alerts</Link></MenuItem> : ""}

@@ -78,7 +78,7 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 }
 
 object UserAccessRequestDao {
-  val db = Database.forConfig("postgresDB")
+  lazy val db = Database.forConfig("postgresDB")
 
   val userAccessRequests = TableQuery[UserAccessRequestsTable]
 

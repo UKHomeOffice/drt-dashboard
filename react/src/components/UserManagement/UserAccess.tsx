@@ -81,15 +81,14 @@ export default function UserAccess() {
         setRowsData(response.data as GridRowModel[])
     }
 
-    const updateUserDetails = (response: AxiosResponse) => {
+    const updateUserDetailsState = (response: AxiosResponse) => {
         setUserDetails([...userDetails, response.data as KeyCloakUser]);
     }
 
-
-    const useKeyCloakDetails = (email) => {
-        console.log('useKeyCloakDetails email ' + ApiClient.userDetailsEndpoint + '/' + email)
+    const keyCloakUserDetails = (email) => {
+        console.log('keyCloakUserDetails email ' + ApiClient.userDetailsEndpoint + '/' + email)
         axios.get(ApiClient.userDetailsEndpoint + '/' + email)
-            .then(response => updateUserDetails(response))
+            .then(response => updateUserDetailsState(response))
     }
 
     const userRequested = () => {
@@ -114,7 +113,7 @@ export default function UserAccess() {
     const addUserToGroups = () => {
         setUserDetails([]);
         let fond = selectedRows.map(s => findEmail(s))
-        fond.map(i => useKeyCloakDetails(i.email))
+        fond.map(i => keyCloakUserDetails(i.email))
     }
 
     const addSelectedRows = (ids) => {
@@ -177,20 +176,16 @@ export default function UserAccess() {
         </Box>
     }
 
-    const otherOption = () => {
-        console.log('otherOption requestPosted= ' + requestPosted)
-        return requestPosted ? <UserAccessApproved rowDetails={rowDetails}
-                                                   requestPosted={requestPosted}
-                                                   setRequestPosted={setRequestPosted}/> : viewSelectAccessRequest()
+    const showApprovedOrAccessRequest = () => {
+        return requestPosted ? <UserAccessApproved userDetails={userDetails}/> : viewSelectAccessRequest()
     }
 
-    const chooseOption = () => {
-        console.log('chooseOption approvedUserRequest= ' + approvedUserRequest)
+    const accessRequestOrApprovedList = () => {
         return <div>{approvedUserRequest ? <UserAccessApprovedList approvedUserRequest={approvedUserRequest}
-                                                                   setApprovedUserRequest={setApprovedUserRequest}/> : otherOption()}</div>
+                                                                   setApprovedUserRequest={setApprovedUserRequest}/> : showApprovedOrAccessRequest()}</div>
     }
 
     return (
-        <div> {chooseOption()} </div>
+        <div> {accessRequestOrApprovedList()} </div>
     );
 }

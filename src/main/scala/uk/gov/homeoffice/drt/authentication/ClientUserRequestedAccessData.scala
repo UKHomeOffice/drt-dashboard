@@ -44,6 +44,7 @@ case class ClientUserRequestedAccessData(
   staffText: String,
   staffing: Boolean,
   status: String) {
+
   def getListOfPortOrRegion = {
     if (rccOption && regionsRequested.nonEmpty) {
       regionsRequested.split(",").toList.map("RCC%20" + _)

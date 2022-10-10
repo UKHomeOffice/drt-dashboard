@@ -184,7 +184,7 @@ object ApiRoutes extends JsonSupport
           }
         },
         (get & path("userDetails" / Segment)) { userEmail =>
-          authByRole(CreateAlerts) {
+          authByRole(ManageUsers) {
             headerValueByName("X-Auth-Roles") { rolesStr =>
               headerValueByName("X-Auth-Email") { email =>
                 headerValueByName("X-Auth-Token") { xAuthToken =>
@@ -208,20 +208,17 @@ object ApiRoutes extends JsonSupport
           }
         },
         (post & path("addUserToGroup" / Segment)) { id =>
-          authByRole(CreateAlerts) {
+          authByRole(ManageUsers) {
             headerValueByName("X-Auth-Roles") { rolesStr =>
               headerValueByName("X-Auth-Email") { email =>
                 headerValueByName("X-Auth-Token") { xAuthToken =>
                   entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
-                    log.info(s"userRequestedAccessData... $userRequestedAccessData")
                     val user = User.fromRoles(email, rolesStr)
                     if (userRequestedAccessData.portsRequested.nonEmpty || userRequestedAccessData.regionsRequested.nonEmpty) {
                       Future.sequence(userRequestedAccessData.getListOfPortOrRegion.map { port =>
-                        log.info(s".........${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port")
                         DashboardClient
                           .postWithRolesAndKeycloakToken(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port", user.roles, xAuthToken)
                       })
-
                       UserRequestService.updateUserRequest(userRequestedAccessData, "Approved")
                       notifications.sendAccessGranted(userRequestedAccessData.email)
                       complete(s"User ${userRequestedAccessData.email} update port ${userRequestedAccessData.portOrRegionText}")

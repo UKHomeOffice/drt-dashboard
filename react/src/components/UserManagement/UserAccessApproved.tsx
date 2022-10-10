@@ -2,21 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-
-interface UserRequestedAccessData {
-    agreeDeclaration: boolean;
-    allPorts: boolean;
-    email: string;
-    lineManager: string;
-    portOrRegionText: string;
-    portsRequested: string;
-    rccOption: boolean;
-    regionsRequested: string;
-    requestTime: string;
-    staffText: string;
-    staffing: boolean;
-    status: string
-}
+import KeyCloakUser from './UserAccess';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -31,16 +17,13 @@ const style = {
 };
 
 interface IProps {
-    rowDetails: UserRequestedAccessData;
-    requestPosted: boolean;
-    setRequestPosted: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    userDetails: KeyCloakUser[];
 }
-
 
 export default function UserAccessApproved(props: IProps) {
 
     const resetRequestPosted = () => {
-        console.log('requestPosted ' + props.requestPosted)
+        console.log('requested userDetails' + props.userDetails.map(ud => ud.email));
         window.location.reload(true);
     }
 
@@ -52,7 +35,9 @@ export default function UserAccessApproved(props: IProps) {
                         User Approved
                     </Typography>
                     <br/>
-                    <div align="center">Selected User is granted access requested.</div>
+                    <div align="center">Selected User with email {props.userDetails.map(ud => ud.email + ' ')}is granted
+                        access requested.
+                    </div>
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
                 </Box>
             </div>
