@@ -7,9 +7,14 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+// import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Grid from "@mui/material/Grid";
+import axios from "axios";
+import ApiClient from "../../services/ApiClient";
+import {KeyCloakUser} from "./UserAccess";
+import UserAccessApproved from "./UserAccessApproved";
 
 export interface UserRequestedAccessData {
     agreeDeclaration: boolean;
@@ -42,20 +47,45 @@ interface IProps {
     openModal: boolean;
     setOpenModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     rowDetails: UserRequestedAccessData
+    approvedPage: boolean;
 }
 
 export default function UserRequestDetails(props: IProps) {
     const [open, setOpen] = React.useState(true);
-//     const handleOpen = () => setOpen(true);
+    const [requestPosted, setRequestPosted] = React.useState(false)
+    const [userDetails, setUserDetails] = React.useState({});
+    const [apiRequestCount, setApiRequestCount] = React.useState(0);
+
     const handleClose = () => {
         props.setOpenModal(false)
         setOpen(false)
     }
 
-    console.log('props' + props.rowDetails)
+    const keyCloakUserDetails = () => {
+        axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails.email)
+            .then(response => setUserDetails(response.data as KeyCloakUser))
+            .then(() => setApiRequestCount(1))
+    }
 
-    return (
-        <div className="flex-container">
+    React.useEffect(() => {
+        if (apiRequestCount == 1) {
+            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, props.rowDetails)
+                .then(response => console.log("User addUserToGroupEndpoint" + response.data))
+                .then(() => setRequestPosted(true))
+        }
+
+
+    }, [userDetails]);
+
+    const showApprovedButton = () => {
+    return !props.approvedPage ?
+        <Button style={{float: 'initial'}} variant="contained" color="primary"
+                onClick={keyCloakUserDetails}>Approve</Button>
+        : <span/>
+    }
+
+    const viewUserDetailTable = () => {
+     return  <div className="flex-container">
             <div>
                 <Modal
                     open={open}
@@ -65,16 +95,9 @@ export default function UserRequestDetails(props: IProps) {
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                             User Request Details
-                            {/*{console.log('rowDetails' + props.rowDetails.account_type)}*/}
                         </Typography>
                         <TableContainer component={Paper}>
                             <Table sx={{minWidth: 500}} size="small" aria-label="a dense table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={{minWidth: 150}}>User Information</TableCell>
-                                        <TableCell>User data</TableCell>
-                                    </TableRow>
-                                </TableHead>
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>Email</TableCell>
@@ -127,10 +150,26 @@ export default function UserRequestDetails(props: IProps) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                        <Grid container spacing={2}>
+                            <Grid xs={8}>
+                                {showApprovedButton()}
+                            </Grid>
+                            <Grid xs={4}>
+                                <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
+                            </Grid>
+                        </Grid>
                     </Box>
                 </Modal>
             </div>
         </div>
+    }
+
+    const viewPage = () => {
+        return requestPosted ? <UserAccessApproved userDetails={userDetails as KeyCloakUser}/> : viewUserDetailTable()
+    }
+
+    return (
+        viewPage()
     );
+
 }

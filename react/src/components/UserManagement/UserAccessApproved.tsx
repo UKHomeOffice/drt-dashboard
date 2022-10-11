@@ -17,13 +17,13 @@ const style = {
 };
 
 interface IProps {
-    userDetails: KeyCloakUser[];
+    userDetails: KeyCloakUser;
 }
 
 export default function UserAccessApproved(props: IProps) {
 
     const resetRequestPosted = () => {
-        window.location.reload(true);
+        window.location.reload();
     }
 
     return (
@@ -34,7 +34,7 @@ export default function UserAccessApproved(props: IProps) {
                         User Approved
                     </Typography>
                     <br/>
-                    <div align="center">Selected User with email {props.userDetails.map(ud => ud.email + ' ')}is granted
+                    <div align="center">Selected User with email {props.userDetails.email} is granted
                         access requested.
                     </div>
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>

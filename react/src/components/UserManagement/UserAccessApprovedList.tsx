@@ -117,7 +117,7 @@ export default function UserAccessApprovedList(props: IProps) {
             />
             {
                 (openModal) ?
-                    <UserRequestDetails openModal={openModal} setOpenModal={setOpenModal} rowDetails={rowDetails}/> :
+                    <UserRequestDetails openModal={openModal} setOpenModal={setOpenModal} rowDetails={rowDetails} approvedPage={true}/> :
                     <span/>
             }
             <div align="left">
