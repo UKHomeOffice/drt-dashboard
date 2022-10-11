@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import KeyCloakUser from './UserAccess';
+import {KeyCloakUser} from './UserAccess';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -23,12 +23,11 @@ interface IProps {
 export default function UserAccessApproved(props: IProps) {
 
     const resetRequestPosted = () => {
-        console.log('requested userDetails' + props.userDetails.map(ud => ud.email));
         window.location.reload(true);
     }
 
     return (
-        <div class="flex-container">
+        <div className="flex-container">
             <div>
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">

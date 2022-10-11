@@ -10,24 +10,27 @@ import uk.gov.homeoffice.drt.auth.Roles.Role
 import scala.concurrent.Future
 
 object DashboardClient {
+
   def get(uri: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
     Http().singleRequest(HttpRequest(HttpMethods.GET, uri))
   }
 
-  def postWithRolesAndKeycloakToken(uri: String, roles: Iterable[Role], keyCloakToken: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
+  def userDetailDrtApi(uri: String, roles: Iterable[Role], keyCloakToken: String, method: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
     val keyCloakHeader = HttpHeader.parse("X-Auth-Token", keyCloakToken) match {
       case Ok(header, _) => Option(header)
       case _ => None
     }
-    Http().singleRequest(Post(uri).withHeaders(keyCloakHeader.toList ::: rolesToRoleHeader(roles)))
-  }
 
-  def getWithRolesAndKeycloakToken(uri: String, roles: Iterable[Role], keyCloakToken: String)(implicit system: ClassicActorSystemProvider): Future[HttpResponse] = {
-    val keyCloakHeader = HttpHeader.parse("X-Auth-Token", keyCloakToken) match {
-      case Ok(header, _) => Option(header)
-      case _ => None
+    val httpRequest: HttpRequest => Future[HttpResponse] =
+      request => Http()
+        .singleRequest(request
+          .withHeaders(keyCloakHeader.toList ::: rolesToRoleHeader(roles)))
+
+    method match {
+      case "GET" => httpRequest(Get(uri))
+      case "POST" => httpRequest(Post(uri))
     }
-    Http().singleRequest(Get(uri).withHeaders(keyCloakHeader.toList ::: rolesToRoleHeader(roles)))
+
   }
 
   def getWithRoles(uri: String, roles: Iterable[Role])(implicit system: ClassicActorSystemProvider): Future[HttpResponse] =

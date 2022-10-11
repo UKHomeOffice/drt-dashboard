@@ -11,18 +11,18 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-interface UserRequestedAccessData {
+export interface UserRequestedAccessData {
     agreeDeclaration: boolean;
     allPorts: boolean;
     email: string;
     lineManager: string;
     portOrRegionText: string;
     portsRequested: string;
-    rccOption: boolean;
+    account_type: string;
     regionsRequested: string;
     requestTime: string;
     staffText: string;
-    staffing: boolean;
+    staff_editing: boolean;
     status: string
 }
 
@@ -52,8 +52,10 @@ export default function UserRequestDetails(props: IProps) {
         setOpen(false)
     }
 
+    console.log('props' + props.rowDetails)
+
     return (
-        <div class="flex-container">
+        <div className="flex-container">
             <div>
                 <Modal
                     open={open}
@@ -63,7 +65,7 @@ export default function UserRequestDetails(props: IProps) {
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                             User Request Details
-                            {console.log('rowDetails' + props.rowDetails.rccOption)}
+                            {/*{console.log('rowDetails' + props.rowDetails.account_type)}*/}
                         </Typography>
                         <TableContainer component={Paper}>
                             <Table sx={{minWidth: 500}} size="small" aria-label="a dense table">
@@ -100,7 +102,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Staffing Requested</TableCell>
-                                        <TableCell>{String(props.rowDetails.staffing)}</TableCell>
+                                        <TableCell>{String(props.rowDetails.staff_editing)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Ports / Region Request reason</TableCell>
@@ -112,7 +114,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Rcc request</TableCell>
-                                        <TableCell>{String(props.rowDetails.rccOption)}</TableCell>
+                                        <TableCell>{props.rowDetails.account_type}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Request Status</TableCell>

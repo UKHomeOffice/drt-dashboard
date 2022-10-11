@@ -38,15 +38,15 @@ case class ClientUserRequestedAccessData(
   lineManager: String,
   portOrRegionText: String,
   portsRequested: String,
-  rccOption: Boolean,
+  accountType: String,
   regionsRequested: String,
   requestTime: String,
   staffText: String,
-  staffing: Boolean,
+  staffEditing: Boolean,
   status: String) {
 
   def getListOfPortOrRegion = {
-    if (rccOption && regionsRequested.nonEmpty) {
+    if (accountType == "rccu" && regionsRequested.nonEmpty) {
       regionsRequested.split(",").toList.map("RCC%20" + _)
     } else if (portsRequested.nonEmpty) {
       portsRequested.split(",").toList
@@ -61,10 +61,10 @@ case class ClientUserRequestedAccessData(
       portsRequested = portsRequested,
       allPorts = allPorts,
       regionsRequested = regionsRequested,
-      staffing = staffing,
+      staffEditing = staffEditing,
       lineManager = lineManager,
       agreeDeclaration = agreeDeclaration,
-      rccOption = rccOption,
+      accountType = accountType,
       portOrRegionText = portOrRegionText,
       staffText = staffText,
       status = status,

@@ -53,14 +53,14 @@ const columns: GridColDef[] = [
 ];
 
 interface IProps {
-    approvedUserRequest: boolean;
-    setApprovedUserRequest: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    showApprovedUserRequest: boolean;
+    setShowApprovedUserRequest: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export default function UserAccessApprovedList(props: IProps) {
     const [userRequestList, setUserRequestList] = React.useState([]);
     const [rowsData, setRowsData] = React.useState([]);
-    const [count, setCount] = React.useState(0);
+    const [apiRequestCount, setApiRequestCount] = React.useState(0);
     const [rowDetails, setRowDetails] = React.useState({})
     const [openModal, setOpenModal] = React.useState(false)
 
@@ -69,22 +69,20 @@ export default function UserAccessApprovedList(props: IProps) {
         setRowsData(response.data as GridRowModel[])
     }
 
-    const userRequested = () => {
-        setCount(1)
-        console.log(ApiClient.requestAccessEndPoint + '?status=Approved')
+    const approvedAccessApi = () => {
+        setApiRequestCount(1)
         axios.get(ApiClient.requestAccessEndPoint + '?status=Approved')
             .then(response => updateAccessRequestData(response))
             .then(() => console.log("User request response"))
     }
 
-
     const resetApprovedUserRequest = () => {
-        props.setApprovedUserRequest(false)
+        props.setShowApprovedUserRequest(false)
     }
 
     React.useEffect(() => {
-        if (count == 0) {
-            userRequested();
+        if (apiRequestCount == 0) {
+            approvedAccessApi();
         }
     });
 

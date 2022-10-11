@@ -5,7 +5,7 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import AccessRequestForm from "../../components/AccessRequestForm";
 
 const server = setupServer(
-  rest.post('/api/request-access', (req, res, ctx) => {
+  rest.post('/api/access-request', (req, res, ctx) => {
     return res(ctx.text('OK'))
   })
 )

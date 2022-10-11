@@ -39,10 +39,10 @@ case class UserAccessRequest(
   portsRequested: String,
   allPorts: Boolean,
   regionsRequested: String,
-  staffing: Boolean,
+  staffEditing: Boolean,
   lineManager: String,
   agreeDeclaration: Boolean,
-  rccOption: Boolean,
+  accountType: String,
   portOrRegionText: String,
   staffText: String,
   status: String,
@@ -58,13 +58,13 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 
   def regionsRequested = column[String]("regions")
 
-  def staffing = column[Boolean]("staffing")
+  def staffing = column[Boolean]("staff_editing")
 
   def lineManager = column[String]("line_manager")
 
   def agreeDeclaration = column[Boolean]("agree_declaration")
 
-  def rccOption = column[Boolean]("rcc_option")
+  def accountType = column[String]("account_type")
 
   def portOrRegionText = column[String]("port_or_region_text")
 
@@ -74,7 +74,7 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 
   def requestTime = column[java.sql.Timestamp]("request_time", O.PrimaryKey)
 
-  def * = (email, portsRequested, allPorts, regionsRequested, staffing, lineManager, agreeDeclaration, rccOption, portOrRegionText, staffText, status, requestTime).mapTo[UserAccessRequest]
+  def * = (email, portsRequested, allPorts, regionsRequested, staffing, lineManager, agreeDeclaration, accountType, portOrRegionText, staffText, status, requestTime).mapTo[UserAccessRequest]
 }
 
 object UserAccessRequestDao {
@@ -88,10 +88,10 @@ object UserAccessRequestDao {
       portsRequested = accessRequest.portsRequested.mkString(","),
       allPorts = accessRequest.allPorts,
       regionsRequested = accessRequest.regionsRequested.mkString(","),
-      staffing = accessRequest.staffing,
+      staffEditing = accessRequest.staffing,
       lineManager = accessRequest.lineManager,
       agreeDeclaration = accessRequest.agreeDeclaration,
-      rccOption = accessRequest.rccOption.contains("rccu"),
+      accountType = accessRequest.rccOption,
       portOrRegionText = accessRequest.portOrRegionText,
       staffText = accessRequest.staffText,
       status = status,
