@@ -1,56 +1,11 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import {DataGrid, GridColDef, GridRowModel} from '@mui/x-data-grid';
+import {DataGrid, GridRowModel} from '@mui/x-data-grid';
 import ApiClient from "../../services/ApiClient";
 import axios, {AxiosResponse} from "axios";
 import UserRequestDetails, {UserRequestedAccessData} from "./UserRequestDetails";
 import {Button} from "@mui/material";
-
-const columns: GridColDef[] = [
-    {
-        field: 'email',
-        headerName: 'Email',
-        width: 200
-    },
-    {
-        field: 'requestTime',
-        headerName: 'Request Time',
-        width: 200,
-    },
-    {
-        field: 'status',
-        headerName: 'status',
-        width: 80,
-    },
-    {
-        field: 'portsRequested',
-        headerName: 'Ports',
-        width: 150,
-    },
-    {
-        field: 'regionsRequested',
-        headerName: 'Regions',
-        width: 100,
-    },
-    {
-        field: 'allPorts',
-        headerName: 'All Ports',
-        width: 100,
-    },
-    {
-        field: 'staffing',
-        headerName: 'Staffing',
-        description: 'This column has a value getter and is not sortable.',
-        sortable: false,
-        width: 100,
-    },
-    {
-        field: 'lineManager',
-        headerName: 'Line Manager',
-        width: 200,
-    },
-
-];
+import {columns} from "./UserAccessCommon";
 
 interface IProps {
     showApprovedUserRequest: boolean;
@@ -117,11 +72,11 @@ export default function UserAccessApprovedList(props: IProps) {
             />
             {
                 (openModal) ?
-                    <UserRequestDetails openModal={openModal} setOpenModal={setOpenModal} rowDetails={rowDetails} approvedPage={true}/> :
+                    <UserRequestDetails openModal={openModal} setOpenModal={setOpenModal} rowDetails={rowDetails}
+                                        approvedPage={true}/> :
                     <span/>
             }
-            <div align="left">
-            </div>
+
             <div align="right">
                 <Button variant="outlined" color="primary" onClick={resetApprovedUserRequest}>back</Button>
             </div>

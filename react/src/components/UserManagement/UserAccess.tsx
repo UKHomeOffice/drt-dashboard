@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import {DataGrid, GridColDef, GridRowModel} from '@mui/x-data-grid';
+import {DataGrid, GridRowModel} from '@mui/x-data-grid';
 import ApiClient from "../../services/ApiClient";
 import axios, {AxiosResponse} from "axios";
 import UserRequestDetails, {UserRequestedAccessData} from "./UserRequestDetails";
@@ -10,6 +10,7 @@ import {Button} from "@mui/material";
 import Grid from '@mui/material/Grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import {columns, KeyCloakUser} from "./UserAccessCommon";
 
 export default function UserAccess() {
     const [userRequestList, setUserRequestList] = React.useState([]);
@@ -115,78 +116,25 @@ export default function UserAccess() {
     }
 
     const accessRequestOrApprovedList = () => {
-        return <div>{showApprovedRequests == "Approved" ? <UserAccessApprovedList showApprovedRequests={showApprovedRequests}
-                                                                    setShowApprovedUserRequest={setShowApprovedUserRequest}/> : showApprovedOrAccessRequest()}</div>
+        return <div>{showApprovedRequests == "Approved" ?
+            <UserAccessApprovedList showApprovedRequests={showApprovedRequests}
+                                    setShowApprovedUserRequest={setShowApprovedUserRequest}/> : showApprovedOrAccessRequest()}</div>
     }
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{width: '100%'}}>
             <Tabs
                 value={showApprovedRequests}
                 onChange={handleChange}
                 textColor="secondary"
                 indicatorColor="secondary"
                 aria-label="secondary tabs example">
-                <Tab value="Requested" label="Requested Access" />
-                <Tab value="Approved" label="Approved Access" />
+                <Tab value="Requested" label="Requested Access"/>
+                <Tab value="Approved" label="Approved Access"/>
             </Tabs>
             <div> {accessRequestOrApprovedList()} </div>
         </Box>
     )
 }
 
-export interface KeyCloakUser {
-    id: string,
-    username: string,
-    enabled: boolean,
-    emailVerified: boolean,
-    firstName: string,
-    lastName: string,
-    email: string
-}
 
-const columns: GridColDef[] = [
-    {
-        field: 'email',
-        headerName: 'Email',
-        width: 200
-    },
-    {
-        field: 'requestTime',
-        headerName: 'Request Time',
-        width: 200,
-    },
-    {
-        field: 'status',
-        headerName: 'status',
-        width: 80,
-    },
-    {
-        field: 'portsRequested',
-        headerName: 'Ports',
-        width: 150,
-    },
-    {
-        field: 'regionsRequested',
-        headerName: 'Regions',
-        width: 100,
-    },
-    {
-        field: 'allPorts',
-        headerName: 'All Ports',
-        width: 100,
-    },
-    {
-        field: 'staff_editing',
-        headerName: 'Staffing',
-        description: 'This column has a value getter and is not sortable.',
-        sortable: false,
-        width: 100,
-    },
-    {
-        field: 'lineManager',
-        headerName: 'Line Manager',
-        width: 200,
-    },
-
-];

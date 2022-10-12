@@ -220,7 +220,7 @@ object ApiRoutes extends JsonSupport
                           .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port", user.roles, xAuthToken, "POST")
                       })
                       UserRequestService.updateUserRequest(userRequestedAccessData, "Approved")
-                      notifications.sendAccessGranted(userRequestedAccessData.email)
+                      notifications.sendAccessGranted(userRequestedAccessData, clientConfig.domain)
                       complete(s"User ${userRequestedAccessData.email} update port ${userRequestedAccessData.portOrRegionText}")
                     } else {
                       complete("No port or region requested")

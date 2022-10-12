@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import {KeyCloakUser} from './UserAccess';
+import {KeyCloakUser} from './UserAccessCommon';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -34,8 +34,8 @@ export default function UserAccessApproved(props: IProps) {
                         User Approved
                     </Typography>
                     <br/>
-                    <div align="center">Selected User with email {props.userDetails.email} is granted
-                        access requested.
+                    <div>Selected User with email {props.userDetails.email} is granted access
+                        requested.
                     </div>
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
                 </Box>

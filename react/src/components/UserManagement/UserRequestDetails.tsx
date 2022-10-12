@@ -13,8 +13,8 @@ import Paper from '@mui/material/Paper';
 import Grid from "@mui/material/Grid";
 import axios from "axios";
 import ApiClient from "../../services/ApiClient";
-import {KeyCloakUser} from "./UserAccess";
 import UserAccessApproved from "./UserAccessApproved";
+import {KeyCloakUser} from './UserAccessCommon';
 
 export interface UserRequestedAccessData {
     agreeDeclaration: boolean;
@@ -78,14 +78,14 @@ export default function UserRequestDetails(props: IProps) {
     }, [userDetails]);
 
     const showApprovedButton = () => {
-    return !props.approvedPage ?
-        <Button style={{float: 'initial'}} variant="contained" color="primary"
-                onClick={keyCloakUserDetails}>Approve</Button>
-        : <span/>
+        return !props.approvedPage ?
+            <Button style={{float: 'initial'}} variant="contained" color="primary"
+                    onClick={keyCloakUserDetails}>Approve</Button>
+            : <span/>
     }
 
     const viewUserDetailTable = () => {
-     return  <div className="flex-container">
+        return <div className="flex-container">
             <div>
                 <Modal
                     open={open}
@@ -150,7 +150,7 @@ export default function UserRequestDetails(props: IProps) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <Grid container spacing={2}>
+                        <Grid container>
                             <Grid xs={8}>
                                 {showApprovedButton()}
                             </Grid>

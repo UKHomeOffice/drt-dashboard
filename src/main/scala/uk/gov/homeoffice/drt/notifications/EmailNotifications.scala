@@ -1,9 +1,8 @@
 package uk.gov.homeoffice.drt.notifications
 
 import java.util
-
-import uk.gov.homeoffice.drt.authentication.AccessRequest
-import uk.gov.service.notify.{ NotificationClient, SendEmailResponse }
+import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
+import uk.gov.service.notify.{NotificationClient, SendEmailResponse}
 
 import scala.collection.JavaConverters.mapAsJavaMapConverter
 import scala.util.Try
@@ -21,12 +20,21 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
   }
 
-  def sendAccessGranted(requester: String) = {
+  def getLink(curad: ClientUserRequestedAccessData, domain: String): String = {
+    if (curad.allPorts || curad.regionsRequested.length > 4 || curad.portsRequested.length > 4)
+      s"https://$domain"
+    else
+      s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
+  }
+
+  def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String) = {
     val personalisation: util.Map[String, String] =
-      Map("requesterUsername" -> getFirstName(requester)).asJava
+      Map("requesterUsername" -> getFirstName(clientUserRequestedAccessData.email),
+        "link" -> getLink(clientUserRequestedAccessData, domain),
+      ).asJava
     Try(client.sendEmail(
       accessGrantedTemplateId,
-      requester,
+      clientUserRequestedAccessData.email,
       personalisation,
       "access granted"))
   }
