@@ -37,7 +37,7 @@ export const columns: GridColDef[] = [
         width: 100,
     },
     {
-        field: 'staff_editing',
+        field: 'staffEditing',
         headerName: 'Staffing',
         description: 'This column has a value getter and is not sortable.',
         sortable: false,

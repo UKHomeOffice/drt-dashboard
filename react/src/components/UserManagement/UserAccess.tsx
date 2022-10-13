@@ -60,8 +60,9 @@ export default function UserAccess() {
 
     const approveUserAccessRequest = () => {
         setUserDetails({} as KeyCloakUser);
-        let fond : any = selectedRows.map(s => findEmail(s))
-        keyCloakUserDetails(fond.email)
+        let fond = selectedRows.map(s => findEmail(s))
+        console.log('fond hello' + fond.map(a => a?.email));
+        keyCloakUserDetails(fond.map(a => a?.email))
     }
 
     const addSelectedRows = (ids: any) => {
@@ -78,9 +79,11 @@ export default function UserAccess() {
             userRequested();
         }
 
-        axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, getRow((userDetails as KeyCloakUser).email))
-            .then(response => console.log("User addUserToGroupEndpoint" + response))
-            .then(() => setRequestPosted(true))
+        if(getRow((userDetails as KeyCloakUser).email)) {
+            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, getRow((userDetails as KeyCloakUser).email))
+                .then(response => console.log("User addUserToGroupEndpoint" + response))
+                .then(() => setRequestPosted(true))
+        }
     }, [userDetails]);
 
     const viewSelectAccessRequest = () => {

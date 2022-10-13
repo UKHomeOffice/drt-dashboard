@@ -35,7 +35,7 @@ interface IProps {
 }
 
 export default function AlertForm(props: IProps) {
-    const [selectedRegions, setSelectedRegions] = React.useState<String[]>(props.regions.map(r => r.name))
+    const [selectedRegions, setSelectedRegions] = React.useState<string[]>([])
     const [alertPorts, setAlertPorts] = React.useState<string[]>(props.user.ports)
     const [alertClass, setAlertClass] = React.useState<string>('notice')
     const [title, setTitle] = React.useState<string>('')

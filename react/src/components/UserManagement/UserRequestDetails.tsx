@@ -23,11 +23,11 @@ export interface UserRequestedAccessData {
     lineManager: string;
     portOrRegionText: string;
     portsRequested: string;
-    account_type: string;
+    accountType: string;
     regionsRequested: string;
     requestTime: string;
     staffText: string;
-    staff_editing: boolean;
+    staffEditing: boolean;
     status: string
 }
 
@@ -125,7 +125,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Staffing Requested</TableCell>
-                                        <TableCell>{String(props.rowDetails?.staff_editing)}</TableCell>
+                                        <TableCell>{String(props.rowDetails?.staffEditing)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Ports / Region Request reason</TableCell>
@@ -137,7 +137,7 @@ export default function UserRequestDetails(props: IProps) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Rcc request</TableCell>
-                                        <TableCell>{props.rowDetails?.account_type}</TableCell>
+                                        <TableCell>{props.rowDetails?.accountType}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Request Status</TableCell>

@@ -1,5 +1,7 @@
 package uk.gov.homeoffice.drt.notifications
 
+import org.slf4j.{Logger, LoggerFactory}
+
 import java.util
 import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
 import uk.gov.service.notify.{NotificationClient, SendEmailResponse}
@@ -8,6 +10,8 @@ import scala.collection.JavaConverters.mapAsJavaMapConverter
 import scala.util.Try
 
 case class EmailNotifications(apiKey: String, accessRequestEmails: List[String]) {
+  val log: Logger = LoggerFactory.getLogger(getClass)
+
   val client = new NotificationClient(apiKey)
 
   val accessRequestEmailTemplateId = "5f34d7bb-293f-481c-826b-62661ba8a736"
@@ -27,7 +31,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
       s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
   }
 
-  def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String) = {
+  def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String, teamEmail: String) = {
     val personalisation: util.Map[String, String] =
       Map("requesterUsername" -> getFirstName(clientUserRequestedAccessData.email),
         "link" -> getLink(clientUserRequestedAccessData, domain),
@@ -36,7 +40,16 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
       accessGrantedTemplateId,
       clientUserRequestedAccessData.email,
       personalisation,
-      "access granted"))
+      "access granted")).recover {
+      case e => log.error(s"Error while sending email to requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+    }
+    Try(client.sendEmail(
+      accessGrantedTemplateId,
+      teamEmail,
+      personalisation,
+      "access granted bcc")).recover {
+      case e => log.error(s"Error while sending bcc email to team $teamEmail for requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+    }
   }
 
   def sendRequest(requester: String, accessRequest: AccessRequest): List[(String, Try[SendEmailResponse])] = {
