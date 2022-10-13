@@ -20,6 +20,8 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
 
   val accessGrantedTemplateId = "12e36257-c485-4e13-af4f-2293d2dd34a6"
 
+  val accessGrantedBccTemplateId = "06e88a3b-2375-4acc-9fde-f2b7afce6bb6"
+
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
   }
@@ -33,7 +35,8 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
 
   def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String, teamEmail: String) = {
     val personalisation: util.Map[String, String] =
-      Map("requesterUsername" -> getFirstName(clientUserRequestedAccessData.email),
+      Map("requester" -> clientUserRequestedAccessData.email,
+        "requesterUsername" -> getFirstName(clientUserRequestedAccessData.email),
         "link" -> getLink(clientUserRequestedAccessData, domain),
       ).asJava
     Try(client.sendEmail(
@@ -42,13 +45,15 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
       personalisation,
       "access granted")).recover {
       case e => log.error(s"Error while sending email to requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+        throw e
     }
     Try(client.sendEmail(
-      accessGrantedTemplateId,
+      accessGrantedBccTemplateId,
       teamEmail,
       personalisation,
       "access granted bcc")).recover {
       case e => log.error(s"Error while sending bcc email to team $teamEmail for requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+        throw e
     }
   }
 

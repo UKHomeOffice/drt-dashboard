@@ -17,7 +17,7 @@ export const RegionalPort = (props: IProps) => {
                 <h1> {props.region} region dashboard </h1>
                 <p> This is a new page on DRT. You can download an arrivals export covering all port terminals in
                     this region.</p>
-                <div style={{textAlign:"center"}}><ArrivalExport region={props.region}/></div>
+                <div style={{textAlign:"left"}}><ArrivalExport region={props.region}/></div>
                 <p> A member of the team will be in touch to get your thoughts about how this
                     page could be more useful. You can also get in touch with the team by email at
                     <a href={"mailto:" + props.config.teamEmail}> {props.config.teamEmail}</a>.</p>
