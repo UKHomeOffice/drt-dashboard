@@ -46,7 +46,7 @@ const style = {
 interface IProps {
     openModal: boolean;
     setOpenModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    rowDetails: UserRequestedAccessData
+    rowDetails: UserRequestedAccessData | undefined
     approvedPage: boolean;
 }
 
@@ -62,7 +62,7 @@ export default function UserRequestDetails(props: IProps) {
     }
 
     const keyCloakUserDetails = () => {
-        axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails.email)
+        axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails?.email)
             .then(response => setUserDetails(response.data as KeyCloakUser))
             .then(() => setApiRequestCount(1))
     }
@@ -101,51 +101,51 @@ export default function UserRequestDetails(props: IProps) {
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>Email</TableCell>
-                                        <TableCell>{props.rowDetails.email}</TableCell>
+                                        <TableCell>{props.rowDetails?.email}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Line Manager</TableCell>
-                                        <TableCell>{props.rowDetails.lineManager}</TableCell>
+                                        <TableCell>{props.rowDetails?.lineManager}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>All ports requested</TableCell>
-                                        <TableCell>{String(props.rowDetails.allPorts)}</TableCell>
+                                        <TableCell>{String(props.rowDetails?.allPorts)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Time Requested</TableCell>
-                                        <TableCell>{props.rowDetails.requestTime}</TableCell>
+                                        <TableCell>{props.rowDetails?.requestTime}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Ports Request</TableCell>
-                                        <TableCell>{props.rowDetails.portsRequested}</TableCell>
+                                        <TableCell>{props.rowDetails?.portsRequested}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Regions Request</TableCell>
-                                        <TableCell>{props.rowDetails.regionsRequested}</TableCell>
+                                        <TableCell>{props.rowDetails?.regionsRequested}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Staffing Requested</TableCell>
-                                        <TableCell>{String(props.rowDetails.staff_editing)}</TableCell>
+                                        <TableCell>{String(props.rowDetails?.staff_editing)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Ports / Region Request reason</TableCell>
-                                        <TableCell>{props.rowDetails.portOrRegionText}</TableCell>
+                                        <TableCell>{props.rowDetails?.portOrRegionText}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Staffing Reason</TableCell>
-                                        <TableCell>{props.rowDetails.staffText}</TableCell>
+                                        <TableCell>{props.rowDetails?.staffText}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Rcc request</TableCell>
-                                        <TableCell>{props.rowDetails.account_type}</TableCell>
+                                        <TableCell>{props.rowDetails?.account_type}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Request Status</TableCell>
-                                        <TableCell>{props.rowDetails.status}</TableCell>
+                                        <TableCell>{props.rowDetails?.status}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Agree Declaration</TableCell>
-                                        <TableCell>{String(props.rowDetails.agreeDeclaration)}</TableCell>
+                                        <TableCell>{String(props.rowDetails?.agreeDeclaration)}</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>

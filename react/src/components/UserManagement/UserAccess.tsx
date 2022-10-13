@@ -13,13 +13,13 @@ import Tab from '@mui/material/Tab';
 import {columns, KeyCloakUser} from "./UserAccessCommon";
 
 export default function UserAccess() {
-    const [userRequestList, setUserRequestList] = React.useState([]);
-    const [rowsData, setRowsData] = React.useState([]);
+    const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
+    const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [apiRequestCount, setApiRequestCount] = React.useState(0);
     const [openModal, setOpenModal] = React.useState(false)
-    const [rowDetails, setRowDetails] = React.useState({})
+    const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [selectedRows, setSelectedRows] = React.useState([]);
-    const [userDetails, setUserDetails] = React.useState({});
+    const [userDetails, setUserDetails] = React.useState({} as KeyCloakUser);
     const [requestPosted, setRequestPosted] = React.useState(false)
     const [showApprovedRequests, setShowApprovedUserRequest] = React.useState("Requested")
 
@@ -36,7 +36,7 @@ export default function UserAccess() {
         setUserDetails(response.data as KeyCloakUser);
     }
 
-    const keyCloakUserDetails = (email: string) => {
+    const keyCloakUserDetails = (email: any) => {
         axios.get(ApiClient.userDetailsEndpoint + '/' + email)
             .then(response => updateUserDetailsState(response))
     }
@@ -47,24 +47,24 @@ export default function UserAccess() {
             .then(response => getAccessRequest(response))
     }
 
-    const findEmail = (requestTime: string) => {
+    const findEmail = (requestTime: any) => {
         return userRequestList.find(obj => {
             return obj.requestTime.trim() == requestTime
         });
     }
 
-    const rowClickOpen = (userData: UserRequestedAccessData) => {
+    const rowClickOpen = (userData: UserRequestedAccessData | undefined) => {
         setRowDetails(userData)
         setOpenModal(true)
     }
 
     const approveUserAccessRequest = () => {
-        setUserDetails([]);
-        let fond = selectedRows.map(s => findEmail(s))
-        fond.map(i => keyCloakUserDetails(i.email))
+        setUserDetails({} as KeyCloakUser);
+        let fond : any = selectedRows.map(s => findEmail(s))
+        keyCloakUserDetails(fond.email)
     }
 
-    const addSelectedRows = (ids: string) => {
+    const addSelectedRows = (ids: any) => {
         console.log(ids);
         setSelectedRows(ids)
     }
@@ -94,7 +94,7 @@ export default function UserAccess() {
                 checkboxSelection
                 onSelectionModelChange={addSelectedRows}
                 experimentalFeatures={{newEditingApi: true}}
-                onRowClick={(params, event) => {
+                onRowClick={(params, event:any) => {
                     if (!event.ignore) {
                         rowClickOpen(findEmail(params.row.requestTime));
                     }
@@ -117,7 +117,7 @@ export default function UserAccess() {
 
     const accessRequestOrApprovedList = () => {
         return <div>{showApprovedRequests == "Approved" ?
-            <UserAccessApprovedList showApprovedRequests={showApprovedRequests}
+            <UserAccessApprovedList showApprovedUserRequest={showApprovedRequests}
                                     setShowApprovedUserRequest={setShowApprovedUserRequest}/> : showApprovedOrAccessRequest()}</div>
     }
 

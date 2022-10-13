@@ -8,15 +8,15 @@ import {Button} from "@mui/material";
 import {columns} from "./UserAccessCommon";
 
 interface IProps {
-    showApprovedUserRequest: boolean;
-    setShowApprovedUserRequest: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    showApprovedUserRequest: string;
+    setShowApprovedUserRequest: ((value: (((prevState: string) => string) | string)) => void);
 }
 
 export default function UserAccessApprovedList(props: IProps) {
-    const [userRequestList, setUserRequestList] = React.useState([]);
-    const [rowsData, setRowsData] = React.useState([]);
+    const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
+    const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [apiRequestCount, setApiRequestCount] = React.useState(0);
-    const [rowDetails, setRowDetails] = React.useState({})
+    const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [openModal, setOpenModal] = React.useState(false)
 
     const updateAccessRequestData = (response: AxiosResponse) => {
@@ -32,7 +32,7 @@ export default function UserAccessApprovedList(props: IProps) {
     }
 
     const resetApprovedUserRequest = () => {
-        props.setShowApprovedUserRequest(false)
+        props.setShowApprovedUserRequest("Requested")
     }
 
     React.useEffect(() => {
@@ -42,13 +42,12 @@ export default function UserAccessApprovedList(props: IProps) {
     });
 
     const findEmail = (requestTime: string) => {
-        let item = userRequestList.find(obj => {
+      return userRequestList.find(obj => {
             return obj.requestTime.trim() == requestTime
         });
-        return item;
     }
 
-    const rowClickOpen = (userData: UserRequestedAccessData) => {
+    const rowClickOpen = (userData: UserRequestedAccessData | undefined) => {
         setRowDetails(userData)
         setOpenModal(true)
         console.log('rowClickOpen ' + openModal)
@@ -62,9 +61,8 @@ export default function UserAccessApprovedList(props: IProps) {
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
-                onSelectionModelChange
                 experimentalFeatures={{newEditingApi: true}}
-                onRowClick={(params, event) => {
+                onRowClick={(params, event: any) => {
                     if (!event.ignore) {
                         rowClickOpen(findEmail(params.row.requestTime));
                     }
@@ -76,10 +74,7 @@ export default function UserAccessApprovedList(props: IProps) {
                                         approvedPage={true}/> :
                     <span/>
             }
-
-            <div align="right">
-                <Button variant="outlined" color="primary" onClick={resetApprovedUserRequest}>back</Button>
-            </div>
+            <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={resetApprovedUserRequest}>back</Button>
         </Box>
 
     );
