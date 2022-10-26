@@ -8,6 +8,9 @@ import {Button} from "@mui/material";
 import {columns} from "./UserAccessCommon";
 
 interface IProps {
+    apiRequestCount: number
+    setApiRequestCount: ((value: (((prevState: number) => number) | number)) => void);
+    statusView: string;
     showApprovedUserRequest: string;
     setShowApprovedUserRequest: ((value: (((prevState: string) => string) | string)) => void);
 }
@@ -15,7 +18,7 @@ interface IProps {
 export default function UserAccessApprovedList(props: IProps) {
     const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    const [apiRequestCount, setApiRequestCount] = React.useState(0);
+    // const [apiRequestCount, setApiRequestCount] = React.useState(props.apiRequestCount);
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [openModal, setOpenModal] = React.useState(false)
 
@@ -25,8 +28,8 @@ export default function UserAccessApprovedList(props: IProps) {
     }
 
     const approvedAccessApi = () => {
-        setApiRequestCount(1)
-        axios.get(ApiClient.requestAccessEndPoint + '?status=Approved')
+        props.setApiRequestCount(1)
+        axios.get(ApiClient.requestAccessEndPoint + '?status=' + props.statusView)
             .then(response => updateAccessRequestData(response))
             .then(() => console.log("User request response"))
     }
@@ -36,13 +39,13 @@ export default function UserAccessApprovedList(props: IProps) {
     }
 
     React.useEffect(() => {
-        if (apiRequestCount == 0) {
+        if (props.apiRequestCount == 0) {
             approvedAccessApi();
         }
     });
 
     const findEmail = (requestTime: string) => {
-      return userRequestList.find(obj => {
+        return userRequestList.find(obj => {
             return obj.requestTime.trim() == requestTime
         });
     }
@@ -74,7 +77,8 @@ export default function UserAccessApprovedList(props: IProps) {
                                         approvedPage={true}/> :
                     <span/>
             }
-            <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={resetApprovedUserRequest}>back</Button>
+            <Button style={{float: 'right'}} variant="outlined" color="primary"
+                    onClick={resetApprovedUserRequest}>back</Button>
         </Box>
 
     );

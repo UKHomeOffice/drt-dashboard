@@ -2,7 +2,6 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import {KeyCloakUser} from './UserAccessCommon';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -17,10 +16,11 @@ const style = {
 };
 
 interface IProps {
-    userDetails: KeyCloakUser;
+    email: string | undefined
+    message: string
 }
 
-export default function UserAccessApproved(props: IProps) {
+export default function ConfirmUserAccess(props: IProps) {
 
     const resetRequestPosted = () => {
         window.location.reload();
@@ -31,11 +31,10 @@ export default function UserAccessApproved(props: IProps) {
             <div>
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        User Approved
+                        User {props.message == 'granted' ? "Approved" : "Dismissed"}
                     </Typography>
                     <br/>
-                    <div>Selected User with email {props.userDetails.email} is granted access
-                        requested.
+                    <div>Selected User with email {props.email} is {props.message} access requested.
                     </div>
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
                 </Box>

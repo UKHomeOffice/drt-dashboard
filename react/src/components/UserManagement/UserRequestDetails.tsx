@@ -13,7 +13,7 @@ import Paper from '@mui/material/Paper';
 import Grid from "@mui/material/Grid";
 import axios from "axios";
 import ApiClient from "../../services/ApiClient";
-import UserAccessApproved from "./UserAccessApproved";
+import ConfirmUserAccess from "./ConfirmUserAccess";
 import {KeyCloakUser} from './UserAccessCommon';
 
 export interface UserRequestedAccessData {
@@ -79,8 +79,7 @@ export default function UserRequestDetails(props: IProps) {
 
     const showApprovedButton = () => {
         return !props.approvedPage ?
-            <Button style={{float: 'initial'}} variant="contained" color="primary"
-                    onClick={keyCloakUserDetails}>Approve</Button>
+            <Button style={{float: 'initial'}} onClick={keyCloakUserDetails}>Approve</Button>
             : <span/>
     }
 
@@ -165,7 +164,8 @@ export default function UserRequestDetails(props: IProps) {
     }
 
     const viewPage = () => {
-        return requestPosted ? <UserAccessApproved userDetails={userDetails as KeyCloakUser}/> : viewUserDetailTable()
+        return requestPosted ?
+            <ConfirmUserAccess message={"Granted"} email={(userDetails as KeyCloakUser).email}/> : viewUserDetailTable()
     }
 
     return (

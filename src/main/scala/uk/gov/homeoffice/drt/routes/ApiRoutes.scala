@@ -221,12 +221,30 @@ object ApiRoutes extends JsonSupport
                       })
                       DashboardClient
                         .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/Border%20Force", user.roles, xAuthToken, "POST")
+                      if (userRequestedAccessData.staffEditing) {
+                        DashboardClient
+                          .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/Staff%20Admin", user.roles, xAuthToken, "POST")
+                      }
                       UserRequestService.updateUserRequest(userRequestedAccessData, "Approved")
                       notifications.sendAccessGranted(userRequestedAccessData, clientConfig.domain, clientConfig.teamEmail)
                       complete(s"User ${userRequestedAccessData.email} update port ${userRequestedAccessData.portOrRegionText}")
                     } else {
                       complete("No port or region requested")
                     }
+                  }
+                }
+              }
+            }
+          }
+        },
+        (post & path("dismiss-user-request")) {
+          authByRole(ManageUsers) {
+            headerValueByName("X-Auth-Roles") { rolesStr =>
+              headerValueByName("X-Auth-Email") { email =>
+                entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
+                  onComplete(UserRequestService.updateUserRequest(userRequestedAccessData, "Dismissed")) {
+                    case Success(value) => complete(s"The result was $value")
+                    case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
                   }
                 }
               }
