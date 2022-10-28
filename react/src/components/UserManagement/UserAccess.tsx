@@ -11,7 +11,6 @@ import Grid from '@mui/material/Grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import {columns, KeyCloakUser} from "./UserAccessCommon";
-import DismissAccess from "./DismissAccess";
 
 export default function UserAccess() {
     const [apiRequestListCount, setApiRequestListCount] = React.useState(0);
@@ -19,11 +18,12 @@ export default function UserAccess() {
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [apiRequestCount, setApiRequestCount] = React.useState(0);
     const [openModal, setOpenModal] = React.useState(false)
-    const [openDismissModal, setOpenDismissModal] = React.useState(false)
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
+    const [selectedRowDetails, setSelectedRowDetails] = React.useState([] as UserRequestedAccessData[]);
     const [selectedRows, setSelectedRows] = React.useState([]);
-    const [userDetails, setUserDetails] = React.useState({} as KeyCloakUser);
+    const [userDetails, setUserDetails] = React.useState([] as KeyCloakUser[]);
     const [requestPosted, setRequestPosted] = React.useState(false)
+    const [dismissedPosted, setDismissedPosted] = React.useState(false)
     const [showApprovedRequests, setShowApprovedUserRequest] = React.useState("Requested")
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -37,12 +37,14 @@ export default function UserAccess() {
     }
 
     const updateUserDetailsState = (response: AxiosResponse) => {
-        setUserDetails(response.data as KeyCloakUser);
+        console.log('response' + (response.data as KeyCloakUser).email)
+        setUserDetails(oldUserDetails => [...oldUserDetails, response.data as KeyCloakUser]);
+        console.log('update user details ' + userDetails.length + ' ' + userDetails.map(ud => ud.email))
     }
 
-    const keyCloakUserDetails = (email: any) => {
-        axios.get(ApiClient.userDetailsEndpoint + '/' + email)
-            .then(response => updateUserDetailsState(response))
+    const keyCloakUserDetails = (emails: string[]) => {
+        emails.map(email => axios.get(ApiClient.userDetailsEndpoint + '/' + email)
+            .then(response => updateUserDetailsState(response)))
     }
 
     const userRequested = () => {
@@ -62,21 +64,24 @@ export default function UserAccess() {
         setOpenModal(true)
     }
 
-    const dismissOpenModal = () => {
-        let UserRequestedAccessData = findEmail(selectedRows)
-        setRowDetails(UserRequestedAccessData)
-        setOpenDismissModal(true)
+    const getKeyClockUserDetails = () => {
+        setUserDetails([{} as KeyCloakUser]);
+        console.log('setUserDetails([{} as KeyCloakUser]) ..' + userDetails.length)
+        let fond: any[] = selectedRows.map(s => findEmail(s))
+        console.log('fond email' + fond.map(a => a?.email));
+        keyCloakUserDetails(fond.map(a => a?.email))
     }
 
-    const approveUserAccessRequest = () => {
-        setUserDetails({} as KeyCloakUser);
-        let fond = selectedRows.map(s => findEmail(s))
-        console.log('fond hello' + fond.map(a => a?.email));
-        keyCloakUserDetails(fond.map(a => a?.email))
+    const addSelectedRowDetails = (srd: any) => {
+        setSelectedRowDetails(oldSelectedRowDetails => [...oldSelectedRowDetails, srd])
     }
 
     const addSelectedRows = (ids: any) => {
         console.log(ids);
+        setSelectedRowDetails([])
+        if (ids) {
+            ids.map((id: string) => addSelectedRowDetails(findEmail(id)))
+        }
         setSelectedRows(ids)
     }
 
@@ -84,16 +89,21 @@ export default function UserAccess() {
         return userRequestList.find(sr => sr.email == email)
     }
 
+    const approveUserAccessRequest = (userDetail: any) => {
+        if (getRow((userDetail as KeyCloakUser).email)) {
+            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetail as KeyCloakUser).id, getRow((userDetail as KeyCloakUser).email))
+                .then(response => console.log("User addUserToGroupEndpoint" + response))
+                .then(() => setRequestPosted(true))
+        }
+    }
+
     React.useEffect(() => {
         if (apiRequestCount == 0) {
             userRequested();
         }
+        console.log('React.useEffect user details ' + userDetails.length + ' ' + userDetails.map(ud => ud.email))
 
-        if (getRow((userDetails as KeyCloakUser).email)) {
-            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, getRow((userDetails as KeyCloakUser).email))
-                .then(response => console.log("User addUserToGroupEndpoint" + response))
-                .then(() => setRequestPosted(true))
-        }
+        userDetails.map(approveUserAccessRequest)
     }, [userDetails]);
 
     const viewSelectAccessRequest = () => {
@@ -118,24 +128,36 @@ export default function UserAccess() {
                                                rowDetails={rowDetails}
                                                approvedPage={false}/> : <span/>
             }
-            {(openDismissModal) ? <DismissAccess openDismissModal={openDismissModal}
-                                                 setOpenDismissModal={setOpenDismissModal}
-                                                 rowDetails={rowDetails}/> : <span/>
-            }
+
             <Grid container spacing={2} justifyContent={"center"}>
                 <Grid item xs={8} md={2}>
-                    <Button variant="outlined" onClick={approveUserAccessRequest}>Approve</Button>
+                    <Button variant="outlined" onClick={getKeyClockUserDetails}>Approve</Button>
                 </Grid>
                 <Grid item xs={8} md={2}>
-                    <Button variant="outlined" onClick={dismissOpenModal}>Dismiss</Button>
+                    <Button variant="outlined" onClick={dismissUserRequest}>Dismiss</Button>
                 </Grid>
             </Grid>
         </Box>
     }
 
+    const dismissUserRequest = () => {
+        selectedRowDetails
+            .map(selectedRowDetail => axios.post(ApiClient.dismissUserRequestEndpoint, selectedRowDetail)
+                .then(response => console.log('dismiss user' + response.data)))
+        setDismissedPosted(true)
+    }
+
+    const showDismissedRequest = () => {
+        return dismissedPosted ?
+            <ConfirmUserAccess message={"dismissed"}
+                               emails={selectedRowDetails.map(srd => srd.email)}/> : viewSelectAccessRequest()
+    }
+
     const showApprovedOrAccessRequest = () => {
+        console.log('userDetails ' + (userDetails as KeyCloakUser[]));
         return requestPosted ?
-            <ConfirmUserAccess message={"granted"} email={userDetails.email}/> : viewSelectAccessRequest()
+            <ConfirmUserAccess message={"granted"}
+                               emails={userDetails.map(ud => ud.email)}/> : showDismissedRequest()
     }
 
     const accessRequestOrApprovedList = () => {

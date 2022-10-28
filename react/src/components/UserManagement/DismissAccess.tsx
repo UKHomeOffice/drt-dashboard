@@ -25,10 +25,10 @@ const style = {
 interface IProps {
     openDismissModal: boolean;
     setOpenDismissModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    rowDetails: UserRequestedAccessData | undefined
+    rowDetails: UserRequestedAccessData[]
 }
 
-
+//TODO: remove this if modal is not needed for dismiss for text reason
 export default function DismissAccess(props: IProps) {
     const [open, setOpen] = React.useState(true);
     // const [userDetails, setUserDetails] = React.useState({});
@@ -41,14 +41,15 @@ export default function DismissAccess(props: IProps) {
     }
 
     const dismissUserRequest = () => {
-        axios.post(ApiClient.dismissUserRequestEndpoint, props.rowDetails)
+        props.rowDetails.map(rowDetail => axios.post(ApiClient.dismissUserRequestEndpoint, rowDetail)
             .then(response => console.log('dismiss user' + response.data))
-            .then(() => setRequestPosted(true))
+            .then(() => setRequestPosted(true)))
     }
 
     const showApprovedOrAccessRequest = () => {
         return requestPosted ?
-            <ConfirmUserAccess message={"dismissed"} email={props.rowDetails?.email}/> : showDismissedRequest()
+            <ConfirmUserAccess message={"dismissed"}
+                               emails={props.rowDetails.map(rd => rd.email)}/> : showDismissedRequest()
     }
 
     const showDismissedRequest = () => {

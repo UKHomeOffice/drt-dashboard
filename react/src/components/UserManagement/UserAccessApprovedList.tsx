@@ -18,7 +18,6 @@ interface IProps {
 export default function UserAccessApprovedList(props: IProps) {
     const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    // const [apiRequestCount, setApiRequestCount] = React.useState(props.apiRequestCount);
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [openModal, setOpenModal] = React.useState(false)
 

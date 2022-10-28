@@ -2,27 +2,27 @@ package uk.gov.homeoffice.drt.routes
 
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
-import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, StatusCodes }
-import akka.http.scaladsl.server.Directives.{ complete, pathPrefix, _ }
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import akka.http.scaladsl.server.Directives.{complete, pathPrefix, _}
 import akka.http.scaladsl.server.directives.MethodDirectives.get
-import akka.http.scaladsl.server.{ Directive0, Route }
+import akka.http.scaladsl.server.{Directive0, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import spray.json._
-import uk.gov.homeoffice.drt.alerts.{ Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport }
+import uk.gov.homeoffice.drt.alerts.{Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport}
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles._
-import uk.gov.homeoffice.drt.authentication.{ AccessRequest, AccessRequestJsonSupport, ClientUserAccessDataJsonSupport, ClientUserRequestedAccessData, KeyCloakUser, KeyCloakUserJsonSupport, User, UserJsonSupport }
+import uk.gov.homeoffice.drt.authentication.{AccessRequest, AccessRequestJsonSupport, ClientUserAccessDataJsonSupport, ClientUserRequestedAccessData, KeyCloakUser, KeyCloakUserJsonSupport, User, UserJsonSupport}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
-import uk.gov.homeoffice.drt.redlist.{ RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate }
+import uk.gov.homeoffice.drt.redlist.{RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate}
 import uk.gov.homeoffice.drt._
 import uk.gov.homeoffice.drt.db.UserAccessRequestJsonSupport
 import uk.gov.homeoffice.drt.services.UserRequestService
 
 import scala.compat.java8.OptionConverters._
-import scala.concurrent.{ ExecutionContextExecutor, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.util.{Failure, Success}
 
 case class PortAlerts(portCode: String, alerts: List[Alert])
 
@@ -49,10 +49,10 @@ object ApiRoutes extends JsonSupport
   })
 
   def apply(
-    prefix: String,
-    clientConfig: ClientConfig,
-    notifications: EmailNotifications,
-    neboUploadRoute: Route)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
+             prefix: String,
+             clientConfig: ClientConfig,
+             notifications: EmailNotifications,
+             neboUploadRoute: Route)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
     pathPrefix(prefix) {
       concat(
         (get & path("user")) {
@@ -215,10 +215,15 @@ object ApiRoutes extends JsonSupport
                   entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
                     val user = User.fromRoles(email, rolesStr)
                     if (userRequestedAccessData.portsRequested.nonEmpty || userRequestedAccessData.regionsRequested.nonEmpty) {
-                      Future.sequence(userRequestedAccessData.getListOfPortOrRegion.map { port =>
+                      if (userRequestedAccessData.allPorts) {
                         DashboardClient
-                          .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port", user.roles, xAuthToken, "POST")
-                      })
+                          .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/All%20Port%20Access", user.roles, xAuthToken, "POST")
+                      } else {
+                        Future.sequence(userRequestedAccessData.getListOfPortOrRegion.map { port =>
+                          DashboardClient
+                            .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/$port", user.roles, xAuthToken, "POST")
+                        })
+                      }
                       DashboardClient
                         .userDetailDrtApi(s"${Dashboard.drtUriForPortCode("LHR")}/data/addUserToGroup/$id/Border%20Force", user.roles, xAuthToken, "POST")
                       if (userRequestedAccessData.staffEditing) {

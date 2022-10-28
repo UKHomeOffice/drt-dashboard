@@ -7,7 +7,6 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-// import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Grid from "@mui/material/Grid";
@@ -61,20 +60,28 @@ export default function UserRequestDetails(props: IProps) {
         setOpen(false)
     }
 
+    const updateState = (keyCloakUser: KeyCloakUser) => {
+        setApiRequestCount(1)
+        setUserDetails(keyCloakUser)
+    }
+
     const keyCloakUserDetails = () => {
+        console.log('keyCloakUserDetails props.rowDetails?.email ' + props.rowDetails?.email)
         axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails?.email)
-            .then(response => setUserDetails(response.data as KeyCloakUser))
-            .then(() => setApiRequestCount(1))
+            .then(response => updateState(response.data as KeyCloakUser))
+        console.log('keyCloakUserDetails setApiRequestCount ' + apiRequestCount)
+        console.log('keyCloakUserDetails setUserDetails ' + (userDetails as KeyCloakUser))
+
     }
 
     React.useEffect(() => {
+        console.log('React.useEffect apiRequestCount ' + apiRequestCount)
         if (apiRequestCount == 1) {
             axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, props.rowDetails)
                 .then(response => console.log("User addUserToGroupEndpoint" + response.data))
                 .then(() => setRequestPosted(true))
+                .then(() => setApiRequestCount(0))
         }
-
-
     }, [userDetails]);
 
     const showApprovedButton = () => {
@@ -100,11 +107,17 @@ export default function UserRequestDetails(props: IProps) {
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>Email</TableCell>
-                                        <TableCell>{props.rowDetails?.email}</TableCell>
+                                        <TableCell>
+                                            <a href={"mailto:" + props.rowDetails?.email + "?Subject=Access%20grant"}
+                                               target="_blank">{props.rowDetails?.email}</a>
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Line Manager</TableCell>
-                                        <TableCell>{props.rowDetails?.lineManager}</TableCell>
+                                        <TableCell>
+                                            <a href={"mailto:" + props.rowDetails?.lineManager + "?Subject=Access%20grant"}
+                                               target="_blank">{props.rowDetails?.lineManager}</a>
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>All ports requested</TableCell>
@@ -165,7 +178,8 @@ export default function UserRequestDetails(props: IProps) {
 
     const viewPage = () => {
         return requestPosted ?
-            <ConfirmUserAccess message={"Granted"} email={(userDetails as KeyCloakUser).email}/> : viewUserDetailTable()
+            <ConfirmUserAccess message={"Granted"}
+                               emails={[(userDetails as KeyCloakUser).email]}/> : viewUserDetailTable()
     }
 
     return (
