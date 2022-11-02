@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import {DataGrid, GridRowModel} from '@mui/x-data-grid';
+import {DataGrid, GridRowId, GridRowModel, GridSelectionModel} from '@mui/x-data-grid';
 import ApiClient from "../../services/ApiClient";
 import axios, {AxiosResponse} from "axios";
 import UserRequestDetails, {UserRequestedAccessData} from "./UserRequestDetails";
@@ -20,7 +20,7 @@ export default function UserAccess() {
     const [openModal, setOpenModal] = React.useState(false)
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [selectedRowDetails, setSelectedRowDetails] = React.useState([] as UserRequestedAccessData[]);
-    const [selectedRowIds, setSelectedRowIds] = React.useState([]);
+    const [selectedRowIds, setSelectedRowIds] = React.useState<GridRowId[]>([]);
     const [users, setUsers] = React.useState([] as KeyCloakUser[]);
     const [receivedUsersResponse, setReceivedUsersResponse] = React.useState(false)
     const [requestPosted, setRequestPosted] = React.useState(false)
@@ -55,7 +55,7 @@ export default function UserAccess() {
             .then(response => setUserAccessData(response))
     }
 
-    const findEmail = (requestTime: string) => {
+    const findAccessRequestByEmail = (requestTime: string | number) => {
         return userRequestList.find(obj => {
             return obj.requestTime.trim() == requestTime
         });
@@ -70,21 +70,25 @@ export default function UserAccess() {
 
     const approveUserDetails = () => {
         setUsers([{} as KeyCloakUser]);
-        console.log('setUserDetails([{} as KeyCloakUser]) ..' + users.length)
-        let fond: any[] = selectedRowIds.map(s => findEmail(s))
-        console.log('fond email' + fond.map(a => a?.email));
-        getKeyCloakUserDetails(fond.map(a => a?.email))
+
+        const emails: string[] = selectedRowIds
+          .map(s => findAccessRequestByEmail(s)?.email)
+          .filter((s): s is string => !!s);
+
+        getKeyCloakUserDetails(emails)
     }
 
-    const addSelectedRowDetails = (srd: any) => {
+    const addSelectedRowDetails = (srd: UserRequestedAccessData) => {
         setSelectedRowDetails(oldSelectedRowDetails => [...oldSelectedRowDetails, srd])
     }
 
-    const addSelectedRows = (ids: any) => {
+    const addSelectedRows = (ids: GridSelectionModel) => {
         console.log(ids);
         setSelectedRowDetails([])
         if (ids) {
-            ids.map((id: string) => addSelectedRowDetails(findEmail(id)))
+            ids.map(id => findAccessRequestByEmail(id))
+              .filter((s): s is UserRequestedAccessData => !!s)
+              .map(s => addSelectedRowDetails(s))
         }
         setSelectedRowIds(ids)
     }
@@ -93,7 +97,7 @@ export default function UserAccess() {
         return userRequestList.find(sr => sr.email == email)
     }
 
-    const approveUserAccessRequest = (user: any) => {
+    const approveUserAccessRequest = (user: KeyCloakUser) => {
         let email = findRequestByEmail((user as KeyCloakUser).email)
         if (email) {
             axios.post(ApiClient.addUserToGroupEndpoint + '/' + (user as KeyCloakUser).id, email)
@@ -126,7 +130,7 @@ export default function UserAccess() {
                 experimentalFeatures={{newEditingApi: true}}
                 onRowClick={(params, event: any) => {
                     if (!event.ignore) {
-                        rowClickOpen(findEmail(params.row.requestTime));
+                        rowClickOpen(findAccessRequestByEmail(params.row.requestTime));
                     }
                 }}
             />
