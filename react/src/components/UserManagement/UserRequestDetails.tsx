@@ -46,55 +46,74 @@ interface IProps {
     openModal: boolean;
     setOpenModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     rowDetails: UserRequestedAccessData | undefined
-    approvedPage: boolean;
+    approvedPage: string;
+    apiParentRequested: boolean
+    setApiParentRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export default function UserRequestDetails(props: IProps) {
-    const [open, setOpen] = React.useState(true);
     const [requestPosted, setRequestPosted] = React.useState(false)
-    const [userDetails, setUserDetails] = React.useState({});
-    const [apiRequestCount, setApiRequestCount] = React.useState(0);
-
+    const [user, setUser] = React.useState({} as KeyCloakUser);
+    const [apiRequested, setApiRequested] = React.useState(false);
+    const [message, setMessage] = React.useState("");
     const handleClose = () => {
         props.setOpenModal(false)
-        setOpen(false)
+        setApiRequested(false)
     }
 
     const updateState = (keyCloakUser: KeyCloakUser) => {
-        setApiRequestCount(1)
-        setUserDetails(keyCloakUser)
+        setApiRequested(true)
+        setUser(keyCloakUser)
     }
 
     const keyCloakUserDetails = () => {
+        setMessage("Granted")
         console.log('keyCloakUserDetails props.rowDetails?.email ' + props.rowDetails?.email)
         axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails?.email)
             .then(response => updateState(response.data as KeyCloakUser))
-        console.log('keyCloakUserDetails setApiRequestCount ' + apiRequestCount)
-        console.log('keyCloakUserDetails setUserDetails ' + (userDetails as KeyCloakUser))
+    }
 
+    const revertAccessRequest = () => {
+        setMessage("Revert")
+        axios.post(ApiClient.updateUserRequestEndpoint + "/" + "Requested", props.rowDetails)
+            .then(response => console.log('reverted user' + response.data))
+            .then(() => setRequestPosted(true))
+            .then(() => setApiRequested(false))
     }
 
     React.useEffect(() => {
-        console.log('React.useEffect apiRequestCount ' + apiRequestCount)
-        if (apiRequestCount == 1) {
-            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (userDetails as KeyCloakUser).id, props.rowDetails)
+        console.log('React.useEffect apiRequestCount ' + apiRequested)
+        if (apiRequested) {
+            axios.post(ApiClient.addUserToGroupEndpoint + '/' + (user as KeyCloakUser).id, props.rowDetails)
                 .then(response => console.log("User addUserToGroupEndpoint" + response.data))
                 .then(() => setRequestPosted(true))
-                .then(() => setApiRequestCount(0))
+                .then(() => setApiRequested(false))
         }
-    }, [userDetails]);
+        if (!props.apiParentRequested) {
+            props.setOpenModal(false)
+        }
+    }, [user, apiRequested]);
 
-    const showApprovedButton = () => {
-        return !props.approvedPage ?
-            <Button style={{float: 'initial'}} onClick={keyCloakUserDetails}>Approve</Button>
-            : <span/>
+    const approvedPage = () => {
+
+        switch (props.approvedPage) {
+            case "Approved" :
+                return <span/>
+
+            case "Dismissed" :
+                return <Button style={{float: 'initial'}} onClick={revertAccessRequest}>Revert</Button>
+
+            case "" :
+                return <Button style={{float: 'initial'}} onClick={keyCloakUserDetails}>Approve</Button>
+        }
+
     }
 
     const viewUserDetailTable = () => {
         return <div className="flex-container">
             <div>
                 <Modal
-                    open={open}
+                    open={props.openModal}
                     onClose={handleClose}
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description">
@@ -108,14 +127,14 @@ export default function UserRequestDetails(props: IProps) {
                                     <TableRow>
                                         <TableCell>Email</TableCell>
                                         <TableCell>
-                                            <a href={"mailto:" + props.rowDetails?.email + "?Subject=Access%20grant"}
+                                            <a href={"mailto:" + props.rowDetails?.email + "?Subject=DRT%20access%20request"}
                                                target="_blank">{props.rowDetails?.email}</a>
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Line Manager</TableCell>
                                         <TableCell>
-                                            <a href={"mailto:" + props.rowDetails?.lineManager + "?Subject=Access%20grant"}
+                                            <a href={"mailto:" + props.rowDetails?.lineManager + "?Subject=DRT%20access%20request"}
                                                target="_blank">{props.rowDetails?.lineManager}</a>
                                         </TableCell>
                                     </TableRow>
@@ -164,7 +183,7 @@ export default function UserRequestDetails(props: IProps) {
                         </TableContainer>
                         <Grid container>
                             <Grid xs={8}>
-                                {showApprovedButton()}
+                                {approvedPage()}
                             </Grid>
                             <Grid xs={4}>
                                 <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
@@ -178,8 +197,14 @@ export default function UserRequestDetails(props: IProps) {
 
     const viewPage = () => {
         return requestPosted ?
-            <ConfirmUserAccess message={"Granted"}
-                               emails={[(userDetails as KeyCloakUser).email]}/> : viewUserDetailTable()
+            <ConfirmUserAccess message={message}
+                               parentRequestPosted={props.apiParentRequested}
+                               setParentRequestPosted={props.setApiParentRequested}
+                               apiRequested={requestPosted}
+                               setApiRequested={setRequestPosted}
+                               openModel={props.openModal}
+                               setOpenModel={props.setOpenModal}
+                               emails={[props.rowDetails?.email ?? user.email]}/> : viewUserDetailTable()
     }
 
     return (

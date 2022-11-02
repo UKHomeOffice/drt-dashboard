@@ -8,8 +8,8 @@ import {Button} from "@mui/material";
 import {columns} from "./UserAccessCommon";
 
 interface IProps {
-    apiRequestCount: number
-    setApiRequestCount: ((value: (((prevState: number) => number) | number)) => void);
+    accessRequestListRequested: boolean
+    setAccessRequestListRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     statusView: string;
     showApprovedUserRequest: string;
     setShowApprovedUserRequest: ((value: (((prevState: string) => string) | string)) => void);
@@ -27,7 +27,7 @@ export default function UserAccessApprovedList(props: IProps) {
     }
 
     const approvedAccessApi = () => {
-        props.setApiRequestCount(1)
+        props.setAccessRequestListRequested(true)
         axios.get(ApiClient.requestAccessEndPoint + '?status=' + props.statusView)
             .then(response => updateAccessRequestData(response))
             .then(() => console.log("User request response"))
@@ -38,7 +38,7 @@ export default function UserAccessApprovedList(props: IProps) {
     }
 
     React.useEffect(() => {
-        if (props.apiRequestCount == 0) {
+        if (!props.accessRequestListRequested) {
             approvedAccessApi();
         }
     });
@@ -72,11 +72,17 @@ export default function UserAccessApprovedList(props: IProps) {
             />
             {
                 (openModal) ?
-                    <UserRequestDetails openModal={openModal} setOpenModal={setOpenModal} rowDetails={rowDetails}
-                                        approvedPage={true}/> :
+                    <UserRequestDetails openModal={openModal}
+                                        setOpenModal={setOpenModal}
+                                        apiParentRequested={props.accessRequestListRequested}
+                                        setApiParentRequested={props.setAccessRequestListRequested}
+                                        rowDetails={rowDetails}
+                                        approvedPage={props.statusView}/> :
                     <span/>
             }
-            <Button style={{float: 'right'}} variant="outlined" color="primary"
+            <Button style={{float: 'right'}}
+                    variant="outlined"
+                    color="primary"
                     onClick={resetApprovedUserRequest}>back</Button>
         </Box>
 

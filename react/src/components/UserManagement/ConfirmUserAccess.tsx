@@ -21,22 +21,35 @@ const style = {
 interface IProps {
     emails: string[]
     message: string
+    parentRequestPosted: boolean
+    setParentRequestPosted: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    apiRequested: boolean
+    setApiRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    openModel: boolean
+    setOpenModel: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export default function ConfirmUserAccess(props: IProps) {
 
-    const resetRequestPosted = () => {
-        window.location.reload();
+    const email = () => {
+        return props.emails.filter(e => e != undefined)
     }
+
+    const resetRequestPosted = () => {
+        props.setApiRequested(false)
+        props.setParentRequestPosted(false)
+        props.setOpenModel(false)
+    }
+
     const logMessage = () => {
         console.log('emails' + props.emails + ' ' + props.emails.map(e => e + ' '))
     }
 
     const moreThanOneUserDisplay = () => {
         return <div>
-            Following selected users are {props.message} access requested.
+            The following users have had their request {messageDisplay()}
             <List>
-                {props.emails.filter(e => e != undefined).map(e =>
+                {email().map(e =>
                     <ListItem>
                         <ListItemText
                             primary={e}
@@ -49,10 +62,19 @@ export default function ConfirmUserAccess(props: IProps) {
 
     const singleUserDisplay = () => {
         return <div>
-            Selected User with
-            email {props.emails.filter(e => e != undefined).map(e => e ? e + ' ' : ' ')} is {props.message} access
-            requested.
+            {email()} has had their request {messageDisplay()}
         </div>
+    }
+
+    const messageDisplay = () => {
+        switch (props.message.toLowerCase()) {
+            case "granted" :
+                return "Approved"
+            case "revert" :
+                return "Reverted"
+            default :
+                return "Dismissed"
+        }
     }
 
     return (
@@ -60,11 +82,11 @@ export default function ConfirmUserAccess(props: IProps) {
             <div>
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        User {props.message == 'granted' ? "Approved" : "Dismissed"}
+                        User {messageDisplay()}
                         {logMessage}
                     </Typography>
                     <br/>
-                    {props.emails.filter(e => e != undefined).length > 1 ? moreThanOneUserDisplay() : singleUserDisplay()}
+                    {email().length > 1 ? moreThanOneUserDisplay() : singleUserDisplay()}
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
                 </Box>
             </div>
