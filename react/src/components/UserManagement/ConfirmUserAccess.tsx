@@ -23,20 +23,16 @@ interface IProps {
     message: string
     parentRequestPosted: boolean
     setParentRequestPosted: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    apiRequested: boolean
-    setApiRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    receivedUserDetails: boolean
+    setReceivedUserDetails: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     openModel: boolean
     setOpenModel: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export default function ConfirmUserAccess(props: IProps) {
 
-    const email = () => {
-        return props.emails.filter(e => e != undefined)
-    }
-
     const resetRequestPosted = () => {
-        props.setApiRequested(false)
+        props.setReceivedUserDetails(false)
         props.setParentRequestPosted(false)
         props.setOpenModel(false)
     }
@@ -49,7 +45,7 @@ export default function ConfirmUserAccess(props: IProps) {
         return <div>
             The following users have had their request {messageDisplay()}
             <List>
-                {email().map(e =>
+                {props.emails.map(e =>
                     <ListItem>
                         <ListItemText
                             primary={e}
@@ -62,18 +58,18 @@ export default function ConfirmUserAccess(props: IProps) {
 
     const singleUserDisplay = () => {
         return <div>
-            {email()} has had their request {messageDisplay()}
+            {props.emails} has had their request {messageDisplay()}
         </div>
     }
 
     const messageDisplay = () => {
         switch (props.message.toLowerCase()) {
             case "granted" :
-                return "Approved"
+                return "approved"
             case "revert" :
-                return "Reverted"
+                return "reverted"
             default :
-                return "Dismissed"
+                return "dismissed"
         }
     }
 
@@ -82,11 +78,11 @@ export default function ConfirmUserAccess(props: IProps) {
             <div>
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        User {messageDisplay()}
+                        User access request {messageDisplay()}
                         {logMessage}
                     </Typography>
                     <br/>
-                    {email().length > 1 ? moreThanOneUserDisplay() : singleUserDisplay()}
+                    {props.emails.length > 1 ? moreThanOneUserDisplay() : singleUserDisplay()}
                     <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
                 </Box>
             </div>

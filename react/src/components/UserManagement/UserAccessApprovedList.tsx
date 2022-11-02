@@ -26,7 +26,7 @@ export default function UserAccessApprovedList(props: IProps) {
         setRowsData(response.data as GridRowModel[])
     }
 
-    const approvedAccessApi = () => {
+    const requestAccessRequestsWithStatus = () => {
         props.setAccessRequestListRequested(true)
         axios.get(ApiClient.requestAccessEndPoint + '?status=' + props.statusView)
             .then(response => updateAccessRequestData(response))
@@ -39,7 +39,7 @@ export default function UserAccessApprovedList(props: IProps) {
 
     React.useEffect(() => {
         if (!props.accessRequestListRequested) {
-            approvedAccessApi();
+            requestAccessRequestsWithStatus();
         }
     });
 
@@ -74,10 +74,10 @@ export default function UserAccessApprovedList(props: IProps) {
                 (openModal) ?
                     <UserRequestDetails openModal={openModal}
                                         setOpenModal={setOpenModal}
-                                        apiParentRequested={props.accessRequestListRequested}
-                                        setApiParentRequested={props.setAccessRequestListRequested}
+                                        receivedUserDetails={props.accessRequestListRequested}
+                                        setReceivedUserDetails={props.setAccessRequestListRequested}
                                         rowDetails={rowDetails}
-                                        approvedPage={props.statusView}/> :
+                                        status={props.statusView}/> :
                     <span/>
             }
             <Button style={{float: 'right'}}

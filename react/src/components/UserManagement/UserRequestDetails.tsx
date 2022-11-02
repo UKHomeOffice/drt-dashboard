@@ -46,23 +46,23 @@ interface IProps {
     openModal: boolean;
     setOpenModal: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     rowDetails: UserRequestedAccessData | undefined
-    approvedPage: string;
-    apiParentRequested: boolean
-    setApiParentRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    status: string;
+    receivedUserDetails: boolean
+    setReceivedUserDetails: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export default function UserRequestDetails(props: IProps) {
     const [requestPosted, setRequestPosted] = React.useState(false)
     const [user, setUser] = React.useState({} as KeyCloakUser);
-    const [apiRequested, setApiRequested] = React.useState(false);
+    const [receivedUserDetails, setReceivedUserDetails] = React.useState(false);
     const [message, setMessage] = React.useState("");
     const handleClose = () => {
         props.setOpenModal(false)
-        setApiRequested(false)
+        setReceivedUserDetails(false)
     }
 
     const updateState = (keyCloakUser: KeyCloakUser) => {
-        setApiRequested(true)
+        setReceivedUserDetails(true)
         setUser(keyCloakUser)
     }
 
@@ -78,25 +78,24 @@ export default function UserRequestDetails(props: IProps) {
         axios.post(ApiClient.updateUserRequestEndpoint + "/" + "Requested", props.rowDetails)
             .then(response => console.log('reverted user' + response.data))
             .then(() => setRequestPosted(true))
-            .then(() => setApiRequested(false))
+            .then(() => setReceivedUserDetails(false))
     }
 
     React.useEffect(() => {
-        console.log('React.useEffect apiRequestCount ' + apiRequested)
-        if (apiRequested) {
+        console.log('React.useEffect apiRequestCount ' + receivedUserDetails)
+        if (receivedUserDetails) {
             axios.post(ApiClient.addUserToGroupEndpoint + '/' + (user as KeyCloakUser).id, props.rowDetails)
                 .then(response => console.log("User addUserToGroupEndpoint" + response.data))
                 .then(() => setRequestPosted(true))
-                .then(() => setApiRequested(false))
+                .then(() => setReceivedUserDetails(false))
         }
-        if (!props.apiParentRequested) {
+        if (!props.receivedUserDetails) {
             props.setOpenModal(false)
         }
-    }, [user, apiRequested]);
+    }, [user, receivedUserDetails]);
 
-    const approvedPage = () => {
-
-        switch (props.approvedPage) {
+    const accessButton = () => {
+        switch (props.status) {
             case "Approved" :
                 return <span/>
 
@@ -106,7 +105,6 @@ export default function UserRequestDetails(props: IProps) {
             case "" :
                 return <Button style={{float: 'initial'}} onClick={keyCloakUserDetails}>Approve</Button>
         }
-
     }
 
     const viewUserDetailTable = () => {
@@ -183,7 +181,7 @@ export default function UserRequestDetails(props: IProps) {
                         </TableContainer>
                         <Grid container>
                             <Grid xs={8}>
-                                {approvedPage()}
+                                {accessButton()}
                             </Grid>
                             <Grid xs={4}>
                                 <Button style={{float: 'right'}} onClick={handleClose}>Close</Button>
@@ -198,10 +196,10 @@ export default function UserRequestDetails(props: IProps) {
     const viewPage = () => {
         return requestPosted ?
             <ConfirmUserAccess message={message}
-                               parentRequestPosted={props.apiParentRequested}
-                               setParentRequestPosted={props.setApiParentRequested}
-                               apiRequested={requestPosted}
-                               setApiRequested={setRequestPosted}
+                               parentRequestPosted={requestPosted}
+                               setParentRequestPosted={setRequestPosted}
+                               receivedUserDetails={props.receivedUserDetails}
+                               setReceivedUserDetails={props.setReceivedUserDetails}
                                openModel={props.openModal}
                                setOpenModel={props.setOpenModal}
                                emails={[props.rowDetails?.email ?? user.email]}/> : viewUserDetailTable()

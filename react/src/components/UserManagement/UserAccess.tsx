@@ -16,7 +16,7 @@ export default function UserAccess() {
     const [accessRequestListRequested, setAccessRequestListRequested] = React.useState(false);
     const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    const [apiRequested, setApiRequested] = React.useState(false);
+    const [receivedUserDetails, setReceivedUserDetails] = React.useState(false);
     const [openModal, setOpenModal] = React.useState(false)
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
     const [selectedRowDetails, setSelectedRowDetails] = React.useState([] as UserRequestedAccessData[]);
@@ -28,13 +28,12 @@ export default function UserAccess() {
     const [statusFilterValue, setStatusFilterValue] = React.useState("Requested")
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-        console.log("inside handle change....")
-        setApiRequested(false)
+        setReceivedUserDetails(false)
         setStatusFilterValue(newValue);
         setAccessRequestListRequested(false);
     };
 
-    const setUserAccessData = (response: AxiosResponse) => {
+    const handleAccessRequestsResponse = (response: AxiosResponse) => {
         setUserRequestList(response.data as UserRequestedAccessData[])
         setRowsData(response.data as GridRowModel[])
     }
@@ -49,10 +48,10 @@ export default function UserAccess() {
             .then(() => setReceivedUsersResponse(true)))
     }
 
-    const userRequested = () => {
-        setApiRequested(true)
+    const requestAccessRequests = () => {
+        setReceivedUserDetails(true)
         axios.get(ApiClient.requestAccessEndPoint + '?status=Requested')
-            .then(response => setUserAccessData(response))
+            .then(response => handleAccessRequestsResponse(response))
     }
 
     const findAccessRequestByEmail = (requestTime: string | number) => {
@@ -108,14 +107,14 @@ export default function UserAccess() {
     }
 
     React.useEffect(() => {
-        if (!apiRequested) {
-            userRequested();
+        if (!receivedUserDetails) {
+            requestAccessRequests();
         }
         console.log('React.useEffect user details ' + users.length + ' ' + users.map(ud => ud.email))
         if (receivedUsersResponse) {
             users.map(approveUserAccessRequest)
         }
-    }, [users, apiRequested, requestPosted, receivedUsersResponse]);
+    }, [users, receivedUserDetails, requestPosted, receivedUsersResponse]);
 
     const viewSelectAccessRequest = () => {
         return <Box sx={{height: 400, width: '100%'}}>
@@ -137,9 +136,9 @@ export default function UserAccess() {
             {(openModal) ? <UserRequestDetails openModal={openModal}
                                                setOpenModal={setOpenModal}
                                                rowDetails={rowDetails}
-                                               apiParentRequested={apiRequested}
-                                               setApiParentRequested={setApiRequested}
-                                               approvedPage={""}/> : <span/>
+                                               receivedUserDetails={receivedUserDetails}
+                                               setReceivedUserDetails={setReceivedUserDetails}
+                                               status={""}/> : <span/>
             }
 
             <Grid container spacing={2} justifyContent={"center"}>
@@ -165,8 +164,8 @@ export default function UserAccess() {
             <ConfirmUserAccess message={"dismissed"}
                                parentRequestPosted={dismissedPosted}
                                setParentRequestPosted={setDismissedPosted}
-                               apiRequested={apiRequested}
-                               setApiRequested={setApiRequested}
+                               receivedUserDetails={receivedUserDetails}
+                               setReceivedUserDetails={setReceivedUserDetails}
                                openModel={openModal}
                                setOpenModel={setOpenModal}
                                emails={selectedRowDetails.map(srd => srd.email)}/> : viewSelectAccessRequest()
@@ -178,8 +177,8 @@ export default function UserAccess() {
             <ConfirmUserAccess message={"granted"}
                                parentRequestPosted={requestPosted}
                                setParentRequestPosted={setRequestPosted}
-                               apiRequested={apiRequested}
-                               setApiRequested={setApiRequested}
+                               receivedUserDetails={receivedUserDetails}
+                               setReceivedUserDetails={setReceivedUserDetails}
                                openModel={openModal}
                                setOpenModel={setOpenModal}
                                emails={users.map(ud => ud.email)}/> : showDismissedRequest()
