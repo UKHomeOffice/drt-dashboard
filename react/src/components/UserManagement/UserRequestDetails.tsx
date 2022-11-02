@@ -68,7 +68,6 @@ export default function UserRequestDetails(props: IProps) {
 
     const keyCloakUserDetails = () => {
         setMessage("Granted")
-        console.log('keyCloakUserDetails props.rowDetails?.email ' + props.rowDetails?.email)
         axios.get(ApiClient.userDetailsEndpoint + '/' + props.rowDetails?.email)
             .then(response => updateState(response.data as KeyCloakUser))
     }

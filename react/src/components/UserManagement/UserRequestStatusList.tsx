@@ -11,11 +11,11 @@ interface IProps {
     accessRequestListRequested: boolean
     setAccessRequestListRequested: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     statusView: string;
-    showApprovedUserRequest: string;
-    setShowApprovedUserRequest: ((value: (((prevState: string) => string) | string)) => void);
+    showUserRequestByStatus: string;
+    setShowUserRequestByStatus: ((value: (((prevState: string) => string) | string)) => void);
 }
 
-export default function UserAccessApprovedList(props: IProps) {
+export default function UserRequestStatusList(props: IProps) {
     const [userRequestList, setUserRequestList] = React.useState([] as UserRequestedAccessData[]);
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [rowDetails, setRowDetails] = React.useState({} as UserRequestedAccessData | undefined)
@@ -33,8 +33,8 @@ export default function UserAccessApprovedList(props: IProps) {
             .then(() => console.log("User request response"))
     }
 
-    const resetApprovedUserRequest = () => {
-        props.setShowApprovedUserRequest("Requested")
+    const resetUserRequestShowStatus = () => {
+        props.setShowUserRequestByStatus("Requested")
     }
 
     React.useEffect(() => {
@@ -52,7 +52,6 @@ export default function UserAccessApprovedList(props: IProps) {
     const rowClickOpen = (userData: UserRequestedAccessData | undefined) => {
         setRowDetails(userData)
         setOpenModal(true)
-        console.log('rowClickOpen ' + openModal)
     }
 
     return (
@@ -83,7 +82,7 @@ export default function UserAccessApprovedList(props: IProps) {
             <Button style={{float: 'right'}}
                     variant="outlined"
                     color="primary"
-                    onClick={resetApprovedUserRequest}>back</Button>
+                    onClick={resetUserRequestShowStatus}>back</Button>
         </Box>
 
     );

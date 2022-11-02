@@ -5,7 +5,7 @@ import ApiClient from "../../services/ApiClient";
 import axios, {AxiosResponse} from "axios";
 import UserRequestDetails, {UserRequestedAccessData} from "./UserRequestDetails";
 import ConfirmUserAccess from "./ConfirmUserAccess";
-import UserAccessApprovedList from "./UserAccessApprovedList";
+import UserRequestStatusList from "./UserRequestStatusList";
 import {Button} from "@mui/material";
 import Grid from '@mui/material/Grid';
 import Tabs from '@mui/material/Tabs';
@@ -61,18 +61,16 @@ export default function UserAccess() {
     }
 
     const rowClickOpen = (userData: UserRequestedAccessData | undefined) => {
-        console.log('rowClickOpen' + userData + ' ' + openModal)
         setRowDetails(userData)
         setOpenModal(true)
-        console.log('rowClickOpen after' + userData + ' ' + openModal)
     }
 
-    const approveUserDetails = () => {
+    const fetchUsers = () => {
         setUsers([{} as KeyCloakUser]);
 
         const emails: string[] = selectedRowIds
-          .map(s => findAccessRequestByEmail(s)?.email)
-          .filter((s): s is string => !!s);
+            .map(s => findAccessRequestByEmail(s)?.email)
+            .filter((s): s is string => !!s);
 
         getKeyCloakUserDetails(emails)
     }
@@ -86,8 +84,8 @@ export default function UserAccess() {
         setSelectedRowDetails([])
         if (ids) {
             ids.map(id => findAccessRequestByEmail(id))
-              .filter((s): s is UserRequestedAccessData => !!s)
-              .map(s => addSelectedRowDetails(s))
+                .filter((s): s is UserRequestedAccessData => !!s)
+                .map(s => addSelectedRowDetails(s))
         }
         setSelectedRowIds(ids)
     }
@@ -97,7 +95,7 @@ export default function UserAccess() {
     }
 
     const approveUserAccessRequest = (user: KeyCloakUser) => {
-        let email = findRequestByEmail((user as KeyCloakUser).email)
+        const email = findRequestByEmail((user as KeyCloakUser).email)
         if (email) {
             axios.post(ApiClient.addUserToGroupEndpoint + '/' + (user as KeyCloakUser).id, email)
                 .then(response => console.log("User addUserToGroupEndpoint" + response))
@@ -110,11 +108,10 @@ export default function UserAccess() {
         if (!receivedUserDetails) {
             requestAccessRequests();
         }
-        console.log('React.useEffect user details ' + users.length + ' ' + users.map(ud => ud.email))
         if (receivedUsersResponse) {
             users.map(approveUserAccessRequest)
         }
-    }, [users, receivedUserDetails, requestPosted, receivedUsersResponse]);
+    }, [users, receivedUserDetails, receivedUsersResponse]);
 
     const viewSelectAccessRequest = () => {
         return <Box sx={{height: 400, width: '100%'}}>
@@ -143,7 +140,7 @@ export default function UserAccess() {
 
             <Grid container spacing={2} justifyContent={"center"}>
                 <Grid item xs={8} md={2}>
-                    <Button variant="outlined" onClick={approveUserDetails}>Approve</Button>
+                    <Button variant="outlined" onClick={fetchUsers}>Approve</Button>
                 </Grid>
                 <Grid item xs={8} md={2}>
                     <Button variant="outlined" onClick={dismissUserRequest}>Dismiss</Button>
@@ -187,17 +184,17 @@ export default function UserAccess() {
     const accessRequestOrApprovedList = () => {
         switch (statusFilterValue) {
             case "Approved" :
-                return <UserAccessApprovedList accessRequestListRequested={accessRequestListRequested}
-                                               setAccessRequestListRequested={setAccessRequestListRequested}
-                                               statusView={"Approved"}
-                                               showApprovedUserRequest={statusFilterValue}
-                                               setShowApprovedUserRequest={setStatusFilterValue}/>
+                return <UserRequestStatusList accessRequestListRequested={accessRequestListRequested}
+                                              setAccessRequestListRequested={setAccessRequestListRequested}
+                                              statusView={"Approved"}
+                                              showUserRequestByStatus={statusFilterValue}
+                                              setShowUserRequestByStatus={setStatusFilterValue}/>
             case "Dismissed" :
-                return <UserAccessApprovedList accessRequestListRequested={accessRequestListRequested}
-                                               setAccessRequestListRequested={setAccessRequestListRequested}
-                                               statusView={"Dismissed"}
-                                               showApprovedUserRequest={statusFilterValue}
-                                               setShowApprovedUserRequest={setStatusFilterValue}/>
+                return <UserRequestStatusList accessRequestListRequested={accessRequestListRequested}
+                                              setAccessRequestListRequested={setAccessRequestListRequested}
+                                              statusView={"Dismissed"}
+                                              showUserRequestByStatus={statusFilterValue}
+                                              setShowUserRequestByStatus={setStatusFilterValue}/>
             case "Requested" :
                 return showApprovedOrAccessRequest();
         }
