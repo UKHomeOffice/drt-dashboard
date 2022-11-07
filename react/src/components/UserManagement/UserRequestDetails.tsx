@@ -82,7 +82,7 @@ export default function UserRequestDetails(props: IProps) {
 
     React.useEffect(() => {
         console.log('React.useEffect apiRequestCount ' + receivedUserDetails)
-        if (receivedUserDetails) {
+        if (receivedUserDetails && (user as KeyCloakUser).id) {
             axios.post(ApiClient.addUserToGroupEndpoint + '/' + (user as KeyCloakUser).id, props.rowDetails)
                 .then(response => console.log("User addUserToGroupEndpoint" + response.data))
                 .then(() => setRequestPosted(true))
