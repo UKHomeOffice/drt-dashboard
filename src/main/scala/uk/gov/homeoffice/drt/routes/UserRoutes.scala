@@ -9,7 +9,7 @@ import uk.gov.homeoffice.drt.db.UserJsonSupport
 import uk.gov.homeoffice.drt.services.UserService
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object UserRoutes extends JsonSupport with UserJsonSupport {
   def apply(prefix: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = {

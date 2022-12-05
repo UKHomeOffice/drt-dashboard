@@ -57,12 +57,10 @@ export default function UserTracking() {
     const [userRequested, setUserRequested] = React.useState(false);
 
     const handleAccessRequestsResponse = (response: AxiosResponse) => {
-        // setUserRequestList(response.data as UserRequestedAccessData[])
         setRowsData(response.data as GridRowModel[])
     }
 
     const requestAccessRequests = () => {
-        // setReceivedUserDetails(true)
         axios.get(ApiClient.userEndpoint)
             .then(response => handleAccessRequestsResponse(response))
             .then(() => setUserRequested(true))

@@ -3,15 +3,12 @@ package uk.gov.homeoffice.drt.db
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
 import org.slf4j.{ Logger, LoggerFactory }
-import slick.dbio.Effect
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.Tag
 import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError }
 
-import java.sql.{ Date, Timestamp }
-import slick.jdbc.PostgresProfile.api._
-import slick.sql.FixedSqlStreamingAction
-
-import java.time.{ LocalDate, LocalDateTime }
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
 trait UserJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
@@ -70,14 +67,13 @@ object UserDao {
   val userTable = TableQuery[UserTable]
 
   def insertOrUpdate(userData: User) = {
-    log.info(s"userAccessRequest $userData")
     db.run(userTable insertOrUpdate userData)
   }
 
-  def filterInactive()(implicit executionContext: ExecutionContext) = {
+  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext) = {
     db.run(userTable.result)
       .mapTo[Seq[User]]
-      .map(_.filter(u => u.inactive_email_sent.isEmpty && u.latest_login.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(60))))
+      .map(_.filter(u => u.inactive_email_sent.isEmpty && u.latest_login.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(numberOfInactivityDays))))
   }
 
   def filterUserToRevoke()(implicit executionContext: ExecutionContext) = {

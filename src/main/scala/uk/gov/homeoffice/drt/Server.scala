@@ -35,7 +35,10 @@ case class ServerConfig(
   keyclockClientId: String,
   keyclockClientSecret: String,
   keyclockUsername: String,
-  keyclockPassword: String) {
+  keyclockPassword: String,
+  scheduleFrequency: Int,
+  inactivityDays: Int,
+  userTrackingFeatureFlag: Boolean) {
   val portCodes: Iterable[PortCode] = portRegions.flatMap(_.ports)
   val portIataCodes: Iterable[String] = portCodes.map(_.iata)
   val clientConfig: ClientConfig = ClientConfig(portRegions, rootDomain, teamEmail)

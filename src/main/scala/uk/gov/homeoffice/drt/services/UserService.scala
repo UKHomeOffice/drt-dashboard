@@ -9,8 +9,8 @@ object UserService {
     UserDao.selectAll
   }
 
-  def inactiveUserCheck()(implicit ec: ExecutionContext) = {
-    UserDao.filterInactive()
+  def inactiveUserCheck(numberOfInactivityDays: Int)(implicit ec: ExecutionContext) = {
+    UserDao.filterInactive(numberOfInactivityDays)
   }
 
   def getUserToRevoke()(implicit ec: ExecutionContext) = {

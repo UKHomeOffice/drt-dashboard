@@ -8,7 +8,6 @@ import scala.concurrent.Future
 
 trait WithSendAndReceive {
   type SendReceive = HttpRequest => Future[HttpResponse]
-  // sendAndReceive gives us a position where we can mock out interaction
   def sendAndReceive: SendReceive
 }
 

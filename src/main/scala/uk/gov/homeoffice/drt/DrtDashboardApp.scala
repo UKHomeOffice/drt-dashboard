@@ -25,7 +25,10 @@ object DrtDashboardApp extends App {
     keyclockClientId = config.getString("key-cloak.client_id"),
     keyclockClientSecret = config.getString("key-cloak.client_secret"),
     keyclockUsername = config.getString("key-cloak.username"),
-    keyclockPassword = config.getString("key-cloak.password"))
+    keyclockPassword = config.getString("key-cloak.password"),
+    scheduleFrequency = config.getInt("user-tracking.schedule-frequency-minutes"),
+    inactivityDays = config.getInt("user-tracking.inactivity-days"),
+    userTrackingFeatureFlag = config.getBoolean("user-tracking.feature-flag"))
 
   val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig), "DrtDashboard")
   val userTrackingActorSystem: ActorSystem[UserTracking.Command] = ActorSystem(UserTracking(serverConfig, 1.minutes, 100), "UserTrackingTimer")
