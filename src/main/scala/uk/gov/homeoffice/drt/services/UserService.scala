@@ -1,24 +1,24 @@
 package uk.gov.homeoffice.drt.services
 
-import uk.gov.homeoffice.drt.db.{ User, UserDao }
+import uk.gov.homeoffice.drt.db.{ IUserDao, User, UserDao }
 
 import scala.concurrent.ExecutionContext
 
-object UserService {
+class UserService(userDao: IUserDao) {
   def getUser()(implicit ec: ExecutionContext) = {
-    UserDao.selectAll
+    userDao.selectAll
   }
 
   def inactiveUserCheck(numberOfInactivityDays: Int)(implicit ec: ExecutionContext) = {
-    UserDao.filterInactive(numberOfInactivityDays)
+    userDao.filterInactive(numberOfInactivityDays)
   }
 
   def getUserToRevoke()(implicit ec: ExecutionContext) = {
-    UserDao.filterUserToRevoke()
+    userDao.filterUserToRevoke()
   }
 
   def upsertUser(userData: User)(implicit ec: ExecutionContext) = {
-    UserDao.insertOrUpdate(userData)
+    userDao.insertOrUpdate(userData)
   }
 
 }

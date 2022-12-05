@@ -12,11 +12,11 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.util.{ Failure, Success }
 
 object UserRoutes extends JsonSupport with UserJsonSupport {
-  def apply(prefix: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = {
+  def apply(prefix: String, userService: UserService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = {
     pathPrefix(prefix) {
       (get & path("users")) {
         headerValueByName("X-Auth-Roles") { _ =>
-          onComplete(UserService.getUser()) {
+          onComplete(userService.getUser()) {
             case Success(value) =>
               complete(value.toJson)
             case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")

@@ -4,12 +4,12 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
 import org.slf4j.{ Logger, LoggerFactory }
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.Tag
+import slick.lifted.{ TableQuery, Tag }
 import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError }
 
 import java.sql.Timestamp
 import java.time.LocalDateTime
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait UserJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object DateTimeFormat extends JsonFormat[Timestamp] {
@@ -59,30 +59,37 @@ class UserTable(tag: Tag) extends Table[User](tag, "user") {
   def * = (id, username, email, latest_login, inactive_email_sent, revoked_access).mapTo[User]
 }
 
-object UserDao {
+trait IUserDao {
+  def insertOrUpdate(userData: User): Future[Int]
+
+  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
+
+  def filterUserToRevoke()(implicit executionContext: ExecutionContext): Future[Seq[User]]
+
+  def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]]
+
+}
+
+class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  lazy val db = Database.forConfig("postgresDB")
-
-  val userTable = TableQuery[UserTable]
-
-  def insertOrUpdate(userData: User) = {
+  def insertOrUpdate(userData: User): Future[Int] = {
     db.run(userTable insertOrUpdate userData)
   }
 
-  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext) = {
+  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     db.run(userTable.result)
       .mapTo[Seq[User]]
       .map(_.filter(u => u.inactive_email_sent.isEmpty && u.latest_login.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(numberOfInactivityDays))))
   }
 
-  def filterUserToRevoke()(implicit executionContext: ExecutionContext) = {
+  def filterUserToRevoke()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     db.run(userTable.result)
       .mapTo[Seq[User]]
       .map(_.filter(u => u.revoked_access.isEmpty && u.inactive_email_sent.nonEmpty && u.inactive_email_sent.exists(_.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(7)))))
   }
 
-  def selectAll()(implicit executionContext: ExecutionContext) = {
+  def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     db.run(userTable.result).mapTo[Seq[User]]
   }
 
