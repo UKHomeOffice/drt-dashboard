@@ -33,7 +33,7 @@ object UserTracking {
 
   case class KeyCloakToken(token: KeyCloakAuthToken) extends Command
 
-  def apply(serverConfig: ServerConfig, after: FiniteDuration, maxSize: Int): Behavior[Command] = Behaviors.setup { context: ActorContext[Command] =>
+  def apply(serverConfig: ServerConfig, timerInitialDelay: FiniteDuration, maxSize: Int): Behavior[Command] = Behaviors.setup { context: ActorContext[Command] =>
     implicit val ec = context.executionContext
     implicit val actorSystem = context.system.classicSystem
     val notifications: EmailNotifications = EmailNotifications(serverConfig.notifyServiceApiKey, serverConfig.accessRequestEmails)
@@ -43,8 +43,8 @@ object UserTracking {
       serverConfig,
       notifications,
       userService,
-      timers, after,
-      serverConfig.scheduleFrequency,
+      timers, timerInitialDelay,
+      serverConfig.scheduleFrequency.minutes,
       serverConfig.inactivityDays,
       maxSize, context).userBehaviour)
   }
@@ -55,8 +55,8 @@ class UserTracking(
   notifications: EmailNotifications,
   userService: UserService,
   timers: TimerScheduler[UserTracking.Command],
-  after: FiniteDuration,
-  frequency: Int,
+  timerInitialDelay: FiniteDuration,
+  timerInterval: FiniteDuration,
   numberOfInactivityDays: Int,
   maxSize: Int,
   context: ActorContext[Command]) {
@@ -65,8 +65,8 @@ class UserTracking(
   import UserTracking._
 
   logger.info(s"Starting timer scheduler for user tracking")
-  timers.startTimerWithFixedDelay(UserTrackingKey, InactiveUserCheck, frequency.minutes, after)
-  timers.startTimerWithFixedDelay(UserTrackingRevokeKey, RevokeUserCheck, frequency.minutes, after)
+  timers.startTimerWithFixedDelay(UserTrackingKey, InactiveUserCheck, timerInterval, timerInitialDelay)
+  timers.startTimerWithFixedDelay(UserTrackingRevokeKey, RevokeUserCheck, timerInterval, timerInitialDelay)
   val keyCloakAuthTokenService = KeyCloakAuthTokenService.getTokenBehavior(serverConfig.keyClockConfig, serverConfig.keyclockUsername, serverConfig.keyclockPassword)
   val keycloakServiceBehavior: ActorRef[KeyCloakAuthTokenService.Token] = context.spawn(keyCloakAuthTokenService, "keycloakServiceActor")
 
