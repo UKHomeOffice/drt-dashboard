@@ -16,7 +16,7 @@ object UserRoutes extends JsonSupport with UserJsonSupport {
     pathPrefix(prefix) {
       (get & path("users")) {
         headerValueByName("X-Auth-Roles") { _ =>
-          onComplete(userService.getUser()) {
+          onComplete(userService.getUsers()) {
             case Success(value) =>
               complete(value.toJson)
             case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")

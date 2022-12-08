@@ -10,6 +10,6 @@ object AppDatabase {
 
   val userTable = TableQuery[UserTable]
 
-  val userAccessRequests: TableQuery[UserAccessRequestsTable] = TableQuery[UserAccessRequestsTable]
+  val userAccessRequestsTable: TableQuery[UserAccessRequestsTable] = TableQuery[UserAccessRequestsTable]
 
 }

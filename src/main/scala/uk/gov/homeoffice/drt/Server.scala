@@ -64,7 +64,7 @@ object Server {
     val notifications = EmailNotifications(serverConfig.notifyServiceApiKey, serverConfig.accessRequestEmails)
 
     val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
-    val userRequestService = new UserRequestService(new UserAccessRequestDao(AppDatabase.db, AppDatabase.userAccessRequests))
+    val userRequestService = new UserRequestService(new UserAccessRequestDao(AppDatabase.db, AppDatabase.userAccessRequestsTable))
     val userService = new UserService(new UserDao(AppDatabase.db, AppDatabase.userTable))
     val neboRoutes = NeboUploadRoutes(serverConfig.neboPortCodes.toList, new ProdHttpClient).route
     val routes: Route = concat(

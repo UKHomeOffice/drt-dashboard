@@ -61,16 +61,17 @@ export default function UserTracking() {
     }
 
     const requestAccessRequests = () => {
-        axios.get(ApiClient.userEndpoint)
+        setUserRequested(true)
+        axios.get(ApiClient.userListEndpoint)
             .then(response => handleAccessRequestsResponse(response))
-            .then(() => setUserRequested(true))
+
     }
 
     React.useEffect(() => {
         if (!userRequested) {
             requestAccessRequests();
         }
-    });
+    },[userRequested]);
 
 
     return (

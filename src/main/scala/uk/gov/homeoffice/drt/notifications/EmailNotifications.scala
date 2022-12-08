@@ -112,7 +112,7 @@ case class EmailNotifications(apiKey: String, accessRequestEmails: List[String])
     }
   }
 
-  def sendUserEmailNotification(email: String, domain: String, teamEmail: String, templateId: String, reference: String): Try[SendEmailResponse] = {
+  def sendUserInactivityEmailNotification(email: String, domain: String, teamEmail: String, templateId: String, reference: String): Try[SendEmailResponse] = {
     val personalisation: util.Map[String, String] = {
       Map(
         "requesterUsername" -> getFirstName(email),

@@ -31,6 +31,8 @@ object DrtDashboardApp extends App {
     userTrackingFeatureFlag = config.getBoolean("user-tracking.feature-flag"))
 
   val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig), "DrtDashboard")
-  val userTrackingActorSystem: ActorSystem[UserTracking.Command] = ActorSystem(UserTracking(serverConfig, 1.minutes, 100), "UserTrackingTimer")
+  if (serverConfig.userTrackingFeatureFlag) {
+    ActorSystem(UserTracking(serverConfig, 1.minutes, 100), "UserTrackingTimer")
+  }
 
 }

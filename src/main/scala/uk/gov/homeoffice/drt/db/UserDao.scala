@@ -62,9 +62,9 @@ class UserTable(tag: Tag) extends Table[User](tag, "user") {
 trait IUserDao {
   def insertOrUpdate(userData: User): Future[Int]
 
-  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
+  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
-  def filterUserToRevoke()(implicit executionContext: ExecutionContext): Future[Seq[User]]
+  def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
@@ -77,16 +77,16 @@ class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
     db.run(userTable insertOrUpdate userData)
   }
 
-  def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     db.run(userTable.result)
       .mapTo[Seq[User]]
       .map(_.filter(u => u.inactive_email_sent.isEmpty && u.latest_login.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(numberOfInactivityDays))))
   }
 
-  def filterUserToRevoke()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+  def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     db.run(userTable.result)
       .mapTo[Seq[User]]
-      .map(_.filter(u => u.revoked_access.isEmpty && u.inactive_email_sent.nonEmpty && u.inactive_email_sent.exists(_.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(7)))))
+      .map(_.filter(u => u.revoked_access.isEmpty && u.inactive_email_sent.exists(_.toLocalDateTime.isBefore(LocalDateTime.now().minusDays(7)))))
   }
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {

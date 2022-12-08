@@ -10,9 +10,9 @@ class MockUserDao() extends IUserDao {
     Future.successful(1)
   }
 
-  override def filterInactive(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = Future.successful(userList)
+  override def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = Future.successful(userList)
 
-  override def filterUserToRevoke()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+  override def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     Future.successful(userList)
   }
 

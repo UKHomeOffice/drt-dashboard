@@ -40,12 +40,14 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     "data",
     userService)
 
-  "Given the users access the drt" >> {
-    Get("/data/users") ~>
-      RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
-      RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
-        responseAs[String] shouldEqual
-          """[{"email":"test1@test.com","id":"poise/test1","latest_login":"2022-12-05 10:15:30.0","username":"poise/test1"},{"email":"test2@test.com","id":"poise/test2","latest_login":"2022-12-05 10:15:30.0","username":"poise/test2"}]""".stripMargin
-      }
+  "Request data for users should" >> {
+    "Give list of users accessing drt" >> {
+      Get("/data/users") ~>
+        RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
+        RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
+          responseAs[String] shouldEqual
+            """[{"email":"test1@test.com","id":"poise/test1","latest_login":"2022-12-05 10:15:30.0","username":"poise/test1"},{"email":"test2@test.com","id":"poise/test2","latest_login":"2022-12-05 10:15:30.0","username":"poise/test2"}]""".stripMargin
+        }
+    }
   }
 }
