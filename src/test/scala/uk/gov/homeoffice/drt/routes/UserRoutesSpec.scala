@@ -37,12 +37,12 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     None))
 
   val routes: Route = UserRoutes(
-    "data",
+    "user",
     userService)
 
-  "Request data for users should" >> {
-    "Give list of users accessing drt" >> {
-      Get("/data/users") ~>
+  "Request data for user should" >> {
+    "Give list of all users accessing drt" >> {
+      Get("/user/all") ~>
         RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
         RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
           responseAs[String] shouldEqual

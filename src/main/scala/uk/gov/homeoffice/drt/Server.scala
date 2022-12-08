@@ -77,7 +77,7 @@ object Server {
       DrtRoutes("drt", serverConfig.portIataCodes),
       ApiRoutes("api", serverConfig.clientConfig, notifications, userRequestService, neboRoutes),
       ExportRoutes(new ProdHttpClient),
-      UserRoutes("data", userService))
+      UserRoutes("user", userService))
     val serverBinding: Future[Http.ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
 
     ctx.pipeToSelf(serverBinding) {

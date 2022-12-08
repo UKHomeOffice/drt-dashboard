@@ -9,15 +9,15 @@ import akka.http.scaladsl.server.{ Directive0, Route }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import org.slf4j.{ Logger, LoggerFactory }
 import spray.json._
+import uk.gov.homeoffice.drt._
 import uk.gov.homeoffice.drt.alerts.{ Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport }
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles._
-import uk.gov.homeoffice.drt.authentication.{ AccessRequest, AccessRequestJsonSupport, ClientUserAccessDataJsonSupport, ClientUserRequestedAccessData, KeyCloakUser, KeyCloakUserJsonSupport, User, UserJsonSupport }
+import uk.gov.homeoffice.drt.authentication._
+import uk.gov.homeoffice.drt.db.UserAccessRequestJsonSupport
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.redlist.{ RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate }
-import uk.gov.homeoffice.drt._
-import uk.gov.homeoffice.drt.db.{ AppDatabase, UserAccessRequestDao, UserAccessRequestJsonSupport }
 import uk.gov.homeoffice.drt.services.UserRequestService
 
 import scala.compat.java8.OptionConverters._

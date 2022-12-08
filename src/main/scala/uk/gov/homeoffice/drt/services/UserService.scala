@@ -1,8 +1,8 @@
 package uk.gov.homeoffice.drt.services
 
-import uk.gov.homeoffice.drt.db.{IUserDao, User}
+import uk.gov.homeoffice.drt.db.{ IUserDao, User }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class UserService(userDao: IUserDao) {
   def getUsers()(implicit ec: ExecutionContext): Future[Seq[User]] = {

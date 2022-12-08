@@ -14,7 +14,7 @@ import scala.util.{ Failure, Success }
 object UserRoutes extends JsonSupport with UserJsonSupport {
   def apply(prefix: String, userService: UserService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = {
     pathPrefix(prefix) {
-      (get & path("users")) {
+      (get & path("all")) {
         headerValueByName("X-Auth-Roles") { _ =>
           onComplete(userService.getUsers()) {
             case Success(value) =>
