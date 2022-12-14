@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt
 
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.{ ActorContext, Behaviors }
 import akka.actor.typed.{ ActorSystem, Behavior, PostStop }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Route
 import uk.gov.homeoffice.drt.db.{ AppDatabase, UserAccessRequestDao, UserDao }
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
-import uk.gov.homeoffice.drt.routes.{ ApiRoutes, CiriumRoutes, DrtRoutes, ExportRoutes, IndexRoute, NeboUploadRoutes, UserRoutes }
+import uk.gov.homeoffice.drt.routes._
 import uk.gov.homeoffice.drt.services.{ UserRequestService, UserService }
 
 import scala.concurrent.{ ExecutionContextExecutor, Future }
@@ -57,7 +57,7 @@ object Server {
 
   case object Stop extends Message
 
-  def apply(serverConfig: ServerConfig): Behavior[Message] = Behaviors.setup { ctx =>
+  def apply(serverConfig: ServerConfig): Behavior[Message] = Behaviors.setup { ctx: ActorContext[Message] =>
     implicit val system: ActorSystem[Nothing] = ctx.system
     implicit val ec: ExecutionContextExecutor = system.executionContext
 
@@ -75,9 +75,10 @@ object Server {
         staticResourceDirectory = getFromResourceDirectory("frontend/static")).route,
       CiriumRoutes("cirium", serverConfig.ciriumDataUri),
       DrtRoutes("drt", serverConfig.portIataCodes),
-      ApiRoutes("api", serverConfig.clientConfig, notifications, userRequestService, neboRoutes),
+      ApiRoutes("api", serverConfig.clientConfig, neboRoutes),
       ExportRoutes(new ProdHttpClient),
-      UserRoutes("user", userService))
+      UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keyclockUrl))
+
     val serverBinding: Future[Http.ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
 
     ctx.pipeToSelf(serverBinding) {
