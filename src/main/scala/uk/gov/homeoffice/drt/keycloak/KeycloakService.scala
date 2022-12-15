@@ -6,18 +6,25 @@ import uk.gov.homeoffice.drt.authentication.KeyCloakUser
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class KeycloakService(keycloakClient: KeycloakClient) {
+trait IKeycloakService {
+  def getUsersForEmail(email: String): Future[Option[KeyCloakUser]]
+  def removeUser(userId: String): Future[HttpResponse]
+  def addUserToGroup(userId: String, group: String)(implicit ec: ExecutionContext): Future[HttpResponse]
+  def logout(username: String)(implicit ec: ExecutionContext): Future[Option[Future[HttpResponse]]]
+}
+
+class KeycloakService(keycloakClient: KeycloakClient) extends IKeycloakService {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
   def getUsersForEmail(email: String): Future[Option[KeyCloakUser]] = {
     keycloakClient.getUsersForEmail(email)
   }
 
-  def removeUser(userId: String) = {
+  def removeUser(userId: String): Future[HttpResponse] = {
     keycloakClient.removeUser(userId)
   }
 
-  def addUserToGroup(userId: String, group: String)(implicit ec: ExecutionContext) = {
+  def addUserToGroup(userId: String, group: String)(implicit ec: ExecutionContext): Future[HttpResponse] = {
     val keyCloakGroup = keycloakClient.getGroups.map(a => a.find(_.name == group))
 
     keyCloakGroup.flatMap {
@@ -38,7 +45,7 @@ class KeycloakService(keycloakClient: KeycloakClient) {
     }
   }
 
-  def logout(username: String)(implicit ec: ExecutionContext) = {
+  def logout(username: String)(implicit ec: ExecutionContext): Future[Option[Future[HttpResponse]]] = {
     keycloakClient.getUsersForUsername(username)
       .map(u =>
         u.map { ud =>

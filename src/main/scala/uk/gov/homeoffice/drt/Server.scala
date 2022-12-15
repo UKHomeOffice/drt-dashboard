@@ -11,6 +11,7 @@ import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
 import uk.gov.homeoffice.drt.routes._
 import uk.gov.homeoffice.drt.services.{ UserRequestService, UserService }
+import uk.gov.service.notify.NotificationClient
 
 import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.util.{ Failure, Success }
@@ -60,13 +61,14 @@ object Server {
   def apply(serverConfig: ServerConfig): Behavior[Message] = Behaviors.setup { ctx: ActorContext[Message] =>
     implicit val system: ActorSystem[Nothing] = ctx.system
     implicit val ec: ExecutionContextExecutor = system.executionContext
-
-    val notifications = EmailNotifications(serverConfig.notifyServiceApiKey, serverConfig.accessRequestEmails)
+    val notificationClient: NotificationClient = new NotificationClient(serverConfig.notifyServiceApiKey)
+    val notifications = EmailNotifications(serverConfig.accessRequestEmails, notificationClient)
 
     val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
     val userRequestService = new UserRequestService(new UserAccessRequestDao(AppDatabase.db, AppDatabase.userAccessRequestsTable))
     val userService = new UserService(new UserDao(AppDatabase.db, AppDatabase.userTable))
     val neboRoutes = NeboUploadRoutes(serverConfig.neboPortCodes.toList, new ProdHttpClient).route
+
     val routes: Route = concat(
       IndexRoute(
         urls,

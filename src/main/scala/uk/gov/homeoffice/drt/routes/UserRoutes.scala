@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import org.joda.time.DateTime
 import org.slf4j.{ Logger, LoggerFactory }
 import spray.json.enrichAny
 import uk.gov.homeoffice.drt.auth.Roles.ManageUsers
@@ -17,6 +18,7 @@ import uk.gov.homeoffice.drt.routes.ApiRoutes.{ authByRole, clientUserAccessData
 import uk.gov.homeoffice.drt.services.{ UserRequestService, UserService }
 import uk.gov.homeoffice.drt.{ ClientConfig, JsonSupport }
 
+import java.sql.Timestamp
 import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.util.{ Failure, Success }
 
@@ -45,7 +47,7 @@ object UserRoutes extends JsonSupport
         (post & path("access-request")) {
           headerValueByName("X-Auth-Email") { userEmail =>
             entity(as[AccessRequest]) { accessRequest =>
-              userRequestService.saveUserRequest(userEmail, accessRequest)
+              userRequestService.saveUserRequest(userEmail, accessRequest, new Timestamp(DateTime.now().getMillis))
               val failures = notifications.sendRequest(userEmail, accessRequest).foldLeft(List[(String, Throwable)]()) {
                 case (exceptions, (_, Success(_))) => exceptions
                 case (exceptions, (requestAddress, Failure(newException))) => (requestAddress, newException) :: exceptions
@@ -82,8 +84,8 @@ object UserRoutes extends JsonSupport
         },
         (get & path("user-details" / Segment)) { userEmail =>
           authByRole(ManageUsers) {
-            headerValueByName("X-Auth-Roles") { rolesStr =>
-              headerValueByName("X-Auth-Email") { email =>
+            headerValueByName("X-Auth-Roles") { _ =>
+              headerValueByName("X-Auth-Email") { _ =>
                 headerValueByName("X-Auth-Token") { xAuthToken =>
                   log.info(s"request to get user details $keyClockUrl/data/userDetails/$userEmail}")
                   val keycloakService = getKeyCloakService(xAuthToken)

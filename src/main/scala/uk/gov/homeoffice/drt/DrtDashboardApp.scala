@@ -2,8 +2,10 @@ package uk.gov.homeoffice.drt
 
 import akka.actor.typed.ActorSystem
 import com.typesafe.config.ConfigFactory
+import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
 import uk.gov.homeoffice.drt.schedule.UserTracking
+import uk.gov.service.notify.NotificationClient
 import scala.concurrent.duration.DurationInt
 
 object DrtDashboardApp extends App {
@@ -32,7 +34,7 @@ object DrtDashboardApp extends App {
 
   val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig), "DrtDashboard")
   if (serverConfig.userTrackingFeatureFlag) {
-    ActorSystem(UserTracking(serverConfig, 1.minutes, 100), "UserTrackingTimer")
+    ActorSystem(UserTracking(serverConfig, 1.minutes, 100, EmailNotifications(serverConfig.accessRequestEmails, new NotificationClient(serverConfig.notifyServiceApiKey))), "UserTrackingTimer")
   }
 
 }

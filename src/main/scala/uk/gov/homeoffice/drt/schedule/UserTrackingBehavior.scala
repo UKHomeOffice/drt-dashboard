@@ -13,9 +13,11 @@ import uk.gov.homeoffice.drt.services.UserService
 import java.sql.Timestamp
 import java.util.Date
 import scala.concurrent.ExecutionContext
+
 sealed trait Command
 
 import scala.concurrent.duration.{ DurationInt, FiniteDuration }
+
 object UserTracking {
   private case object UserTrackingKey extends Command
 
@@ -27,9 +29,8 @@ object UserTracking {
 
   case class KeyCloakToken(token: KeyCloakAuthToken) extends Command
 
-  def apply(serverConfig: ServerConfig, timerInitialDelay: FiniteDuration, maxSize: Int): Behavior[Command] = Behaviors.setup { context: ActorContext[Command] =>
+  def apply(serverConfig: ServerConfig, timerInitialDelay: FiniteDuration, maxSize: Int, notifications: EmailNotifications): Behavior[Command] = Behaviors.setup { context: ActorContext[Command] =>
     implicit val ec = context.executionContext
-    val notifications: EmailNotifications = EmailNotifications(serverConfig.notifyServiceApiKey, serverConfig.accessRequestEmails)
     val userService: UserService = new UserService(new UserDao(AppDatabase.db, AppDatabase.userTable))
 
     Behaviors.withTimers(timers => new UserTracking(
