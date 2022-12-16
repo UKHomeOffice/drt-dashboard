@@ -1,12 +1,12 @@
 package uk.gov.homeoffice.drt.schedule
 
-import akka.actor.typed.scaladsl.{ ActorContext, Behaviors, TimerScheduler }
-import akka.actor.typed.{ ActorRef, Behavior }
-import org.slf4j.{ Logger, LoggerFactory }
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.homeoffice.drt.ServerConfig
-import uk.gov.homeoffice.drt.db.{ AppDatabase, UserDao }
+import uk.gov.homeoffice.drt.db.{AppDatabase, UserDao}
 import uk.gov.homeoffice.drt.keycloak.KeyCloakAuthTokenService.GetToken
-import uk.gov.homeoffice.drt.keycloak.{ KeyCloakAuthToken, KeyCloakAuthTokenService, KeycloakService }
+import uk.gov.homeoffice.drt.keycloak.{KeyCloakAuthToken, KeyCloakAuthTokenService, KeycloakService}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.services.UserService
 
@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
 
 sealed trait Command
 
-import scala.concurrent.duration.{ DurationInt, FiniteDuration }
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 object UserTracking {
   private case object UserTrackingKey extends Command
@@ -44,16 +44,15 @@ object UserTracking {
   }
 }
 
-class UserTracking(
-  serverConfig: ServerConfig,
-  notifications: EmailNotifications,
-  userService: UserService,
-  timers: TimerScheduler[Command],
-  timerInitialDelay: FiniteDuration,
-  timerInterval: FiniteDuration,
-  numberOfInactivityDays: Int,
-  maxSize: Int,
-  context: ActorContext[Command]) {
+class UserTracking(serverConfig: ServerConfig,
+                   notifications: EmailNotifications,
+                   userService: UserService,
+                   timers: TimerScheduler[Command],
+                   timerInitialDelay: FiniteDuration,
+                   timerInterval: FiniteDuration,
+                   numberOfInactivityDays: Int,
+                   maxSize: Int,
+                   context: ActorContext[Command]) {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import UserTracking._
@@ -87,10 +86,10 @@ class UserTracking(
         Behaviors.same
 
       case KeyCloakToken(token: KeyCloakAuthToken) =>
-        implicit val actorSystem = context.system
+        implicit val actorSystem: ActorSystem[Nothing] = context.system
         val usersToRevoke = userService.getUsersToRevoke().map(_.take(maxSize))
         val keyClockClient = KeyCloakAuthTokenService.getKeyClockClient(serverConfig.keyClockConfig.url, token)
-        val keycloakService = new KeycloakService(keyClockClient)
+        val keycloakService = KeycloakService(keyClockClient)
         usersToRevoke.map { utrOption =>
           utrOption.map { utr =>
             keycloakService.getUsersForEmail(utr.email).map { ud =>

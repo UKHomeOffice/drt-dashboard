@@ -32,9 +32,10 @@ object DrtDashboardApp extends App {
     inactivityDays = config.getInt("user-tracking.inactivity-days"),
     userTrackingFeatureFlag = config.getBoolean("user-tracking.feature-flag"))
 
-  val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig), "DrtDashboard")
+  val emailNotifications = EmailNotifications(serverConfig.accessRequestEmails, new NotificationClient(serverConfig.notifyServiceApiKey))
+  val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig, emailNotifications), "DrtDashboard")
   if (serverConfig.userTrackingFeatureFlag) {
-    ActorSystem(UserTracking(serverConfig, 1.minutes, 100, EmailNotifications(serverConfig.accessRequestEmails, new NotificationClient(serverConfig.notifyServiceApiKey))), "UserTrackingTimer")
+    ActorSystem(UserTracking(serverConfig, 1.minutes, 100, emailNotifications), "UserTrackingTimer")
   }
 
 }

@@ -13,16 +13,12 @@ trait DateTimeJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     override def read(json: JsValue): Timestamp = json match {
       case JsString(rawDate) => {
         try {
-          DateTime.parse(rawDate)
+          DateTime.parse(rawDate).asInstanceOf[Timestamp]
         } catch {
-          case iae: IllegalArgumentException => deserializationError("Invalid date format")
-          case _: Exception => None
+          case _: IllegalArgumentException => deserializationError("Invalid date format")
+          case _: Exception => deserializationError(s"Couldn't parse date time, got $rawDate")
         }
-      } match {
-        case dateTime: Timestamp => dateTime
-        case None => deserializationError(s"Couldn't parse date time, got $rawDate")
       }
-
     }
   }
 }

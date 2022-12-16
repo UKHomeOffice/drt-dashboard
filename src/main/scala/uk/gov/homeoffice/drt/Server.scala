@@ -1,47 +1,47 @@
 package uk.gov.homeoffice.drt
 
-import akka.actor.typed.scaladsl.{ ActorContext, Behaviors }
-import akka.actor.typed.{ ActorSystem, Behavior, PostStop }
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import akka.actor.typed.{ActorSystem, Behavior, PostStop}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.server.Directives.{ concat, getFromResource, getFromResourceDirectory }
+import akka.http.scaladsl.server.Directives.{concat, getFromResource, getFromResourceDirectory}
 import akka.http.scaladsl.server.Route
-import uk.gov.homeoffice.drt.db.{ AppDatabase, UserAccessRequestDao, UserDao }
+import uk.gov.homeoffice.drt.db.{AppDatabase, UserAccessRequestDao, UserDao}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
-import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
+import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
 import uk.gov.homeoffice.drt.routes._
-import uk.gov.homeoffice.drt.services.{ UserRequestService, UserService }
+import uk.gov.homeoffice.drt.services.{UserRequestService, UserService}
 import uk.gov.service.notify.NotificationClient
 
-import scala.concurrent.{ ExecutionContextExecutor, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.util.{Failure, Success}
 
 case class KeyClockConfig(
-  url: String,
-  tokenUrl: String,
-  clientId: String,
-  clientSecret: String)
+                           url: String,
+                           tokenUrl: String,
+                           clientId: String,
+                           clientSecret: String)
 
 case class ServerConfig(
-  host: String,
-  port: Int,
-  teamEmail: String,
-  portRegions: Iterable[PortRegion],
-  ciriumDataUri: String,
-  rootDomain: String,
-  useHttps: Boolean,
-  notifyServiceApiKey: String,
-  accessRequestEmails: List[String],
-  neboPortCodes: Array[String],
-  keyclockUrl: String,
-  keyclockTokenUrl: String,
-  keyclockClientId: String,
-  keyclockClientSecret: String,
-  keyclockUsername: String,
-  keyclockPassword: String,
-  scheduleFrequency: Int,
-  inactivityDays: Int,
-  userTrackingFeatureFlag: Boolean) {
+                         host: String,
+                         port: Int,
+                         teamEmail: String,
+                         portRegions: Iterable[PortRegion],
+                         ciriumDataUri: String,
+                         rootDomain: String,
+                         useHttps: Boolean,
+                         notifyServiceApiKey: String,
+                         accessRequestEmails: List[String],
+                         neboPortCodes: Array[String],
+                         keyclockUrl: String,
+                         keyclockTokenUrl: String,
+                         keyclockClientId: String,
+                         keyclockClientSecret: String,
+                         keyclockUsername: String,
+                         keyclockPassword: String,
+                         scheduleFrequency: Int,
+                         inactivityDays: Int,
+                         userTrackingFeatureFlag: Boolean) {
   val portCodes: Iterable[PortCode] = portRegions.flatMap(_.ports)
   val portIataCodes: Iterable[String] = portCodes.map(_.iata)
   val clientConfig: ClientConfig = ClientConfig(portRegions, rootDomain, teamEmail)
@@ -58,12 +58,9 @@ object Server {
 
   case object Stop extends Message
 
-  def apply(serverConfig: ServerConfig): Behavior[Message] = Behaviors.setup { ctx: ActorContext[Message] =>
+  def apply(serverConfig: ServerConfig, notifications: EmailNotifications): Behavior[Message] = Behaviors.setup { ctx: ActorContext[Message] =>
     implicit val system: ActorSystem[Nothing] = ctx.system
     implicit val ec: ExecutionContextExecutor = system.executionContext
-    val notificationClient: NotificationClient = new NotificationClient(serverConfig.notifyServiceApiKey)
-    val notifications = EmailNotifications(serverConfig.accessRequestEmails, notificationClient)
-
     val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
     val userRequestService = new UserRequestService(new UserAccessRequestDao(AppDatabase.db, AppDatabase.userAccessRequestsTable))
     val userService = new UserService(new UserDao(AppDatabase.db, AppDatabase.userTable))

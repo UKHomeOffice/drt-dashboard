@@ -12,10 +12,10 @@ export default class ApiClient implements IApiClient {
   public static alertsEndPoint = "/api/alerts";
   public static neboFileUpload = "/api/nebo-upload";
   public static redListUpdates = "/api/red-list-updates";
-  public static requestAccessEndPoint = "/user/access-request";
   public static userDetailsEndpoint = "/user/user-details";
-  public static addUserToGroupEndpoint = "/user/accept-user-request";
-  public static updateUserRequestEndpoint = "/user/update-user-request";
+  public static requestAccessEndPoint = "/user/access-request";
+  public static addUserToGroupEndpoint = "/user/accept-access-request";
+  public static updateUserRequestEndpoint = "/user/update-access-request";
   public static userListEndpoint = "/user/all";
 
 

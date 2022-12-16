@@ -1,19 +1,24 @@
 package uk.gov.homeoffice.drt.keycloak
 
 import akka.http.scaladsl.model.HttpResponse
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.homeoffice.drt.authentication.KeyCloakUser
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 trait IKeycloakService {
+  implicit val ec: ExecutionContext
+
   def getUsersForEmail(email: String): Future[Option[KeyCloakUser]]
+
   def removeUser(userId: String): Future[HttpResponse]
-  def addUserToGroup(userId: String, group: String)(implicit ec: ExecutionContext): Future[HttpResponse]
-  def logout(username: String)(implicit ec: ExecutionContext): Future[Option[Future[HttpResponse]]]
+
+  def addUserToGroup(userId: String, group: String): Future[HttpResponse]
+
+  def logout(username: String): Future[Option[Future[HttpResponse]]]
 }
 
-class KeycloakService(keycloakClient: KeycloakClient) extends IKeycloakService {
+case class KeycloakService(keycloakClient: KeycloakClient)(implicit val ec: ExecutionContext) extends IKeycloakService {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
   def getUsersForEmail(email: String): Future[Option[KeyCloakUser]] = {
@@ -24,7 +29,7 @@ class KeycloakService(keycloakClient: KeycloakClient) extends IKeycloakService {
     keycloakClient.removeUser(userId)
   }
 
-  def addUserToGroup(userId: String, group: String)(implicit ec: ExecutionContext): Future[HttpResponse] = {
+  def addUserToGroup(userId: String, group: String): Future[HttpResponse] = {
     val keyCloakGroup = keycloakClient.getGroups.map(a => a.find(_.name == group))
 
     keyCloakGroup.flatMap {
@@ -45,7 +50,7 @@ class KeycloakService(keycloakClient: KeycloakClient) extends IKeycloakService {
     }
   }
 
-  def logout(username: String)(implicit ec: ExecutionContext): Future[Option[Future[HttpResponse]]] = {
+  def logout(username: String): Future[Option[Future[HttpResponse]]] = {
     keycloakClient.getUsersForUsername(username)
       .map(u =>
         u.map { ud =>
