@@ -65,8 +65,6 @@ steps:
     when:
       event:
         - push
-    depends_on:
-      - Copy front end to resources
 
   - name: sonar-scanner
     pull: if-not-exists
