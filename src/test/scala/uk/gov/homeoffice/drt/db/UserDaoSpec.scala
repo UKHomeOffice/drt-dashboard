@@ -1,14 +1,15 @@
 package uk.gov.homeoffice.drt.db
 
 import org.specs2.mutable.Specification
-import org.specs2.specification.{ AfterEach, BeforeEach }
-import slick.lifted.TableQuery
+import org.specs2.specification.{AfterEach, BeforeEach}
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.TableQuery
+
 import java.sql.Timestamp
 import java.time.Instant
-import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext}
 
 class UserDaoSpec extends Specification with AfterEach with BeforeEach {
   sequential
