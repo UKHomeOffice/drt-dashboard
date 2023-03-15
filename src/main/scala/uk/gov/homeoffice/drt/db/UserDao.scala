@@ -54,11 +54,11 @@ trait IUserDao {
 class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def inactiveUserIndex(numberOfInactivityDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
+  def noActivitySinceDays(numberOfInactivityDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
     user.inactive_email_sent.isEmpty &&
       user.latest_login < new Timestamp(Instant.now().minusSeconds(numberOfInactivityDays * 60 * 60 * 24).toEpochMilli)
 
-  def revokeUserIndex: UserTable => Rep[Boolean] = (user: UserTable) =>
+  def accessShouldBeRevoked: UserTable => Rep[Boolean] = (user: UserTable) =>
     user.revoked_access.isEmpty &&
       user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds(7 * 60 * 60 * 24).toEpochMilli))
         .getOrElse(false)
@@ -68,13 +68,13 @@ class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
   }
 
   def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
-    val inactiveIdx: UserTable => PostgresProfile.api.Rep[Boolean] = inactiveUserIndex(numberOfInactivityDays)
+    val inactiveIdx: UserTable => PostgresProfile.api.Rep[Boolean] = noActivitySinceDays(numberOfInactivityDays)
     db.run(userTable.filter(inactiveIdx).result)
       .mapTo[Seq[User]]
   }
 
   def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
-    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = revokeUserIndex
+    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked
     db.run(userTable.filter(revokeIdx).result)
       .mapTo[Seq[User]]
   }
