@@ -13,8 +13,8 @@ class UserService(userDao: IUserDao) {
     userDao.selectInactiveUsers(numberOfInactivityDays)
   }
 
-  def getUsersToRevoke()(implicit ec: ExecutionContext): Future[Seq[User]] = {
-    userDao.selectUsersToRevokeAccess()
+  def getUsersToRevoke(numberOfInactivityDays: Int)(implicit ec: ExecutionContext): Future[Seq[User]] = {
+    userDao.selectUsersToRevokeAccess(numberOfInactivityDays)
   }
 
   def upsertUser(userData: User)(implicit ec: ExecutionContext): Future[Int] = {

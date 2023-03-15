@@ -15,12 +15,12 @@ trait UserJsonSupport extends DateTimeJsonSupport {
 }
 
 case class User(
-  id: String,
-  username: String,
-  email: String,
-  latest_login: java.sql.Timestamp,
-  inactive_email_sent: Option[java.sql.Timestamp],
-  revoked_access: Option[java.sql.Timestamp])
+                 id: String,
+                 username: String,
+                 email: String,
+                 latest_login: java.sql.Timestamp,
+                 inactive_email_sent: Option[java.sql.Timestamp],
+                 revoked_access: Option[java.sql.Timestamp])
 
 class UserTable(tag: Tag, tableName: String = "user") extends Table[User](tag, tableName) {
 
@@ -45,7 +45,7 @@ trait IUserDao {
 
   def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
-  def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]]
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
@@ -53,15 +53,16 @@ trait IUserDao {
 
 class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
   val log: Logger = LoggerFactory.getLogger(getClass)
+  val secondsInADay = 60 * 60 * 24
 
   def noActivitySinceDays(numberOfInactivityDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
     user.inactive_email_sent.isEmpty &&
-      user.latest_login < new Timestamp(Instant.now().minusSeconds(numberOfInactivityDays * 60 * 60 * 24).toEpochMilli)
+      user.latest_login < new Timestamp(Instant.now().minusSeconds(numberOfInactivityDays * secondsInADay).toEpochMilli)
 
-  def accessShouldBeRevoked: UserTable => Rep[Boolean] = (user: UserTable) =>
+  def accessShouldBeRevoked(numberOfInactivityDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
     user.revoked_access.isEmpty &&
-      user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds(7 * 60 * 60 * 24).toEpochMilli))
-        .getOrElse(false)
+      user.latest_login < new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays + 7) * secondsInADay).toEpochMilli) &&
+      user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds((7) * secondsInADay).toEpochMilli)).getOrElse(false)
 
   def insertOrUpdate(userData: User): Future[Int] = {
     db.run(userTable insertOrUpdate userData)
@@ -73,8 +74,8 @@ class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
       .mapTo[Seq[User]]
   }
 
-  def selectUsersToRevokeAccess()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
-    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked(numberOfInactivityDays)
     db.run(userTable.filter(revokeIdx).result)
       .mapTo[Seq[User]]
   }

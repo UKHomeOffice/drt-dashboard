@@ -100,7 +100,7 @@ class UserTracking(
       case PerformAccountRevocations(token: KeyCloakAuthToken) =>
         context.log.info("KeyCloakToken-RevokeAccess")
         implicit val actorSystem: ActorSystem[Nothing] = context.system
-        val usersToRevoke = userService.getUsersToRevoke().map(_.take(maxSize))
+        val usersToRevoke = userService.getUsersToRevoke(numberOfInactivityDays).map(_.take(maxSize))
         val keyClockClient = KeyCloakAuthTokenService.getKeyClockClient(serverConfig.keyClockConfig.url, token)
         val keycloakService = KeycloakService(keyClockClient)
         usersToRevoke.map { utrOption =>
