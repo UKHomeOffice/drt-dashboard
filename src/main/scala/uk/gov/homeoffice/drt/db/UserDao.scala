@@ -1,4 +1,3 @@
-
 package uk.gov.homeoffice.drt.db
 
 import org.slf4j.{Logger, LoggerFactory}
@@ -16,13 +15,12 @@ trait UserJsonSupport extends DateTimeJsonSupport {
 }
 
 case class User(
-                 id: String,
-                 username: String,
-                 email: String,
-                 latest_login: java.sql.Timestamp,
-                 inactive_email_sent: Option[java.sql.Timestamp],
-                 revoked_access: Option[java.sql.Timestamp])
-
+  id: String,
+  username: String,
+  email: String,
+  latest_login: java.sql.Timestamp,
+  inactive_email_sent: Option[java.sql.Timestamp],
+  revoked_access: Option[java.sql.Timestamp])
 
 class UserTable(tag: Tag, tableName: String = "user") extends Table[User](tag, tableName) {
 
