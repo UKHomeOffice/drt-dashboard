@@ -14,6 +14,7 @@ class UserDaoSpec extends Specification with AfterEach with BeforeEach {
   sequential
 
   private val numberOfInactivityDays = 60
+  private val deactivateAfterWarningDays = 7
   val secondsInADay: Int = 24 * 60 * 60
   var appDatabaseTest: AppTestDatabase = null
   var userTable: TableQuery[UserTable] = null
@@ -100,7 +101,7 @@ class UserDaoSpec extends Specification with AfterEach with BeforeEach {
     userDao.insertOrUpdate(userInactiveMoreThan67days)
     Await.result(userDao.insertOrUpdate(userWithNoEmail), 1.seconds)
 
-    val usersToRevokeAccess = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays), 1.seconds)
+    val usersToRevokeAccess = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays, deactivateAfterWarningDays), 1.seconds)
 
     usersToRevokeAccess mustEqual expectedUsers
   }
@@ -114,12 +115,12 @@ class UserDaoSpec extends Specification with AfterEach with BeforeEach {
     val inActiveUser = userActive1.copy(latest_login = new Timestamp(Instant.now().minusSeconds(61 * secondsInADay).toEpochMilli))
     userDao.insertOrUpdate(inActiveUser)
     val oneInActiveUser = Await.result(userDao.selectInactiveUsers(numberOfInactivityDays), 1.seconds)
-    val noUserToRevoke = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays), 1.seconds)
+    val noUserToRevoke = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays, deactivateAfterWarningDays), 1.seconds)
     //No user activity in 68 days
     val revokedUser = inActiveUser.copy(latest_login = new Timestamp(Instant.now().minusSeconds(68 * secondsInADay).toEpochMilli),
       inactive_email_sent = Some(new Timestamp(Instant.now().minusSeconds(8 * secondsInADay).toEpochMilli)))
     userDao.insertOrUpdate(revokedUser)
-    val oneUserToRevoke = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays), 1.seconds)
+    val oneUserToRevoke = Await.result(userDao.selectUsersToRevokeAccess(numberOfInactivityDays, deactivateAfterWarningDays), 1.seconds)
 
     oneInActiveUser.head mustEqual (inActiveUser)
     oneUserToRevoke.head mustEqual (revokedUser)

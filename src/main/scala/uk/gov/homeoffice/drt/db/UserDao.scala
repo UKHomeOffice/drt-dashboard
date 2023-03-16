@@ -45,7 +45,7 @@ trait IUserDao {
 
   def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
-  def selectUsersToRevokeAccess(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
@@ -59,10 +59,10 @@ class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
     user.inactive_email_sent.isEmpty &&
       user.latest_login < new Timestamp(Instant.now().minusSeconds(numberOfInactivityDays * secondsInADay).toEpochMilli)
 
-  def accessShouldBeRevoked(numberOfInactivityDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
+  def accessShouldBeRevoked(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
     user.revoked_access.isEmpty &&
-      user.latest_login < new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays + 7) * secondsInADay).toEpochMilli) &&
-      user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds((7) * secondsInADay).toEpochMilli)).getOrElse(false)
+      user.latest_login < new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays + deactivateAfterWarningDays) * secondsInADay).toEpochMilli) &&
+      user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds((deactivateAfterWarningDays) * secondsInADay).toEpochMilli)).getOrElse(false)
 
   def insertOrUpdate(userData: User): Future[Int] = {
     db.run(userTable insertOrUpdate userData)
@@ -74,8 +74,8 @@ class UserDao(db: Database, userTable: TableQuery[UserTable]) extends IUserDao {
       .mapTo[Seq[User]]
   }
 
-  def selectUsersToRevokeAccess(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
-    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked(numberOfInactivityDays)
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked(numberOfInactivityDays, deactivateAfterWarningDays)
     db.run(userTable.filter(revokeIdx).result)
       .mapTo[Seq[User]]
   }
