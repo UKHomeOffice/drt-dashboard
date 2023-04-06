@@ -1,15 +1,15 @@
 package uk.gov.homeoffice.drt.routes
 
 import akka.actor.typed.ActorSystem
-import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, StatusCodes }
-import akka.http.scaladsl.server.Directives.{ complete, pathPrefix, _ }
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import akka.http.scaladsl.server.Directives.{complete, pathPrefix, _}
 import akka.http.scaladsl.server.directives.MethodDirectives.get
-import akka.http.scaladsl.server.{ Directive0, Route }
+import akka.http.scaladsl.server.{Directive0, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import spray.json._
 import uk.gov.homeoffice.drt._
-import uk.gov.homeoffice.drt.alerts.{ Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport }
+import uk.gov.homeoffice.drt.alerts.{Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport}
 import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles._
 import uk.gov.homeoffice.drt.authentication._
@@ -57,19 +57,18 @@ object ApiRoutes extends JsonSupport
             }
           }
         },
-        (get & path("userTracking")) {
-          headerValueByName("X-Auth-Roles") { rolesStr =>
-            headerValueByName("X-Auth-Email") { email =>
-              optionalHeaderValueByName("X-Auth-Username") { usernameOption =>
-                userService.upsertUser(
-                  uk.gov.homeoffice.drt.db.User(usernameOption.getOrElse(email),
-                    usernameOption.getOrElse(email),
-                    email,
-                    new Timestamp(new Date().getTime),
-                    None,
-                    None))
-                complete(StatusCodes.OK)
-              }
+        (get & path("track-user")) {
+          headerValueByName("X-Auth-Email") { email =>
+            optionalHeaderValueByName("X-Auth-Username") { usernameOption =>
+              userService.upsertUser(
+                uk.gov.homeoffice.drt.db.User(
+                  id = usernameOption.getOrElse(email),
+                  username = usernameOption.getOrElse(email),
+                  email = email,
+                  latest_login = new Timestamp(new Date().getTime),
+                  inactive_email_sent = None,
+                  revoked_access = None))
+              complete(StatusCodes.OK)
             }
           }
         },

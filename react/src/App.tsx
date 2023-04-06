@@ -52,7 +52,7 @@ const App = (props: PropsFromReact) => {
 
     const [userTracked, setUserTracked] = React.useState(false);
 
-    const userTracking = () => {
+    const trackUser = () => {
         axios
             .get(ApiClient.userTrackingEndPoint)
             .then(() => {
@@ -63,7 +63,7 @@ const App = (props: PropsFromReact) => {
     }
 
     useEffect(() => {
-        userTracking();
+        trackUser();
     }, [userTracked]);
 
     return (props.user.kind === "SignedInUser" && props.config.kind === "LoadedConfig") ?
