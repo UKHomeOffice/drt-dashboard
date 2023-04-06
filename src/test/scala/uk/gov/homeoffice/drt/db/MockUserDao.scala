@@ -9,7 +9,7 @@ class MockUserDao extends IUserDao {
   val secondsInADay = 60 * 60 * 24
 
   override def insertOrUpdate(userData: User): Future[Int] = {
-    userList :+ userData
+    userList = userList :+ userData
     Future.successful(userList.size)
   }
 
@@ -24,5 +24,7 @@ class MockUserDao extends IUserDao {
       user.latest_login.before(new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays + deactivateAfterWarningDays) * secondsInADay).toEpochMilli)) &&
       user.inactive_email_sent.exists(_.before(new Timestamp(Instant.now().minusSeconds((deactivateAfterWarningDays) * secondsInADay).toEpochMilli)))))
 
-  override def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]] = Future.successful(userList)
+  override def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+    Future.successful(userList)
+  }
 }
