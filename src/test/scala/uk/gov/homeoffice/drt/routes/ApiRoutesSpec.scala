@@ -6,12 +6,14 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.Specs2RouteTest
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import org.specs2.mutable.Specification
 import spray.json._
-import uk.gov.homeoffice.drt.auth.Roles.{ BorderForceStaff, LHR }
+import uk.gov.homeoffice.drt.auth.Roles.{BorderForceStaff, LHR}
+import uk.gov.homeoffice.drt.db.MockUserDao
 import uk.gov.homeoffice.drt.ports.PortRegion
-import uk.gov.homeoffice.drt.{ ClientConfig, ClientConfigJsonFormats, JsonSupport }
+import uk.gov.homeoffice.drt.services.UserService
+import uk.gov.homeoffice.drt.{ClientConfig, ClientConfigJsonFormats, JsonSupport}
 
 class ApiRoutesSpec extends Specification with Specs2RouteTest with JsonSupport with ClientConfigJsonFormats {
   val testKit: ActorTestKit = ActorTestKit()
@@ -26,7 +28,7 @@ class ApiRoutesSpec extends Specification with Specs2RouteTest with JsonSupport 
   val routes: Route = ApiRoutes(
     "api",
     clientConfig,
-    neboRoutes.route)
+    neboRoutes.route, new UserService(new MockUserDao))
 
   "Given a uri accessed by a user with an email but no port access, I should see an empty port list and their email address in JSON" >> {
     Get("/api/user") ~>
