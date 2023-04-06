@@ -14,10 +14,13 @@ import uk.gov.homeoffice.drt.auth.Roles
 import uk.gov.homeoffice.drt.auth.Roles._
 import uk.gov.homeoffice.drt.authentication._
 import uk.gov.homeoffice.drt.ports.PortRegion
-import uk.gov.homeoffice.drt.redlist.{ RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate }
+import uk.gov.homeoffice.drt.redlist.{RedListJsonFormats, RedListUpdate, RedListUpdates, SetRedListUpdate}
+import uk.gov.homeoffice.drt.services.UserService
 
+import java.sql.Timestamp
+import java.util.Date
 import scala.compat.java8.OptionConverters._
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 case class PortAlerts(portCode: String, alerts: List[Alert])
 
@@ -43,13 +46,30 @@ object ApiRoutes extends JsonSupport
   def apply(
     prefix: String,
     clientConfig: ClientConfig,
-    neboUploadRoute: Route)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
+    neboUploadRoute: Route,
+    userService: UserService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
     pathPrefix(prefix) {
       concat(
         (get & path("user")) {
           headerValueByName("X-Auth-Roles") { rolesStr =>
             headerValueByName("X-Auth-Email") { email =>
               complete(User.fromRoles(email, rolesStr))
+            }
+          }
+        },
+        (get & path("userTracking")) {
+          headerValueByName("X-Auth-Roles") { rolesStr =>
+            headerValueByName("X-Auth-Email") { email =>
+              optionalHeaderValueByName("X-Auth-Username") { usernameOption =>
+                userService.upsertUser(
+                  uk.gov.homeoffice.drt.db.User(usernameOption.getOrElse(email),
+                    usernameOption.getOrElse(email),
+                    email,
+                    new Timestamp(new Date().getTime),
+                    None,
+                    None))
+                complete(StatusCodes.OK)
+              }
             }
           }
         },
@@ -162,4 +182,3 @@ object ApiRoutes extends JsonSupport
         })
     }
 }
-
