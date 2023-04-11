@@ -62,7 +62,7 @@ class ApiRoutesSpec extends Specification with Specs2RouteTest with JsonSupport 
   }
 
   "When user tracking is received with expected headers, user details is present in user table" >> {
-    Get("/api/userTracking") ~>
+    Get("/api/track-user") ~>
       RawHeader("X-Auth-Roles", "") ~>
       RawHeader("X-Auth-username", "my") ~>
       RawHeader("X-Auth-Email", "my@email.com") ~> routes ~> check {
