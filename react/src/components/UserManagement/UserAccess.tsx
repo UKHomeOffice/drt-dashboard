@@ -43,9 +43,9 @@ export default function UserAccess() {
     }
 
     const getKeyCloakUserDetails = (emails: string[]) => {
-        emails.map(email => axios.get(ApiClient.userDetailsEndpoint + '/' + email)
-            .then(response => updateUserDetailsState(response))
-            .then(() => setReceivedUsersResponse(true)))
+        Promise.all(emails.map(email => axios.get(ApiClient.userDetailsEndpoint + '/' + email)
+            .then(response => updateUserDetailsState(response))))
+            .then(() => setReceivedUsersResponse(true));
     }
 
     const requestAccessRequests = () => {
@@ -217,5 +217,3 @@ export default function UserAccess() {
         </Box>
     )
 }
-
-
