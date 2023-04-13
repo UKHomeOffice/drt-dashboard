@@ -53,7 +53,7 @@ export default function UserAccess() {
             .then(response => handleAccessRequestsResponse(response))
     }
 
-    const findAccessRequestByEmail = (requestTime: string | number) => {
+    const findAccessRequestByRowId = (requestTime: string | number) => {
         return userRequestList.find(obj => {
             return obj.requestTime.trim() == requestTime
         });
@@ -68,7 +68,7 @@ export default function UserAccess() {
         setUsers([{} as KeyCloakUser]);
 
         const emails: string[] = selectedRowIds
-            .map(s => findAccessRequestByEmail(s)?.email)
+            .map(s => findAccessRequestByRowId(s)?.email)
             .filter((s): s is string => !!s);
 
         approveAndUpdateKeyCloakUserDetails(emails)
@@ -82,7 +82,7 @@ export default function UserAccess() {
         console.log(ids);
         setSelectedRowDetails([])
         if (ids) {
-            ids.map(id => findAccessRequestByEmail(id))
+            ids.map(id => findAccessRequestByRowId(id))
                 .filter((s): s is UserRequestedAccessData => !!s)
                 .map(s => addSelectedRowDetails(s))
         }
@@ -122,7 +122,7 @@ export default function UserAccess() {
                 experimentalFeatures={{newEditingApi: true}}
                 onRowClick={(params, event: any) => {
                     if (!event.ignore) {
-                        rowClickOpen(findAccessRequestByEmail(params.row.requestTime));
+                        rowClickOpen(findAccessRequestByRowId(params.row.requestTime));
                     }
                 }}
             />
