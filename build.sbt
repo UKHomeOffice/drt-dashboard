@@ -41,7 +41,7 @@ lazy val root = (project in file(".")).
       "ch.qos.logback" % "logback-classic" % logBackClassicVersion % Runtime,
       "com.lihaoyi" %% "scalatags" % scalaTagsVersion,
       "uk.gov.homeoffice" %% "drt-cirium" % drtCiriumVersion,
-      "uk.gov.homeoffice" %% "drt-lib" % drtLibVersion,
+      "uk.gov.homeoffice" %% "drt-lib" % drtLibVersion excludeAll ("org.apache.spark","spark-mllib"),
       "ch.qos.logback.contrib" % "logback-json-classic" % logBackJsonVersion,
       "ch.qos.logback.contrib" % "logback-jackson" % logBackJsonVersion,
       "org.codehaus.janino" % "janino" % janinoVersion,
