@@ -9,6 +9,7 @@ import akka.http.scaladsl.server.Route
 import uk.gov.homeoffice.drt.db.{AppDatabase, UserAccessRequestDao, UserDao}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
+import uk.gov.homeoffice.drt.routes.TrainingUploadRoutes.trainingUploadRoute
 import uk.gov.homeoffice.drt.routes._
 import uk.gov.homeoffice.drt.services.{UserRequestService, UserService}
 
@@ -61,6 +62,8 @@ object Server {
   def apply(serverConfig: ServerConfig, notifications: EmailNotifications): Behavior[Message] = Behaviors.setup { ctx: ActorContext[Message] =>
     implicit val system: ActorSystem[Nothing] = ctx.system
     implicit val ec: ExecutionContextExecutor = system.executionContext
+
+
     val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
     val userRequestService = new UserRequestService(new UserAccessRequestDao(AppDatabase.db, AppDatabase.userAccessRequestsTable))
     val userService = new UserService(new UserDao(AppDatabase.db, AppDatabase.userTable))
@@ -76,7 +79,8 @@ object Server {
       DrtRoutes("drt", serverConfig.portIataCodes),
       ApiRoutes("api", serverConfig.clientConfig, neboRoutes, userService),
       ExportRoutes(new ProdHttpClient),
-      UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keyclockUrl))
+      UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keyclockUrl),
+      trainingUploadRoute("training"))
 
     val serverBinding: Future[Http.ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
 

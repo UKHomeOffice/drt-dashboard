@@ -160,3 +160,16 @@ html {
     padding: 10px;
     font-size: 15px;
 }
+
+.page-container {
+    display: flex;
+}
+
+.textarea-container {
+    flex: 1;
+}
+
+.markdown-preview {
+    flex: 1;
+    margin-left: 5px;
+}

@@ -49,6 +49,7 @@ lazy val root = (project in file(".")).
       "uk.gov.service.notify" % "notifications-java-client" % notificationsJavaClientVersion,
       "com.github.tototoshi" %% "scala-csv" % scalaCsvVersion,
       "org.scalactic" %% "scalactic" % scalaTestVersion,
+      "software.amazon.awssdk" % "s3" % "2.16.49",
 
       "com.typesafe.slick" %% "slick" % slickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
