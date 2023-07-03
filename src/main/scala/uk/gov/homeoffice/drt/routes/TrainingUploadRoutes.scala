@@ -16,7 +16,7 @@ object TrainingUploadRoutes {
 
   def trainingUploadRoute(prefix: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     pathPrefix(prefix) {
-      path("upload") {
+      path("uploadVideo") {
         post {
           entity(as[Multipart.FormData]) { _ =>
             formFields('title, 'markdownContent) { (title, markdownContent) =>
@@ -24,10 +24,17 @@ object TrainingUploadRoutes {
                 case (metadata, byteSource) =>
                   val filename = metadata.fileName
                   TrainingData.insertWebmDataTemplate(filename, title, markdownContent)
-                  val byteStringFuture: Future[ByteString] = byteSource.runFold(ByteString.empty)(_ ++ _)
-                  val responseF = byteStringFuture.map { byteString =>
-                    S3Service.uploadFileSmallerFile(byteString, filename)
-                  }.map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
+                  val responseF = S3Service.isFileLarge(byteSource).flatMap {
+                    case true => S3Service.uploadFile(byteSource, filename)
+                      .map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
+                    case false =>
+                      val byteStringFuture: Future[ByteString] = byteSource.runFold(ByteString.empty)(_ ++ _)
+                      byteStringFuture.map { byteString =>
+                        S3Service.uploadFileSmallerFile(byteString, filename)
+                      }.map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
+                  }
+
+
                   onComplete(responseF) {
                     case Success(result) => result
                     case Failure(ex) =>
@@ -38,7 +45,6 @@ object TrainingUploadRoutes {
             }
           }
         }
-
       }
     }
 }

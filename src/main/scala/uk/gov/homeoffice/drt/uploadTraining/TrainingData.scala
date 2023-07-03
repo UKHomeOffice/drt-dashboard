@@ -1,7 +1,5 @@
 package uk.gov.homeoffice.drt.uploadTraining
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 import uk.gov.homeoffice.drt.db.AppDatabase

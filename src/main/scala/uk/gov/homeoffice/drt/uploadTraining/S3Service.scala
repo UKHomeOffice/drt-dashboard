@@ -51,13 +51,16 @@ object S3Service {
     .toScala
     .map(_.uploadId())
 
+  def isFileLarge(source : Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Future[Boolean] = {
+    val threshold: Int = 5 * 1024 * 1024
+    source.runFold(0L)((acc, byteString) => acc + byteString.size).map { fileSize =>
+      if (fileSize > threshold) true else false
+    }
+  }
+
   def uploadFileSmallerFile(byteString: ByteString, filename: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Future[Unit] = {
-    //    val minimumPartSize: Int = 5 * 1024 * 1024 // 5 MB
-    //    val byteStringFuture = source.runFold(ByteString.empty)(_ ++ _)
-    //    byteStringData.map { byteString =>
     s3Client.putObject(putObjectRequest(filename), AsyncRequestBody.fromByteBuffer(byteString.asByteBuffer)).toScala
       .map(response => log.info(s"File $filename uploaded successfully. ETag: ${response.eTag()}"))
-    //    }.map(_=> filename)
   }
 
   private def uploadPart(partNumber: Int, data: ByteString, uploadId: String, filename: String): Future[CompletedPart] = {
@@ -106,9 +109,9 @@ object S3Service {
         s3Client.completeMultipartUpload(completeMultipartUploadRequest)
           .whenComplete { (response, exception) =>
             if (response != null) {
-              println(s"File uploaded successfully. ETag: ${response.eTag()}")
+              log.info(s"File $filename uploaded successfully. ETag: ${response.eTag()}")
             } else {
-              println(s"Failed to upload file. Exception: $exception")
+              log.info(s"Failed to upload file. Exception: $exception")
             }
           }
       }
