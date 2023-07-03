@@ -34,12 +34,11 @@ object TrainingUploadRoutes {
                       }.map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
                   }
 
-
                   onComplete(responseF) {
                     case Success(result) => result
                     case Failure(ex) =>
                       log.error(s"Error while uploading", ex)
-                      complete(StatusCodes.InternalServerError, ex.getMessage) // Handle the failure case
+                      complete(StatusCodes.InternalServerError, ex.getMessage)
                   }
               }
             }
