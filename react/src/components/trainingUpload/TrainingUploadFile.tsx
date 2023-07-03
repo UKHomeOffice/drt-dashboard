@@ -43,12 +43,10 @@ const UploadForm: React.FC = () => {
         axios.post('/training/uploadVideo', formData)
             .then(response => handleResponse(response))
             .then(data => {
-                // Handle the response data
                 console.log(data);
             })
             .catch(error => {
                 setError(true);
-                // Handle errors
                 console.error(error);
             });
     };
