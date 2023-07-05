@@ -1,4 +1,4 @@
-CREATE TABLE training_data_template
+CREATE TABLE feature_guide
 (
     id               SERIAL PRIMARY KEY,
     upload_time      timestamp NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE training_data_template
     markdown_content TEXT      NOT NULL
 );
 
-CREATE TABLE user_feature_view
+CREATE TABLE feature_guide_view
 (
     email     text NOT NULL,
     file_id   integer NOT NULL,

@@ -23,10 +23,10 @@ object S3Service {
 
   def objectKey(filename: String) = s"$prefixFolder/$filename"
 
-  val accessKey = config.getString("s3.drt-data.credentials.access_key_id")
-  val secretKey = config.getString("s3.drt-data.credentials.secret_key")
-  val bucketName = config.getString("s3.drt-data.bucket-name")
-  val prefixFolder = config.getString("s3.drt-data.prefix-folder")
+  val accessKey = config.getString("s3.credentials.access_key_id")
+  val secretKey = config.getString("s3.credentials.secret_key")
+  val bucketName = config.getString("s3.bucket-name")
+  val prefixFolder = config.getString("s3.prefix-folder")
 
   val credentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey))
 

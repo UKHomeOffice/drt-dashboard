@@ -3,13 +3,12 @@ package uk.gov.homeoffice.drt.uploadTraining
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 import uk.gov.homeoffice.drt.db.AppDatabase
-
 import java.sql.Timestamp
 
 
-case class TrainingDataTemplate(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String)
+case class FeatureGuideRow(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String)
 
-class TrainingDataTemplateTable(tag: Tag) extends Table[TrainingDataTemplate](tag, "training_data_template") {
+class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_guide") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
 
   def uploadTime: Rep[Timestamp] = column[Timestamp]("upload_time")
@@ -20,16 +19,15 @@ class TrainingDataTemplateTable(tag: Tag) extends Table[TrainingDataTemplate](ta
 
   def markdownContent: Rep[String] = column[String]("markdown_content")
 
-  def * : ProvenShape[TrainingDataTemplate] = (id, uploadTime, fileName, title, markdownContent).mapTo[TrainingDataTemplate]
+  def * : ProvenShape[FeatureGuideRow] = (id, uploadTime, fileName, title, markdownContent).mapTo[FeatureGuideRow]
 }
 
 
-object TrainingData {
-  val trainingDataTemplates = TableQuery[TrainingDataTemplateTable]
+object FeatureGuideService {
+  val FeatureGuideTable = TableQuery[FeatureGuideTable]
 
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
-    val insertAction = trainingDataTemplates += TrainingDataTemplate(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent)
+    val insertAction = FeatureGuideTable += FeatureGuideRow(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent)
     AppDatabase.db.run(insertAction)
   }
-
 }

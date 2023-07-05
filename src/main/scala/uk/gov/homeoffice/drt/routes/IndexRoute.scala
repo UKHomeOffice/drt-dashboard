@@ -23,7 +23,7 @@ case object UserManagementPathString extends PathString
 
 case object UserTrackingPathString extends PathString
 
-case object UploadVideoPathString extends PathString
+case object uploadFeatureGuidePathString extends PathString
 
 case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route, staticResourceDirectory: Route) {
   val log: Logger = LoggerFactory.getLogger(getClass)
@@ -48,8 +48,8 @@ case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route
       path("userTracking") {
         indexRouteDirectives(UserTrackingPathString)
       },
-      path("uploadVideo") {
-        indexRouteDirectives(UploadVideoPathString)
+      path("uploadFeatureGuide") {
+        indexRouteDirectives(uploadFeatureGuidePathString)
       },
       (get & pathPrefix("")) {
         directoryResource

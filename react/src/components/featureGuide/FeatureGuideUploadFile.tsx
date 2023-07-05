@@ -24,7 +24,7 @@ const UploadForm: React.FC = () => {
     };
 
     const handleResponse = (response: AxiosResponse) => {
-        if(response.status === 200) {
+        if (response.status === 200) {
             setUploaded(true);
             response.data
         } else {
@@ -40,7 +40,7 @@ const UploadForm: React.FC = () => {
         formData.append('webmFile', video);
         formData.append('title', text);
         formData.append('markdownContent', markdownContent);
-        axios.post('/training/uploadVideo', formData)
+        axios.post('/guide/uploadFeatureGuide', formData)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -52,29 +52,31 @@ const UploadForm: React.FC = () => {
     };
 
     return (
-        error ? <div style={{marginTop: '20px' , color:'red'}}> Error uploading file <br/>
-            <button style={{marginTop: '20px'}} onClick={() => setError(false)}>Back</button> </div> :
-        uploaded ? <div style={{marginTop: '20px'}}> File Uploaded Successfully <br/>
-                <button style={{marginTop: '20px'}} onClick={() => setUploaded(false)}>Upload another file</button> </div> :
-        <form onSubmit={handleSubmit}>
-            <h1>Training Content form</h1>
-            <div style={{marginTop: '20px'}}>
-                <label htmlFor="image">Training video file : </label>
-                <input type="file" id="webmFile" accept="File/*" onChange={handleImageChange}/>
-            </div>
-            <div style={{marginTop: '20px'}}>
-                <label htmlFor="text">Title : </label>
-                <input id="text" value={text} onChange={handleInputChange}/>
-            </div>
-            <div style={{marginTop: '20px'}}>
-                <label htmlFor="markdown">Markdown:</label>
-                <MarkdownEditor
-                    markdownContent={markdownContent}
-                    handleMarkdownChange={handleMarkdownChange}
-                />
-            </div>
-            <button type="submit">Submit</button>
-        </form>
+        error ? <div style={{marginTop: '20px', color: 'red'}}> There was a problem saving the feature guide <br/>
+                <button style={{marginTop: '20px'}} onClick={() => setError(false)}>Back</button>
+            </div> :
+            uploaded ? <div style={{marginTop: '20px'}}> New feature guide successfully saved <br/>
+                    <button style={{marginTop: '20px'}} onClick={() => setUploaded(false)}>Upload another file</button>
+                </div> :
+                <form onSubmit={handleSubmit}>
+                    <h1>New Feature Guide</h1>
+                    <div style={{marginTop: '20px'}}>
+                        <label htmlFor="image">Feature demo video (webm format) : </label>
+                        <input type="file" id="webmFile" accept="File/*" onChange={handleImageChange}/>
+                    </div>
+                    <div style={{marginTop: '20px'}}>
+                        <label htmlFor="text">Title </label>
+                        <input id="text" value={text} onChange={handleInputChange}/>
+                    </div>
+                    <div style={{marginTop: '20px'}}>
+                        <label htmlFor="markdown">Markdown:</label>
+                        <MarkdownEditor
+                            markdownContent={markdownContent}
+                            handleMarkdownChange={handleMarkdownChange}
+                        />
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
     );
 };
 

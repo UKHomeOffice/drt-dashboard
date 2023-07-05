@@ -161,13 +161,6 @@ html {
     font-size: 15px;
 }
 
-.page-container {
-    display: flex;
-}
-
-.textarea-container {
-    flex: 1;
-}
 
 .markdown-preview {
     flex: 1;

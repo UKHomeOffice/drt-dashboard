@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Route
 import uk.gov.homeoffice.drt.db.{AppDatabase, UserAccessRequestDao, UserDao}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
-import uk.gov.homeoffice.drt.routes.TrainingUploadRoutes.trainingUploadRoute
+import uk.gov.homeoffice.drt.routes.FeatureGuideRoutes.featureGuideRoute
 import uk.gov.homeoffice.drt.routes._
 import uk.gov.homeoffice.drt.services.{UserRequestService, UserService}
 
@@ -80,7 +80,7 @@ object Server {
       ApiRoutes("api", serverConfig.clientConfig, neboRoutes, userService),
       ExportRoutes(new ProdHttpClient),
       UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keyclockUrl),
-      trainingUploadRoute("training"))
+      featureGuideRoute("guide"))
 
     val serverBinding: Future[Http.ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
 
