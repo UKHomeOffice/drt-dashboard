@@ -8,7 +8,7 @@ export const MarkdownEditor = ({markdownContent, handleMarkdownChange}: {
     handleMarkdownChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 }) => {
     return (
-        <Box sx={{display: "flex"}}>
+        <Box sx={{display: "flex", font: "Arial", fontSize: "16px"}}>
             <Box sx={{flex: 1}}>
         <textarea
             value={markdownContent}
