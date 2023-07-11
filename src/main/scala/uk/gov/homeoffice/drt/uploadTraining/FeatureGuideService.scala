@@ -4,6 +4,7 @@ import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 import uk.gov.homeoffice.drt.db.AppDatabase
 import java.sql.Timestamp
+import scala.concurrent.Future
 
 
 case class FeatureGuideRow(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String)
@@ -26,6 +27,11 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 object FeatureGuideService {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
 
+  def getFeatureGuides(): Future[Seq[FeatureGuideRow]] = {
+    val query = FeatureGuideTable.result
+    val result = AppDatabase.db.run(query)
+    result
+  }
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
     val insertAction = FeatureGuideTable += FeatureGuideRow(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent)
     AppDatabase.db.run(insertAction)
