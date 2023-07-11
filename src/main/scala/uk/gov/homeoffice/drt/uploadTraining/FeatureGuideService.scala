@@ -27,11 +27,17 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 object FeatureGuideService {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
 
+  def deleteFeatureGuide(featureId: String): Future[Int] = {
+    val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).delete
+    AppDatabase.db.run(query)
+  }
+
   def getFeatureGuides(): Future[Seq[FeatureGuideRow]] = {
     val query = FeatureGuideTable.result
     val result = AppDatabase.db.run(query)
     result
   }
+
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
     val insertAction = FeatureGuideTable += FeatureGuideRow(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent)
     AppDatabase.db.run(insertAction)

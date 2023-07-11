@@ -3,6 +3,7 @@ import {MarkdownEditor} from './MarkdownEditor';
 import axios, {AxiosResponse} from "axios";
 import ListFeatureGuide from "./ListFeatureGuide";
 import {PreviewComponent} from "./PreviewComponent";
+import Button from "@mui/material/Button";
 
 const UploadForm: React.FC = () => {
     const [video, setVideo] = useState<File | null>(null);
@@ -58,15 +59,19 @@ const UploadForm: React.FC = () => {
 
     return (
         error ? <div style={{marginTop: '20px', color: 'red'}}> There was a problem saving the feature guide <br/>
-                <button style={{marginTop: '20px'}} onClick={() => setError(false)}>Back</button>
+                <Button variant="outlined" color="primary" style={{marginTop: '20px'}}
+                        onClick={() => setError(false)}>Back</Button>
             </div> :
             uploaded ? <div style={{marginTop: '20px'}}> New feature guide successfully saved <br/>
-                    <button style={{marginTop: '20px'}} onClick={() => setUploaded(false)}>Upload another file</button>
+                    <Button variant="outlined" color="primary" style={{marginTop: '20px'}}
+                            onClick={() => setUploaded(false)}>Upload another file</Button>
                 </div> :
                 viewFeatureGuides ? <ListFeatureGuide setViewFeatureGuides={setViewFeatureGuides}/> :
                     <div>
                         <form onSubmit={handleSubmit}>
-                            <h1>New Feature Guide | <a href = "#" style={{marginTop: '20px'}} onClick={() => setViewFeatureGuides(true)}>View Feature list</a> </h1>
+                            <h1>New Feature Guide | <a href="#" style={{marginTop: '20px'}}
+                                                       onClick={() => setViewFeatureGuides(true)}>View Feature list</a>
+                            </h1>
                             <div style={{marginTop: '20px'}}>
                                 <label htmlFor="image">Feature demo video (webm format) : </label>
                                 <input type="file" id="webmFile" accept="File/*" onChange={handleImageChange}/>
@@ -82,13 +87,17 @@ const UploadForm: React.FC = () => {
                                     handleMarkdownChange={handleMarkdownChange}
                                 />
                             </div>
-                            <button type="submit">Submit</button>
+                            <div style={{marginLeft: '100px'}}>
+                                <Button variant="outlined" color="primary" type="submit">Upload</Button>
+                            </div>
                         </form>
                         {markdownContent.length > 0 ?
-                        <button style={{marginLeft: "240px"}} onClick={handlePreviewOpen}>Preview
-                        </button> : <span/>}
+                            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                                <Button variant="contained" color="primary" onClick={handlePreviewOpen}>Preview</Button>
+                            </div> : <span/>}
 
-                        <PreviewComponent videoURL={video ? URL.createObjectURL(video) : ""} title={text} markdownContent={markdownContent} openPreview={openPreview}
+                        <PreviewComponent videoURL={video ? URL.createObjectURL(video) : ""} title={text}
+                                          markdownContent={markdownContent} openPreview={openPreview}
                                           setOpenPreview={setOpenPreview}/>
                     </div>
 

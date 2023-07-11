@@ -115,8 +115,10 @@ const ListFeatureGuide: React.FC = (props: Props) => {
                             color="primary"
                             onClick={handleBack}>back</Button>
                 </Box>
-                <PreviewComponent title={rowDetails?.title} markdownContent={rowDetails?.markdownContent}
-                                  openPreview={openPreview} setOpenPreview={setOpenPreview}/>
+                <PreviewComponent id={rowDetails?.id} title={rowDetails?.title}
+                                  markdownContent={rowDetails?.markdownContent}
+                                  openPreview={openPreview} setOpenPreview={setOpenPreview}
+                                  setReceivedData={setReceivedData} isEdit={true}/>
 
             </div>
     )

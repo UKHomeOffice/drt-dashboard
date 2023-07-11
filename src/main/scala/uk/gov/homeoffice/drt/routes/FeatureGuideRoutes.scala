@@ -54,6 +54,23 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
     }
   }
 
+  def deleteFeature()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+    path("removeFeatureGuide" / Segment) { featureId =>
+      delete {
+        val responseF: Future[StandardRoute] = FeatureGuideService.deleteFeatureGuide(featureId).map { featureGuides =>
+          val json: JsValue = featureGuides.toJson
+          complete(StatusCodes.OK, json)
+        }
+
+        onComplete(responseF) {
+          case Success(result) => result
+          case Failure(ex) =>
+            log.error(s"Error while deleting feature $featureId", ex)
+            complete(StatusCodes.InternalServerError, ex.getMessage)
+        }
+      }
+    }
+
   def apply(prefix: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     pathPrefix(prefix) {
       concat(
@@ -85,6 +102,6 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
               }
             }
           }
-        } ~ getFeatureGuides())
+        } ~ getFeatureGuides() ~ deleteFeature())
     }
 }
