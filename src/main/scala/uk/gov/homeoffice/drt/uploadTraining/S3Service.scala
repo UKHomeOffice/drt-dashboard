@@ -1,16 +1,19 @@
 package uk.gov.homeoffice.drt.uploadTraining
 
 import akka.actor.typed.ActorSystem
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.IOResult
+import akka.stream.scaladsl.{Sink, Source, StreamConverters}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
-import software.amazon.awssdk.core.async.AsyncRequestBody
+import software.amazon.awssdk.core.ResponseBytes
+import software.amazon.awssdk.core.async.{AsyncRequestBody, AsyncResponseTransformer}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model._
 
+import java.io.InputStream
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -41,6 +44,25 @@ object S3Service {
     .key(objectKey(fileName))
     .build()
 
+  def getVideoFile(filename: String) = {
+    val getObjectRequest: GetObjectRequest = GetObjectRequest.builder()
+      .bucket(bucketName)
+      .key(s"$prefixFolder/$filename")
+      .build()
+
+    val responseBytes: Future[ResponseBytes[GetObjectResponse]] = s3Client
+      .getObject(getObjectRequest, AsyncResponseTransformer.toBytes[GetObjectResponse]
+      ).toScala
+
+    val s3Response: Future[InputStream] = responseBytes.map(_.asInputStream())
+
+    val responseTransformer: Future[Source[ByteString, Future[IOResult]]] =
+      s3Response.map { inputStream =>
+        StreamConverters.fromInputStream(() => inputStream)
+      }
+
+    responseTransformer
+  }
 
   def createMultipartUploadRequest(filename: String) = CreateMultipartUploadRequest.builder()
     .bucket(bucketName)
@@ -51,16 +73,19 @@ object S3Service {
     .toScala
     .map(_.uploadId())
 
-  def isFileLarge(source : Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Future[Boolean] = {
+  def isFileLarge(source: Source[ByteString, Any])(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Future[Boolean] = {
     val threshold: Int = 5 * 1024 * 1024
-    source.runFold(0L)((acc, byteString) => acc + byteString.size).map { fileSize =>
-      if (fileSize > threshold) true else false
+    source.runFold(0L)((acc, byteString) => acc + byteString.size).map {
+      fileSize =>
+        if (fileSize > threshold) true else false
     }
   }
 
   def uploadFileSmallerFile(byteString: ByteString, filename: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Future[Unit] = {
     s3Client.putObject(putObjectRequest(filename), AsyncRequestBody.fromByteBuffer(byteString.asByteBuffer)).toScala
-      .map(response => log.info(s"File $filename uploaded successfully. ETag: ${response.eTag()}"))
+      .map(response => log.info(s"File $filename uploaded successfully. ETag: ${
+        response.eTag()
+      }"))
   }
 
   private def uploadPart(partNumber: Int, data: ByteString, uploadId: String, filename: String): Future[CompletedPart] = {
@@ -84,37 +109,46 @@ object S3Service {
 
 
   def uploadFile(source: Source[ByteString, Any], filename: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = {
-    val parts: Source[(Int, ByteString), Any] = source.zipWithIndex.map { case (data, index) => (index.toInt + 1, data) }
+    val parts: Source[(Int, ByteString), Any] = source.zipWithIndex.map {
+      case (data, index) => (index.toInt + 1, data)
+    }
     val uploadIdF: Future[String] = uploadIdFuture(filename)
 
-    val completedPartsFuture: Future[Seq[CompletedPart]] = uploadIdF.flatMap { uploadId =>
-      parts.mapAsyncUnordered(parallelism = 1) { case (partNumber, data) =>
-        uploadPart(partNumber, data, uploadId, filename)
-      }.runWith(Sink.seq)
+    val completedPartsFuture: Future[Seq[CompletedPart]] = uploadIdF.flatMap {
+      uploadId =>
+        parts.mapAsyncUnordered(parallelism = 1) {
+          case (partNumber, data) =>
+            uploadPart(partNumber, data, uploadId, filename)
+        }.runWith(Sink.seq)
     }
 
 
-    completedPartsFuture.flatMap { completedParts =>
-      uploadIdF.map { uploadId =>
+    completedPartsFuture.flatMap {
+      completedParts =>
+        uploadIdF.map {
+          uploadId =>
 
-        val sortedCompletedParts = completedParts.sortBy(_.partNumber())
+            val sortedCompletedParts = completedParts.sortBy(_.partNumber())
 
-        val completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
-          .bucket(bucketName)
-          .key(objectKey(filename))
-          .uploadId(uploadId)
-          .multipartUpload(CompletedMultipartUpload.builder().parts(sortedCompletedParts: _*).build())
-          .build()
+            val completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
+              .bucket(bucketName)
+              .key(objectKey(filename))
+              .uploadId(uploadId)
+              .multipartUpload(CompletedMultipartUpload.builder().parts(sortedCompletedParts: _*).build())
+              .build()
 
-        s3Client.completeMultipartUpload(completeMultipartUploadRequest)
-          .whenComplete { (response, exception) =>
-            if (response != null) {
-              log.info(s"File $filename uploaded successfully. ETag: ${response.eTag()}")
-            } else {
-              log.info(s"Failed to upload file. Exception: $exception")
-            }
-          }
-      }
+            s3Client.completeMultipartUpload(completeMultipartUploadRequest)
+              .whenComplete {
+                (response, exception) =>
+                  if (response != null) {
+                    log.info(s"File $filename uploaded successfully. ETag: ${
+                      response.eTag()
+                    }")
+                  } else {
+                    log.info(s"Failed to upload file. Exception: $exception")
+                  }
+              }
+        }
 
     }
   }

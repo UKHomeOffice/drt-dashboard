@@ -4,6 +4,7 @@ import {DataGrid, GridColDef, GridRowModel} from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
 import {Button} from "@mui/material";
 import {PreviewComponent} from "./PreviewComponent";
+import {FeatureGuideEdit} from "./FeatureGuideEdit";
 
 
 interface Props {
@@ -55,6 +56,7 @@ const ListFeatureGuide: React.FC = (props: Props) => {
     const [openPreview, setOpenPreview] = React.useState(false)
     const [rowDetails, setRowDetails] = React.useState({} as FeatureData | undefined)
     const [error, setError] = useState(false);
+    const [showEdit, setShowEdit] = React.useState(false)
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
@@ -95,32 +97,38 @@ const ListFeatureGuide: React.FC = (props: Props) => {
         error ? <div style={{marginTop: '20px', color: 'red'}}> There is problem while retrieving the list <br/>
                 <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={handleBack}>back</Button>
             </div> :
-            <div>
-                <h1>Feature Guide List</h1>
-                <Box sx={{height: 400, width: '100%'}}>
-                    <DataGrid
-                        getRowId={(rowsData) => rowsData.id}
-                        rows={rowsData}
-                        columns={featureColumns}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
-                        experimentalFeatures={{newEditingApi: true}}
-                        onRowClick={(params, event: any) => {
-                            if (!event.ignore) {
-                                rowClickOpen(params.row as FeatureData);
-                            }
-                        }}
-                    />
-                    <Button style={{float: 'right'}} variant="outlined"
-                            color="primary"
-                            onClick={handleBack}>back</Button>
-                </Box>
-                <PreviewComponent id={rowDetails?.id} title={rowDetails?.title}
-                                  markdownContent={rowDetails?.markdownContent}
-                                  openPreview={openPreview} setOpenPreview={setOpenPreview}
-                                  setReceivedData={setReceivedData} isEdit={true}/>
-
-            </div>
+            showEdit ? <FeatureGuideEdit id={rowDetails?.id} title={rowDetails?.title}
+                                         videoURL={"/guide/getFeatureVideos/" + rowDetails?.fileName}
+                                         markdownContent={rowDetails?.markdownContent}
+                                         showEdit={showEdit} setShowEdit={setShowEdit} setReceivedData={setReceivedData}
+                /> :
+                <div>
+                    <h1>Feature Guide List</h1>
+                    <Box sx={{height: 400, width: '100%'}}>
+                        <DataGrid
+                            getRowId={(rowsData) => rowsData.id}
+                            rows={rowsData}
+                            columns={featureColumns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            experimentalFeatures={{newEditingApi: true}}
+                            onRowClick={(params, event: any) => {
+                                if (!event.ignore) {
+                                    rowClickOpen(params.row as FeatureData);
+                                }
+                            }}
+                        />
+                        <Button style={{float: 'right'}} variant="outlined"
+                                color="primary"
+                                onClick={handleBack}>back</Button>
+                    </Box>
+                    <PreviewComponent id={rowDetails?.id} title={rowDetails?.title}
+                                      videoURL={"/guide/getFeatureVideos/" + rowDetails?.fileName}
+                                      markdownContent={rowDetails?.markdownContent}
+                                      openPreview={openPreview} setOpenPreview={setOpenPreview}
+                                      setReceivedData={setReceivedData} isEdit={true}
+                                      showEdit={showEdit} setShowEdit={setShowEdit}/>
+                </div>
     )
 }
 

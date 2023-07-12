@@ -15,11 +15,18 @@ interface Props {
     openPreview: boolean;
     setOpenPreview: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    showEdit: boolean;
+    setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     isEdit: boolean;
 }
 
 export function PreviewComponent(props: Props) {
     const [showDelete, setShowDelete] = useState(false);
+
+    const handleEdit = () => {
+        props.setShowEdit(true);
+        props.setOpenPreview(false)
+    }
 
     const handlePreviewClose = () => {
         props.setOpenPreview(false)
@@ -49,7 +56,7 @@ export function PreviewComponent(props: Props) {
                             <DialogActions>
                                 {props.isEdit ? <div>
                                     <IconButton aria-label="delete" onClick={handleDelete}><DeleteIcon/></IconButton>
-                                    <IconButton aria-label="edit" onClick={handlePreviewClose}><EditIcon/></IconButton>
+                                    <IconButton aria-label="edit" onClick={handleEdit}><EditIcon/></IconButton>
                                 </div> : null}
                                 <IconButton aria-label="close"
                                             onClick={handlePreviewClose}><CloseIcon/></IconButton>

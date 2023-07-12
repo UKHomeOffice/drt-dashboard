@@ -27,6 +27,12 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 object FeatureGuideService {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
 
+  def updateFeatureGuide(featureId: String, title: String, markdownContent: String) = {
+    val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.title, f.markdownContent, f.uploadTime))
+      .update((Some(title), markdownContent, new Timestamp(System.currentTimeMillis())))
+    AppDatabase.db.run(query)
+  }
+
   def deleteFeatureGuide(featureId: String): Future[Int] = {
     val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).delete
     AppDatabase.db.run(query)
