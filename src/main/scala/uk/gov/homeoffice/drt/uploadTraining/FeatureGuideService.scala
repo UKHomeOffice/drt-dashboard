@@ -7,7 +7,7 @@ import java.sql.Timestamp
 import scala.concurrent.Future
 
 
-case class FeatureGuideRow(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String)
+case class FeatureGuideRow(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String, published: Boolean)
 
 class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_guide") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -20,12 +20,20 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 
   def markdownContent: Rep[String] = column[String]("markdown_content")
 
-  def * : ProvenShape[FeatureGuideRow] = (id, uploadTime, fileName, title, markdownContent).mapTo[FeatureGuideRow]
+  def published: Rep[Boolean] = column[Boolean]("published")
+
+  def * : ProvenShape[FeatureGuideRow] = (id, uploadTime, fileName, title, markdownContent, published).mapTo[FeatureGuideRow]
 }
 
 
 object FeatureGuideService {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
+
+  def updatePublishFeatureGuide(featureId: String, publish: Boolean) = {
+    val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.published, f.uploadTime))
+      .update(publish, new Timestamp(System.currentTimeMillis()))
+    AppDatabase.db.run(query)
+  }
 
   def updateFeatureGuide(featureId: String, title: String, markdownContent: String) = {
     val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.title, f.markdownContent, f.uploadTime))
@@ -45,7 +53,7 @@ object FeatureGuideService {
   }
 
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
-    val insertAction = FeatureGuideTable += FeatureGuideRow(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent)
+    val insertAction = FeatureGuideTable += FeatureGuideRow(None, new Timestamp(System.currentTimeMillis()), Some(fileName), Some(title), markdownContent, false)
     AppDatabase.db.run(insertAction)
   }
 }

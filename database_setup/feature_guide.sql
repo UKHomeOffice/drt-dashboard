@@ -4,7 +4,8 @@ CREATE TABLE feature_guide
     upload_time      timestamp NOT NULL,
     file_name        VARCHAR(255),
     title            VARCHAR(255),
-    markdown_content TEXT      NOT NULL
+    markdown_content TEXT      NOT NULL,
+    published        BOOLEAN   NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE feature_guide_view

@@ -38,7 +38,7 @@ trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
     }
   }
 
-  implicit val featureGuideRowFormatParser: RootJsonFormat[FeatureGuideRow] = jsonFormat5(FeatureGuideRow)
+  implicit val featureGuideRowFormatParser: RootJsonFormat[FeatureGuideRow] = jsonFormat6(FeatureGuideRow)
 }
 
 object FeatureGuideRoutes extends FeatureGuideJsonFormats {
@@ -101,6 +101,21 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       }
     }
 
+  def publishFeatureGuide()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+    path("publishFeatureGuide" / Segment / Segment) { (publishAction, featureId) =>
+      post {
+        val responseF = FeatureGuideService.updatePublishFeatureGuide(featureId, publishAction == "publish")
+          .map(_ => complete(StatusCodes.OK, s"Feature $featureId is published successfully"))
+
+        onComplete(responseF) {
+          case Success(result) => result
+          case Failure(ex) =>
+            log.error(s"Error while uploading", ex)
+            complete(StatusCodes.InternalServerError, ex.getMessage)
+        }
+      }
+    }
+
   def deleteFeature()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("removeFeatureGuide" / Segment) { featureId =>
       delete {
@@ -149,6 +164,6 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
               }
             }
           }
-        } ~ getFeatureGuides() ~ deleteFeature() ~ updateFeatureGuide() ~ getFeatureVideoFile())
+        } ~ getFeatureGuides() ~ deleteFeature() ~ updateFeatureGuide() ~ getFeatureVideoFile() ~ publishFeatureGuide())
     }
 }
