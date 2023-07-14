@@ -15,3 +15,11 @@ CREATE TABLE feature_guide_view
     view_time timestamp NOT NULL,
     PRIMARY KEY (email, file_id)
 );
+
+CREATE TABLE feature_guide_first_view
+(
+    email     text NOT NULL,
+    file_id   integer NOT NULL,
+    action_time timestamp NOT NULL,
+    PRIMARY KEY (email, file_id)
+);

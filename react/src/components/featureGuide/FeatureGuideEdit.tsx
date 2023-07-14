@@ -10,8 +10,6 @@ interface Props {
     videoURL: string | undefined;
     title: string | undefined;
     markdownContent: string | undefined;
-    // openPreview: boolean;
-    // setOpenPreview: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     showEdit: boolean;
     setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -20,7 +18,6 @@ interface Props {
 export function FeatureGuideEdit(props: Props) {
     const [editTitle, setEditTitle] = React.useState(props.title)
     const [editMarkdownContent, setEditMarkdownContent] = React.useState(props.markdownContent)
-    // const [editVideoURL, setEditVideoURL] = React.useState(props.videoURL)
     const [openPreview, setOpenPreview] = React.useState(false)
     const [updated, setUpdated] = useState(false);
     const [error, setError] = useState(false);
