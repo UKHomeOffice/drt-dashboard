@@ -13,7 +13,8 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError, enrichAny}
-import uk.gov.homeoffice.drt.uploadTraining.{FeatureGuideRow, FeatureGuideService, S3Service}
+import uk.gov.homeoffice.drt.db.FeatureGuideRow
+import uk.gov.homeoffice.drt.uploadTraining.{FeatureGuideService, S3Service}
 
 import java.sql.Timestamp
 import scala.concurrent.{ExecutionContextExecutor, Future}
