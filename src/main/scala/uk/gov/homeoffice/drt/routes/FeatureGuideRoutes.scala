@@ -45,7 +45,7 @@ trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
 object FeatureGuideRoutes extends FeatureGuideJsonFormats {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def getFeatureVideoFile()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def getFeatureVideoFile(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("getFeatureVideos" / Segment) { filename =>
       get {
         val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = S3Service.getVideoFile(filename)
@@ -69,8 +69,8 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       }
     }
 
-  def getFeatureGuides()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = path("getFeatureGuides") {
-    val responseF: Future[StandardRoute] = FeatureGuideService.getFeatureGuides().map { featureGuides =>
+  def getFeatureGuides(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) = path("getFeatureGuides") {
+    val responseF: Future[StandardRoute] = featureGuideService.getFeatureGuides().map { featureGuides =>
       val json: JsValue = featureGuides.toJson
       complete(StatusCodes.OK, json)
     }
@@ -83,12 +83,12 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
     }
   }
 
-  def updateFeatureGuide()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def updateFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("updateFeatureGuide" / Segment) { featureId =>
       post {
         entity(as[Multipart.FormData]) { _ =>
           formFields('title, 'markdownContent) { (title, markdownContent) =>
-            val responseF = FeatureGuideService.updateFeatureGuide(featureId, title, markdownContent)
+            val responseF = featureGuideService.updateFeatureGuide(featureId, title, markdownContent)
               .map(_ => complete(StatusCodes.OK, s"Feature $featureId is updated successfully"))
 
             onComplete(responseF) {
@@ -102,10 +102,10 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       }
     }
 
-  def publishFeatureGuide()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def publishFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("publishFeatureGuide" / Segment / Segment) { (publishAction, featureId) =>
       post {
-        val responseF = FeatureGuideService.updatePublishFeatureGuide(featureId, publishAction == "publish")
+        val responseF = featureGuideService.updatePublishFeatureGuide(featureId, publishAction == "publish")
           .map(_ => complete(StatusCodes.OK, s"Feature $featureId is published successfully"))
 
         onComplete(responseF) {
@@ -117,10 +117,10 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       }
     }
 
-  def deleteFeature()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def deleteFeature(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("removeFeatureGuide" / Segment) { featureId =>
       delete {
-        val responseF: Future[StandardRoute] = FeatureGuideService.deleteFeatureGuide(featureId).map { featureGuides =>
+        val responseF: Future[StandardRoute] = featureGuideService.deleteFeatureGuide(featureId).map { featureGuides =>
           val json: JsValue = featureGuides.toJson
           complete(StatusCodes.OK, json)
         }
@@ -134,7 +134,7 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       }
     }
 
-  def apply(prefix: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def apply(prefix: String, featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     pathPrefix(prefix) {
       concat(
         path("uploadFeatureGuide") {
@@ -144,7 +144,7 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
                 fileUpload("webmFile") {
                   case (metadata, byteSource) =>
                     val filename = metadata.fileName
-                    FeatureGuideService.insertWebmDataTemplate(filename, title, markdownContent)
+                    featureGuideService.insertWebmDataTemplate(filename, title, markdownContent)
                     val responseF = S3Service.isFileLarge(byteSource).flatMap {
                       case true => S3Service.uploadFile(byteSource, filename)
                         .map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
@@ -165,6 +165,6 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
               }
             }
           }
-        } ~ getFeatureGuides() ~ deleteFeature() ~ updateFeatureGuide() ~ getFeatureVideoFile() ~ publishFeatureGuide())
+        } ~ getFeatureGuides(featureGuideService) ~ deleteFeature(featureGuideService) ~ updateFeatureGuide(featureGuideService) ~ getFeatureVideoFile(featureGuideService) ~ publishFeatureGuide(featureGuideService))
     }
 }

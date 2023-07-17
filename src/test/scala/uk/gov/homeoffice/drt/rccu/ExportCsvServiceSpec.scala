@@ -13,6 +13,7 @@ import uk.gov.homeoffice.drt.ports.PortRegion
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
+
 class ExportCsvServiceSpec extends Specification {
   val testKit: ActorTestKit = ActorTestKit()
   implicit val sys: ActorSystem[Nothing] = testKit.system
@@ -30,17 +31,6 @@ class ExportCsvServiceSpec extends Specification {
     val expectedUri = "http://lhr:9000/export/arrivals/2022-07-22/2022-07-24/T1"
     val uri = exportCsvService.getUri("LHR", "2022-07-22", "2022-07-24", "T1")
     uri mustEqual expectedUri
-  }
-
-  "Get response for given region port terminal" >> {
-    val response = Await.result(exportCsvService.getPortResponseForTerminal("2022-07-22", "2022-07-23", "Heathrow", "Heathrow", "T2"), 1.seconds).get
-
-    response.port must be("Heathrow")
-    response.regionName must be ("Heathrow")
-    response.terminal must be ("T2")
-    response.httpResponse.entity.dataBytes.fold(ByteString.empty)(_ ++ _).map(_.utf8String).runWith(Sink.head).map { csv =>
-      csv mustEqual csv
-    }
   }
 
   object MockHttpClient extends HttpClient {

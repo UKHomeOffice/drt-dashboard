@@ -33,12 +33,12 @@ sealed trait FeatureGuideViewLike {
   implicit val rw: ReadWriter[FeatureGuideViewRow] = macroRW
 }
 
-object FeatureGuideViewDao extends FeatureGuideViewLike {
+case class FeatureGuideViewDao(db: Database) extends FeatureGuideViewLike {
 
   val userFeatureView = TableQuery[FeatureGuideViewTable]
 
   def deleteViewForFeature(featureId: String) = {
     val deleteAction = userFeatureView.filter(_.featureGuideId === featureId.toInt).delete
-    AppDatabase.db.run(deleteAction)
+    db.run(deleteAction)
   }
 }

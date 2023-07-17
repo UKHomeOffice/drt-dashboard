@@ -5,25 +5,25 @@ import uk.gov.homeoffice.drt.db.{FeatureGuideDao, FeatureGuideRow, FeatureGuideV
 import scala.concurrent.Future
 
 
-object FeatureGuideService {
+case class FeatureGuideService(featureGuideDao: FeatureGuideDao, featureGuideViewDao: FeatureGuideViewDao) {
   def updatePublishFeatureGuide(featureId: String, publish: Boolean) = {
-    FeatureGuideDao.updatePublishFeatureGuide(featureId, publish)
+    featureGuideDao.updatePublishFeatureGuide(featureId, publish)
   }
 
   def updateFeatureGuide(featureId: String, title: String, markdownContent: String) = {
-    FeatureGuideDao.updateFeatureGuide(featureId, title, markdownContent)
-    FeatureGuideViewDao.deleteViewForFeature(featureId)
+    featureGuideDao.updateFeatureGuide(featureId, title, markdownContent)
+    featureGuideViewDao.deleteViewForFeature(featureId)
   }
 
   def deleteFeatureGuide(featureId: String): Future[Int] = {
-    FeatureGuideDao.deleteFeatureGuide(featureId)
+    featureGuideDao.deleteFeatureGuide(featureId)
   }
 
   def getFeatureGuides(): Future[Seq[FeatureGuideRow]] = {
-    FeatureGuideDao.getFeatureGuides()
+    featureGuideDao.getFeatureGuides()
   }
 
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
-    FeatureGuideDao.insertWebmDataTemplate(fileName, title, markdownContent)
+    featureGuideDao.insertWebmDataTemplate(fileName, title, markdownContent)
   }
 }

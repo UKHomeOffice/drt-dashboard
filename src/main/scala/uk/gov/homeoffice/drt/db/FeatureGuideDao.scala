@@ -26,7 +26,7 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 }
 
 
-object FeatureGuideDao {
+case class FeatureGuideDao(db: Database) {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
 
   private def getCurrentTime = new Timestamp(new DateTime().getMillis)
@@ -34,28 +34,28 @@ object FeatureGuideDao {
   def updatePublishFeatureGuide(featureId: String, publish: Boolean) = {
     val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.published, f.uploadTime))
       .update(publish, getCurrentTime)
-    AppDatabase.db.run(query)
+    db.run(query)
   }
 
   def updateFeatureGuide(featureId: String, title: String, markdownContent: String) = {
     val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.title, f.markdownContent, f.uploadTime))
       .update((Some(title), markdownContent, getCurrentTime))
-    AppDatabase.db.run(query)
+    db.run(query)
   }
 
   def deleteFeatureGuide(featureId: String): Future[Int] = {
     val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).delete
-    AppDatabase.db.run(query)
+    db.run(query)
   }
 
   def getFeatureGuides(): Future[Seq[FeatureGuideRow]] = {
     val query = FeatureGuideTable.result
-    val result = AppDatabase.db.run(query)
+    val result = db.run(query)
     result
   }
 
   def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
     val insertAction = FeatureGuideTable += FeatureGuideRow(None, getCurrentTime, Some(fileName), Some(title), markdownContent, false)
-    AppDatabase.db.run(insertAction)
+    db.run(insertAction)
   }
 }
