@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {MarkdownEditor} from './MarkdownEditor';
 import axios, {AxiosResponse} from "axios";
 import ListFeatureGuide from "./ListFeatureGuide";
@@ -13,7 +13,17 @@ const UploadForm: React.FC = () => {
     const [error, setError] = useState(false);
     const [openPreview, setOpenPreview] = useState(false);
     const [viewFeatureGuides, setViewFeatureGuides] = useState(false);
-    const handlePreviewOpen = () => setOpenPreview(true);
+    const [videoUrl, setVideoUrl] = useState('');
+
+    const handlePreviewOpen = () => {
+        setVideoUrl(URL.createObjectURL(video));
+    }
+
+    useEffect(() => {
+        if (videoUrl !== '') {
+            setOpenPreview(true);
+        }
+    }, [videoUrl]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -96,7 +106,7 @@ const UploadForm: React.FC = () => {
                                 <Button variant="contained" color="primary" onClick={handlePreviewOpen}>Preview</Button>
                             </div> : <span/>}
 
-                        <PreviewComponent videoURL={video ? URL.createObjectURL(video) : ""} title={text}
+                        <PreviewComponent videoURL={video ? videoUrl : ""} title={text}
                                           markdownContent={markdownContent} openPreview={openPreview}
                                           setOpenPreview={setOpenPreview}/>
                     </div>
