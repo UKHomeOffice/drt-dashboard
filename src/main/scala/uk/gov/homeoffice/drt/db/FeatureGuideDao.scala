@@ -54,7 +54,7 @@ case class FeatureGuideDao(db: Database) {
     result
   }
 
-  def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
+  def insertFeatureGuide(fileName: String, title: String, markdownContent: String): Unit = {
     val insertAction = FeatureGuideTable += FeatureGuideRow(None, getCurrentTime, Some(fileName), Some(title), markdownContent, false)
     db.run(insertAction)
   }

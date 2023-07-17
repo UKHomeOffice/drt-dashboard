@@ -118,7 +118,7 @@ const App = (props: PropsFromReact) => {
                     <Route exact path="/red-list-editor">
                         <RedListEditor/>
                     </Route>
-                    <Route exact path="/userGuideUpload">
+                    <Route exact path="/feature-guide-upload">
                         <UploadForm/>
                     </Route>
                 </Switch>

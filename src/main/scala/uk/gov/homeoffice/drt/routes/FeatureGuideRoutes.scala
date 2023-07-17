@@ -7,18 +7,21 @@ import akka.http.scaladsl.model.HttpEntity.ChunkStreamPart
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.StandardRoute
+import akka.http.scaladsl.server.{Route, StandardRoute}
 import akka.stream.IOResult
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError, enrichAny}
 import uk.gov.homeoffice.drt.db.FeatureGuideRow
-import uk.gov.homeoffice.drt.uploadTraining.{FeatureGuideService, S3Service}
+import uk.gov.homeoffice.drt.services.s3.{S3Downloader, S3Service, S3Uploader}
+import uk.gov.homeoffice.drt.uploadTraining.FeatureGuideService
 
 import java.sql.Timestamp
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
+
+case class FeaturePublished(published: Boolean)
 
 trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
   implicit object TimestampFormat extends JsonFormat[Timestamp] {
@@ -40,15 +43,27 @@ trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
   }
 
   implicit val featureGuideRowFormatParser: RootJsonFormat[FeatureGuideRow] = jsonFormat6(FeatureGuideRow)
+
+  implicit val featurePublishedFormatParser: RootJsonFormat[FeaturePublished] = jsonFormat1(FeaturePublished)
+
 }
 
 object FeatureGuideRoutes extends FeatureGuideJsonFormats {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def getFeatureVideoFile(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def routeResponse(responseF: Future[StandardRoute]): Route = {
+    onComplete(responseF) {
+      case Success(result) => result
+      case Failure(ex) =>
+        log.error(s"Error while uploading", ex)
+        complete(StatusCodes.InternalServerError, ex.getMessage)
+    }
+  }
+
+  def getFeatureVideoFile(downloader: S3Downloader, prefixFolder: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     path("getFeatureVideos" / Segment) { filename =>
       get {
-        val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = S3Service.getVideoFile(filename)
+        val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = downloader.download(s"$prefixFolder/$filename")
 
         val fileEntityF: Future[ResponseEntity] = responseStreamF.map(responseStream =>
           HttpEntity.Chunked(
@@ -60,12 +75,7 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
 
         val responseF = fileEntityF.map { fileEntity => complete(HttpResponse(entity = fileEntity, headers = List(contentDispositionHeader))) }
 
-        onComplete(responseF) {
-          case Success(result) => result
-          case Failure(ex) =>
-            log.error(s"Error while uploading", ex)
-            complete(StatusCodes.InternalServerError, ex.getMessage)
-        }
+        routeResponse(responseF)
       }
     }
 
@@ -75,12 +85,8 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
       complete(StatusCodes.OK, json)
     }
 
-    onComplete(responseF) {
-      case Success(result) => result
-      case Failure(ex) =>
-        log.error(s"Error while uploading", ex)
-        complete(StatusCodes.InternalServerError, ex.getMessage)
-    }
+    routeResponse(responseF)
+
   }
 
   def updateFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
@@ -91,28 +97,21 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
             val responseF = featureGuideService.updateFeatureGuide(featureId, title, markdownContent)
               .map(_ => complete(StatusCodes.OK, s"Feature $featureId is updated successfully"))
 
-            onComplete(responseF) {
-              case Success(result) => result
-              case Failure(ex) =>
-                log.error(s"Error while uploading", ex)
-                complete(StatusCodes.InternalServerError, ex.getMessage)
-            }
+            routeResponse(responseF)
           }
         }
       }
     }
 
   def publishFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
-    path("publishFeatureGuide" / Segment / Segment) { (publishAction, featureId) =>
+    path("published" / Segment) { (featureId) =>
       post {
-        val responseF = featureGuideService.updatePublishFeatureGuide(featureId, publishAction == "publish")
-          .map(_ => complete(StatusCodes.OK, s"Feature $featureId is published successfully"))
+        entity(as[FeaturePublished]) { featurePublished =>
+          val responseF = featureGuideService.updatePublishFeatureGuide(featureId, featurePublished.published)
+            .map(_ => complete(StatusCodes.OK, s"Feature $featureId is published successfully"))
 
-        onComplete(responseF) {
-          case Success(result) => result
-          case Failure(ex) =>
-            log.error(s"Error while uploading", ex)
-            complete(StatusCodes.InternalServerError, ex.getMessage)
+          routeResponse(responseF)
+
         }
       }
     }
@@ -125,16 +124,11 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
           complete(StatusCodes.OK, json)
         }
 
-        onComplete(responseF) {
-          case Success(result) => result
-          case Failure(ex) =>
-            log.error(s"Error while deleting feature $featureId", ex)
-            complete(StatusCodes.InternalServerError, ex.getMessage)
-        }
+        routeResponse(responseF)
       }
     }
 
-  def apply(prefix: String, featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
+  def apply(prefix: String, featureGuideService: FeatureGuideService, uploader: S3Uploader, downloader: S3Downloader, prefixFolder: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
     pathPrefix(prefix) {
       concat(
         path("uploadFeatureGuide") {
@@ -144,27 +138,14 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
                 fileUpload("webmFile") {
                   case (metadata, byteSource) =>
                     val filename = metadata.fileName
-                    featureGuideService.insertWebmDataTemplate(filename, title, markdownContent)
-                    val responseF = S3Service.isFileLarge(byteSource).flatMap {
-                      case true => S3Service.uploadFile(byteSource, filename)
-                        .map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
-                      case false =>
-                        val byteStringFuture: Future[ByteString] = byteSource.runFold(ByteString.empty)(_ ++ _)
-                        byteStringFuture.map { byteString =>
-                          S3Service.uploadFileSmallerFile(byteString, filename)
-                        }.map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
-                    }
-
-                    onComplete(responseF) {
-                      case Success(result) => result
-                      case Failure(ex) =>
-                        log.error(s"Error while uploading", ex)
-                        complete(StatusCodes.InternalServerError, ex.getMessage)
-                    }
+                    featureGuideService.insertFeatureGuide(filename, title, markdownContent)
+                    val responseF = uploader.upload(filename, byteSource)
+                      .map(_ => complete(StatusCodes.OK, s"File $filename uploaded successfully"))
+                    routeResponse(responseF)
                 }
               }
             }
           }
-        } ~ getFeatureGuides(featureGuideService) ~ deleteFeature(featureGuideService) ~ updateFeatureGuide(featureGuideService) ~ getFeatureVideoFile(featureGuideService) ~ publishFeatureGuide(featureGuideService))
+        } ~ getFeatureGuides(featureGuideService) ~ deleteFeature(featureGuideService) ~ updateFeatureGuide(featureGuideService) ~ getFeatureVideoFile(downloader, prefixFolder) ~ publishFeatureGuide(featureGuideService))
     }
 }

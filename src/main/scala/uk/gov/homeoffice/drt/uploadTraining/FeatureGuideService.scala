@@ -23,7 +23,7 @@ case class FeatureGuideService(featureGuideDao: FeatureGuideDao, featureGuideVie
     featureGuideDao.getFeatureGuides()
   }
 
-  def insertWebmDataTemplate(fileName: String, title: String, markdownContent: String): Unit = {
-    featureGuideDao.insertWebmDataTemplate(fileName, title, markdownContent)
+  def insertFeatureGuide(fileName: String, title: String, markdownContent: String): Unit = {
+    featureGuideDao.insertFeatureGuide(fileName, title, markdownContent)
   }
 }

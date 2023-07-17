@@ -34,13 +34,13 @@ export function PublishComponent(props: Props) {
         props.setReceivedData(false);
     }
 
-    const handleConfirmDialog = () => {
+    const updatePublishState = () => {
         confirmPublishFeature();
     }
 
     const confirmPublishFeature = () => {
         props.actionString == "publish" ?
-            axios.post('/guide/publishFeatureGuide/publish/' + props.id)
+            axios.post('/guide/published/' + props.id, {published: true})
                 .then(response => handleResponse(response))
                 .then(data => {
                     setConfirmAction(true);
@@ -48,7 +48,7 @@ export function PublishComponent(props: Props) {
                 }).catch(error => {
                 setError(true);
                 console.error(error);
-            }) : axios.post('/guide/publishFeatureGuide/unPublish/' + props.id)
+            }) : axios.post('/guide/published/' + props.id, {published: false})
                 .then(response => handleResponse(response))
                 .then(data => {
                     setConfirmAction(true);
@@ -91,7 +91,7 @@ export function PublishComponent(props: Props) {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
-                            <Button onClick={handleConfirmDialog} variant="contained" color="error">
+                            <Button onClick={updatePublishState} variant="contained" color="error">
                                 {props.actionString == "publish" ? "Publish" : "UnPublish"}
                             </Button>
                         </DialogActions>
