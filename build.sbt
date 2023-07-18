@@ -50,7 +50,7 @@ lazy val root = (project in file(".")).
       "uk.gov.service.notify" % "notifications-java-client" % notificationsJavaClientVersion,
       "com.github.tototoshi" %% "scala-csv" % scalaCsvVersion,
       "org.scalactic" %% "scalactic" % scalaTestVersion,
-      "software.amazon.awssdk" % "s3" % "2.16.49",
+      "software.amazon.awssdk" % "s3" % awsJava2SdkVersion,
 
       "com.typesafe.slick" %% "slick" % slickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
@@ -61,7 +61,6 @@ lazy val root = (project in file(".")).
       "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-//      "software.amazon.awssdk" % "s3" % awsJava2SdkVersion,
 
       "org.specs2" %% "specs2-core" % specs2Version % Test
     ),

@@ -61,7 +61,7 @@ object FeatureGuideRoutes extends FeatureGuideJsonFormats {
   }
 
   def getFeatureVideoFile(downloader: S3Downloader, prefixFolder: String)(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]) =
-    path("getFeatureVideos" / Segment) { filename =>
+    path("get-feature-videos" / Segment) { filename =>
       get {
         val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = downloader.download(s"$prefixFolder/$filename")
 

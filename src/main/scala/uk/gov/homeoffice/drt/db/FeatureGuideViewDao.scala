@@ -22,18 +22,7 @@ class FeatureGuideViewTable(tag: Tag) extends Table[FeatureGuideViewRow](tag, "f
 
 }
 
-sealed trait FeatureGuideViewLike {
-
-  import upickle.default.{ReadWriter, macroRW}
-
-  implicit val timestampReader: ReadWriter[java.sql.Timestamp] = readwriter[String].bimap[java.sql.Timestamp](
-    timestamp => timestamp.getTime.toString,
-    str => new Timestamp(str.toLong)
-  )
-  implicit val rw: ReadWriter[FeatureGuideViewRow] = macroRW
-}
-
-case class FeatureGuideViewDao(db: Database) extends FeatureGuideViewLike {
+case class FeatureGuideViewDao(db: Database) {
 
   val userFeatureView = TableQuery[FeatureGuideViewTable]
 
