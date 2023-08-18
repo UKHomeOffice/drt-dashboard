@@ -23,7 +23,7 @@ import scala.util.{Failure, Success}
 
 case class FeaturePublished(published: Boolean)
 
-trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
+trait DefaultTimeJsonProtocol extends DefaultJsonProtocol{
   implicit object TimestampFormat extends JsonFormat[Timestamp] {
     override def write(obj: Timestamp): JsValue = JsString(obj.toString)
 
@@ -41,6 +41,9 @@ trait FeatureGuideJsonFormats extends DefaultJsonProtocol {
       }
     }
   }
+}
+
+trait FeatureGuideJsonFormats extends DefaultTimeJsonProtocol {
 
   implicit val featureGuideRowFormatParser: RootJsonFormat[FeatureGuideRow] = jsonFormat6(FeatureGuideRow)
 

@@ -73,6 +73,7 @@ object Server {
       val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
       val userRequestService = UserRequestService(UserAccessRequestDao(ProdDatabase.db))
       val userService = UserService(UserDao(ProdDatabase.db))
+      val seminarDao = SeminarDao(ProdDatabase.db)
       val featureGuideService = FeatureGuideService(FeatureGuideDao(ProdDatabase.db), FeatureGuideViewDao(ProdDatabase.db))
       val neboRoutes = NeboUploadRoutes(serverConfig.neboPortCodes.toList, ProdHttpClient).route
 
@@ -91,7 +92,8 @@ object Server {
         ApiRoutes("api", serverConfig.clientConfig, neboRoutes, userService),
         ExportRoutes(ProdHttpClient, exportUploader.upload, exportDownloader.download, () => SDate.now()),
         UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keycloakUrl),
-        FeatureGuideRoutes("guide", featureGuideService, featureUploader, featureDownloader, serverConfig.featureFolderPrefix)
+        FeatureGuideRoutes("guide", featureGuideService, featureUploader, featureDownloader, serverConfig.featureFolderPrefix),
+        SeminarRoute("seminar",seminarDao)
       )
 
       val serverBinding: Future[ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
