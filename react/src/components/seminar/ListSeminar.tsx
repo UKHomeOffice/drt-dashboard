@@ -13,6 +13,8 @@ import {EditSeminar} from "./EditSeminar";
 import Box from "@mui/material/Box";
 import {PublishSeminar} from "./PublishSeminar";
 import {ViewSeminar} from "./ViewSeminar";
+import {CalendarViewMonth} from "@mui/icons-material";
+import {RegisteredUsers} from "./RegisteredUsers";
 
 interface Props {
     setViewSeminars: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -102,12 +104,23 @@ export function ListSeminar(props: Props) {
                 </IconButton>
             ),
         },
+        {
+            field: 'users',
+            headerName: 'Users',
+            width: 50,
+            renderCell: (params: GridRenderCellParams) => (
+                <IconButton aria-label="users-registered">
+                    <CalendarViewMonth onClick={() => handleRegisteredUsers(params.row as SeminarData)}/>
+                </IconButton>
+            ),
+        },
     ];
 
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [receivedData, setReceivedData] = React.useState(false);
     const [rowDetails, setRowDetails] = React.useState({} as SeminarData | undefined)
     const [error, setError] = useState(false);
+    const [showRegisteredUser, setRegisteredUser] = React.useState(false)
     const [showEdit, setShowEdit] = React.useState(false)
     const [showDelete, setShowDelete] = useState(false);
     const [publish, setPublish] = useState(false);
@@ -128,6 +141,11 @@ export function ListSeminar(props: Props) {
     const handleEdit = (userData: SeminarData | undefined) => {
         setRowDetails(userData)
         setShowEdit(true);
+    }
+
+    const handleRegisteredUsers = (userData: SeminarData | undefined) => {
+        setRowDetails(userData)
+        setRegisteredUser(true);
     }
 
     const handleDelete = (userData: SeminarData | undefined) => {
@@ -193,6 +211,10 @@ export function ListSeminar(props: Props) {
                                                 showEdit={showEdit} setShowEdit={setShowEdit}
                                                 setReceivedData={setReceivedData}
                             /> :
+                            showRegisteredUser ? <RegisteredUsers seminarId={rowDetails?.id} seminarTitle={rowDetails?.title}
+                                                                  showRegisteredUser={showRegisteredUser}
+                                                                  setShowRegisteredUser={setRegisteredUser}
+                                />:
                             <div>
                                 <h1>Seminar List | <a href="#" style={{marginTop: '20px'}}
                                                       onClick={listAllSeminars}>{listAll ? "Ahead Only" : "View all"}</a>

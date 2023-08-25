@@ -2,15 +2,13 @@ package uk.gov.homeoffice.drt.routes
 
 import akka.http.scaladsl.model.{Multipart, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Route, StandardRoute}
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRow}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext}
 
 case class SeminarPublished(published: Boolean)
 
@@ -21,19 +19,10 @@ trait SeminarJsonFormats extends DefaultTimeJsonProtocol {
 
 }
 
-object SeminarRoute extends SeminarJsonFormats {
-  val log: Logger = LoggerFactory.getLogger(getClass)
+object SeminarRoute extends BaseRoute with SeminarJsonFormats {
+  override val log: Logger = LoggerFactory.getLogger(getClass)
 
   val stringToTimestamp: String => Timestamp = timeString => new Timestamp(DateTime.parse(timeString).getMillis)
-
-  def routeResponse(responseF: Future[StandardRoute], eventText: String): Route = {
-    onComplete(responseF) {
-      case Success(result) => result
-      case Failure(ex) =>
-        log.error(s"Error while $eventText", ex)
-        complete(StatusCodes.InternalServerError, ex.getMessage)
-    }
-  }
 
   def editSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("edit" / Segment) { seminarId =>
     put {
