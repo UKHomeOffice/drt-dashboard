@@ -26,6 +26,7 @@ export interface SeminarData {
     description: string;
     startTime: string;
     endTime: string;
+    meetingLink: string;
 }
 
 export function ListSeminar(props: Props) {
@@ -55,6 +56,15 @@ export function ListSeminar(props: Props) {
             field: 'endTime',
             headerName: 'End Time',
             width: 150,
+        },
+        {
+            field: 'meetingLink',
+            headerName: 'Meeting Link',
+            description: 'This column has a value getter and is not sortable.',
+            width: 100,
+            renderCell: (params: GridRenderCellParams) => (
+                <a href={params.row.meetingLink} target="_blank">Team link</a>
+            ),
         },
         {
             field: 'latestUpdateTime',
@@ -208,38 +218,41 @@ export function ListSeminar(props: Props) {
                                                 describe={rowDetails?.description}
                                                 startTime={rowDetails?.startTime}
                                                 endTime={rowDetails?.endTime}
+                                                meetingLink={rowDetails?.meetingLink}
                                                 showEdit={showEdit} setShowEdit={setShowEdit}
                                                 setReceivedData={setReceivedData}
                             /> :
-                            showRegisteredUser ? <RegisteredUsers seminarId={rowDetails?.id} seminarTitle={rowDetails?.title}
-                                                                  showRegisteredUser={showRegisteredUser}
-                                                                  setShowRegisteredUser={setRegisteredUser}
-                                />:
-                            <div>
-                                <h1>Seminar List | <a href="#" style={{marginTop: '20px'}}
-                                                      onClick={listAllSeminars}>{listAll ? "Ahead Only" : "View all"}</a>
-                                </h1>
-                                <Box sx={{height: 400, width: '100%'}}>
-                                    <DataGrid
-                                        getRowId={(rowsData) => rowsData.id}
-                                        rows={rowsData}
-                                        columns={seminarColumns}
-                                        pageSize={5}
-                                        rowsPerPageOptions={[5]}
-                                        experimentalFeatures={{newEditingApi: true}}
-                                    />
-                                    <Button style={{float: 'right'}} variant="outlined"
-                                            color="primary"
-                                            onClick={handleBack}>back</Button>
-                                </Box>
-                                <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                             description={rowDetails?.description}
-                                             startTime={rowDetails?.startTime}
-                                             endTime={rowDetails?.endTime}
-                                             view={view} setView={setView}
-                                             setReceivedData={setReceivedData} isEdit={true}
-                                             showEdit={showEdit} setShowEdit={setShowEdit}/>
-                            </div>
+                            showRegisteredUser ?
+                                <RegisteredUsers seminarId={rowDetails?.id} seminarTitle={rowDetails?.title}
+                                                 showRegisteredUser={showRegisteredUser}
+                                                 setShowRegisteredUser={setRegisteredUser}
+                                /> :
+                                <div>
+                                    <h1>Seminar List | <a href="#" style={{marginTop: '20px'}}
+                                                          onClick={listAllSeminars}>{listAll ? "Ahead Only" : "View all"}</a>
+                                    </h1>
+                                    <Box sx={{height: 400, width: '100%'}}>
+                                        <DataGrid
+                                            getRowId={(rowsData) => rowsData.id}
+                                            rows={rowsData}
+                                            columns={seminarColumns}
+                                            pageSize={5}
+                                            rowsPerPageOptions={[5]}
+                                            experimentalFeatures={{newEditingApi: true}}
+                                        />
+                                        <Button style={{float: 'right'}} variant="outlined"
+                                                color="primary"
+                                                onClick={handleBack}>back</Button>
+                                    </Box>
+                                    <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
+                                                 description={rowDetails?.description}
+                                                 startTime={rowDetails?.startTime}
+                                                 endTime={rowDetails?.endTime}
+                                                 meetingLink={rowDetails?.meetingLink}
+                                                 view={view} setView={setView}
+                                                 setReceivedData={setReceivedData} isEdit={true}
+                                                 showEdit={showEdit} setShowEdit={setShowEdit}/>
+                                </div>
     )
 
 }

@@ -6,6 +6,7 @@ CREATE TABLE seminar
     description        VARCHAR(255),
     start_time         timestamp NOT NULL,
     end_time           timestamp NOT NULL,
+    meeting_link        VARCHAR(500),
     published          BOOLEAN   NOT NULL DEFAULT FALSE
 );
 

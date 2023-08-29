@@ -7,7 +7,7 @@ import slick.jdbc.PostgresProfile.api._
 import java.sql.Timestamp
 import scala.concurrent.Future
 
-case class SeminarRow(id: Option[Int], title: String, description: String, startTime: Timestamp, endTime: Timestamp, published: Boolean, latestUpdateTime: Timestamp)
+case class SeminarRow(id: Option[Int], title: String, description: String, startTime: Timestamp, endTime: Timestamp, published: Boolean, meetingLink: Option[String], latestUpdateTime: Timestamp)
 
 class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -22,9 +22,11 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def published: Rep[Boolean] = column[Boolean]("published")
 
+  def meetingLink: Rep[Option[String]] = column[Option[String]]("meeting_link")
+
   def latestUpdateTime: Rep[Timestamp] = column[Timestamp]("latest_update_time")
 
-  def * : ProvenShape[SeminarRow] = (id, title, description, startTime, endTime, published, latestUpdateTime).mapTo[SeminarRow]
+  def * : ProvenShape[SeminarRow] = (id, title, description, startTime, endTime, published, meetingLink, latestUpdateTime).mapTo[SeminarRow]
 }
 
 
@@ -41,8 +43,8 @@ case class SeminarDao(db: Database) {
 
   def updateSeminar(seminarRow: SeminarRow): Future[Int] = seminarRow.id match {
     case Some(id) =>
-      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.description, f.startTime, f.endTime, f.latestUpdateTime))
-        .update(seminarRow.title, seminarRow.description, seminarRow.startTime, seminarRow.endTime, getCurrentTime)
+      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.description, f.startTime, f.endTime, f.meetingLink, f.latestUpdateTime))
+        .update(seminarRow.title, seminarRow.description, seminarRow.startTime, seminarRow.endTime, seminarRow.meetingLink, getCurrentTime)
       db.run(query)
     case None => Future.successful(0)
   }
@@ -58,8 +60,8 @@ case class SeminarDao(db: Database) {
     result
   }
 
-  def insertSeminarForm(title: String, description: String, startTime: Timestamp, endTime: Timestamp): Future[Int] = {
-    val insertAction = seminarTable += SeminarRow(None, title, description, startTime, endTime, false, getCurrentTime)
+  def insertSeminarForm(title: String, description: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
+    val insertAction = seminarTable += SeminarRow(None, title, description, startTime, endTime, false, meetingLink, getCurrentTime)
     db.run(insertAction)
   }
 }

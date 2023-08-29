@@ -14,6 +14,7 @@ interface Props {
     description: string | undefined;
     startTime: string | undefined;
     endTime: string | undefined;
+    meetingLink: string | undefined;
     view: boolean;
     setView: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -96,6 +97,12 @@ export function ViewSeminar(props: Props) {
                         </Grid>
                         <Grid item xs={9}>
                             <Typography>{props.endTime}</Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <label>Meeting Link:</label>
+                        </Grid>
+                        <Grid item xs={9}>
+                            <Typography><a href={props.meetingLink}>Team link</a></Typography>
                         </Grid>
                     </Grid>
                 </DialogContent>

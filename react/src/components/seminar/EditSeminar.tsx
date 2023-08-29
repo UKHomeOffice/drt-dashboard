@@ -15,6 +15,7 @@ interface Props {
     describe: string | undefined;
     startTime: string | undefined;
     endTime: string | undefined;
+    meetingLink: string | undefined;
     setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     showEdit: boolean;
     setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -25,6 +26,7 @@ export function EditSeminar(props: Props) {
     const [editDescribe, setEditDescribe] = React.useState(props.describe)
     const [editStartTime, setEditStartTime] = React.useState<Dayjs>(dayjs(props.startTime));
     const [editEndTime, setEditEndTime] = React.useState<Dayjs>(dayjs(props.endTime));
+    const [editMeetingLink, setEditMeetingLink] = React.useState(props.meetingLink);
     const [updated, setUpdated] = useState(false);
     const [error, setError] = useState(false);
 
@@ -56,6 +58,7 @@ export function EditSeminar(props: Props) {
         formData.append('description', editDescribe);
         formData.append('startTime', startTimeString);
         formData.append('endTime', endTimeString);
+        formData.append('meetingLink', editMeetingLink);
         axios.put('/seminar/edit/' + props.id, formData)
             .then(response => handleResponse(response))
             .then(data => {
@@ -104,6 +107,21 @@ export function EditSeminar(props: Props) {
                                     placeholder="Describe your seminar here"
                                     value={editDescribe}
                                     onChange={(e) => setEditDescribe(e.target.value)}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <label>Meeting Link:</label>
+                            </Grid>
+                            <Grid item xs={10}>
+                                <TextField
+                                           fullWidth
+                                           label="Meeting Link"
+                                           sx={{width: 400}}
+                                           multiline
+                                           rows={1}
+                                           variant="outlined"
+                                           placeholder="Paste your meeting link here"
+                                           value={editMeetingLink}
+                                           onChange={(e) => setEditMeetingLink(e.target.value)}/>
                             </Grid>
                             <Grid item xs={3}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>

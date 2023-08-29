@@ -19,7 +19,7 @@ export function CreateSeminar() {
     const [endTime, setEndTime] = React.useState<Dayjs | null>(null);
     const [saved, setSaved] = useState(false);
     const [viewSeminars, setViewSeminars] = useState(false);
-
+    const [meetingLink, setMeetingLink] = useState('');
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
@@ -40,6 +40,7 @@ export function CreateSeminar() {
         formData.append('description', description);
         formData.append('startTime', startTimeString);
         formData.append('endTime', endTimeString);
+        formData.append('meetingLink', meetingLink);
         axios.post('/seminar/save', formData)
             .then(response => handleResponse(response))
             .then(data => {
@@ -93,6 +94,21 @@ export function CreateSeminar() {
                                                value={description}
                                                onChange={(e) => setDescription(e.target.value)}/>
                                 </Grid>
+                                <Grid item xs={2}>
+                                    <label>Meeting Link:</label>
+                                </Grid>
+                                <Grid item xs={10}>
+                                    <TextField
+                                               fullWidth
+                                               label="Meeting Link"
+                                               sx={{width: 400}}
+                                               multiline
+                                               rows={1}
+                                               variant="outlined"
+                                               placeholder="Paste your meeting link here"
+                                               value={meetingLink}
+                                               onChange={(e) => setMeetingLink(e.target.value)}/>
+                                </Grid>
                                 <Grid item xs={3}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DateTimePicker
@@ -101,6 +117,7 @@ export function CreateSeminar() {
                                             value={startTime}
                                             onChange={(newValue) => {
                                                 setStartTime(newValue);
+                                                setEndTime(newValue);
                                             }}
 
                                         />
