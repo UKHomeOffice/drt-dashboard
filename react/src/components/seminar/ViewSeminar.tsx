@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {DeleteSeminar} from "./DeleteSeminar";
 import Typography from "@mui/material/Typography";
+import {stringToUKDate} from "./ListSeminar";
 
 interface Props {
     id: string | undefined;
@@ -90,13 +91,13 @@ export function ViewSeminar(props: Props) {
                             <label>Start Time:</label>
                         </Grid>
                         <Grid item xs={9}>
-                            <Typography>{props.startTime}</Typography>
+                            <Typography>{stringToUKDate(props.startTime)}</Typography>
                         </Grid>
                         <Grid item xs={3}>
                             <label>End Time:</label>
                         </Grid>
                         <Grid item xs={9}>
-                            <Typography>{props.endTime}</Typography>
+                            <Typography>{stringToUKDate(props.endTime)}</Typography>
                         </Grid>
                         <Grid item xs={3}>
                             <label>Meeting Link:</label>

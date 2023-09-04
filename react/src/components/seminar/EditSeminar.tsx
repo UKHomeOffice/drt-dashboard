@@ -8,6 +8,8 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {DateTimePicker} from "@mui/x-date-pickers/DateTimePicker";
 import Box from "@mui/material/Box";
 import dayjs, {Dayjs} from 'dayjs';
+import {stringToUKDate} from "./ListSeminar";
+import {seminarFormData} from "./CreateSeminar";
 
 interface Props {
     id: string | undefined;
@@ -24,8 +26,8 @@ interface Props {
 export function EditSeminar(props: Props) {
     const [editTitle, setEditTitle] = React.useState(props.title)
     const [editDescribe, setEditDescribe] = React.useState(props.describe)
-    const [editStartTime, setEditStartTime] = React.useState<Dayjs>(dayjs(props.startTime));
-    const [editEndTime, setEditEndTime] = React.useState<Dayjs>(dayjs(props.endTime));
+    const [editStartTime, setEditStartTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.startTime)));
+    const [editEndTime, setEditEndTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.endTime)));
     const [editMeetingLink, setEditMeetingLink] = React.useState(props.meetingLink);
     const [updated, setUpdated] = useState(false);
     const [error, setError] = useState(false);
@@ -51,15 +53,8 @@ export function EditSeminar(props: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const startTimeString = editStartTime?.format("YYYY-MM-DDTHH:mm") as string
-        const endTimeString = editEndTime?.format("YYYY-MM-DDTHH:mm") as string
-        const formData = new FormData();
-        formData.append('title', editTitle);
-        formData.append('description', editDescribe);
-        formData.append('startTime', startTimeString);
-        formData.append('endTime', endTimeString);
-        formData.append('meetingLink', editMeetingLink);
-        axios.put('/seminar/edit/' + props.id, formData)
+        axios.put('/seminar/edit/' + props.id,
+            seminarFormData(editStartTime, editEndTime, editTitle || '', editDescribe || '', editMeetingLink || ''))
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -113,15 +108,15 @@ export function EditSeminar(props: Props) {
                             </Grid>
                             <Grid item xs={10}>
                                 <TextField
-                                           fullWidth
-                                           label="Meeting Link"
-                                           sx={{width: 400}}
-                                           multiline
-                                           rows={1}
-                                           variant="outlined"
-                                           placeholder="Paste your meeting link here"
-                                           value={editMeetingLink}
-                                           onChange={(e) => setEditMeetingLink(e.target.value)}/>
+                                    fullWidth
+                                    label="Meeting Link"
+                                    sx={{width: 400}}
+                                    multiline
+                                    rows={1}
+                                    variant="outlined"
+                                    placeholder="Paste your meeting link here"
+                                    value={editMeetingLink}
+                                    onChange={(e) => setEditMeetingLink(e.target.value)}/>
                             </Grid>
                             <Grid item xs={3}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>

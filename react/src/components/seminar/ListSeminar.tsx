@@ -15,6 +15,22 @@ import {PublishSeminar} from "./PublishSeminar";
 import {ViewSeminar} from "./ViewSeminar";
 import {CalendarViewMonth} from "@mui/icons-material";
 import {RegisteredUsers} from "./RegisteredUsers";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from 'dayjs';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+export function stringToUKDate(date?: string): string | undefined {
+    if (!date) {
+        return undefined;
+    }
+
+    const utcDate = dayjs.utc(date, "YYYY-MM-DD HH:mm:ss.S");
+    const ukDatetime = utcDate.tz("Europe/London");
+    return ukDatetime.format('YYYY-MM-DD HH:mm');
+}
 
 interface Props {
     setViewSeminars: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -51,11 +67,18 @@ export function ListSeminar(props: Props) {
             field: 'startTime',
             headerName: 'Start Time',
             width: 150,
+            renderCell: (params) => {
+                return <div>{stringToUKDate(params.value)}</div>;
+            }
+
         },
         {
             field: 'endTime',
             headerName: 'End Time',
             width: 150,
+            renderCell: (params) => {
+                return <div>{stringToUKDate(params.value)}</div>;
+            }
         },
         {
             field: 'meetingLink',
@@ -146,7 +169,6 @@ export function ListSeminar(props: Props) {
         setRowDetails(userData)
         setUnPublish(true);
     }
-
 
     const handleEdit = (userData: SeminarData | undefined) => {
         setRowDetails(userData)

@@ -7,16 +7,34 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import {Dayjs} from 'dayjs';
+import dayjs, {Dayjs} from 'dayjs';
 import {ListSeminar} from "./ListSeminar";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Europe/London');
+
+export function seminarFormData(startTime: Dayjs | undefined, endTime: Dayjs | undefined, title: string, description: string, meetingLink: string) {
+    const startTimeString = startTime?.utc().format("YYYY-MM-DDTHH:mm:ssZ") as string
+    const endTimeString = endTime?.utc().format("YYYY-MM-DDTHH:mm:ssZ") as string
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('startTime', startTimeString);
+    formData.append('endTime', endTimeString);
+    formData.append('meetingLink', meetingLink);
+    return formData;
+}
 
 export function CreateSeminar() {
+    dayjs.tz.setDefault('Europe/London');
     const [error, setError] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [startTime, setStartTime] = React.useState<Dayjs | null>(null);
-    const [endTime, setEndTime] = React.useState<Dayjs | null>(null);
+    const [startTime, setStartTime] = React.useState<Dayjs | undefined>();
+    const [endTime, setEndTime] = React.useState<Dayjs | undefined>();
     const [saved, setSaved] = useState(false);
     const [viewSeminars, setViewSeminars] = useState(false);
     const [meetingLink, setMeetingLink] = useState('');
@@ -33,15 +51,7 @@ export function CreateSeminar() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const startTimeString = startTime?.format("YYYY-MM-DDTHH:mm") as string
-        const endTimeString = endTime?.format("YYYY-MM-DDTHH:mm") as string
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('startTime', startTimeString);
-        formData.append('endTime', endTimeString);
-        formData.append('meetingLink', meetingLink);
-        axios.post('/seminar/save', formData)
+        axios.post('/seminar/save', seminarFormData(startTime, endTime, title, description, meetingLink))
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -99,15 +109,15 @@ export function CreateSeminar() {
                                 </Grid>
                                 <Grid item xs={10}>
                                     <TextField
-                                               fullWidth
-                                               label="Meeting Link"
-                                               sx={{width: 400}}
-                                               multiline
-                                               rows={1}
-                                               variant="outlined"
-                                               placeholder="Paste your meeting link here"
-                                               value={meetingLink}
-                                               onChange={(e) => setMeetingLink(e.target.value)}/>
+                                        fullWidth
+                                        label="Meeting Link"
+                                        sx={{width: 400}}
+                                        multiline
+                                        rows={1}
+                                        variant="outlined"
+                                        placeholder="Copy and paste your meeting link here"
+                                        value={meetingLink}
+                                        onChange={(e) => setMeetingLink(e.target.value)}/>
                                 </Grid>
                                 <Grid item xs={3}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>

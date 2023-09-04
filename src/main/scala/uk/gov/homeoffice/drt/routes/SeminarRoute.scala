@@ -8,7 +8,9 @@ import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRow}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext}
+import java.time.{LocalDateTime, ZoneId, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import scala.concurrent.ExecutionContext
 
 case class SeminarPublished(published: Boolean)
 
@@ -22,7 +24,14 @@ trait SeminarJsonFormats extends DefaultTimeJsonProtocol {
 object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   override val log: Logger = LoggerFactory.getLogger(getClass)
 
-  val stringToTimestamp: String => Timestamp = timeString => new Timestamp(DateTime.parse(timeString).getMillis)
+  val stringToTimestamp: String => Timestamp = timeString => {
+    val localTime = LocalDateTime.parse(timeString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"))
+      .atZone(ZoneId.of("Europe/London"))
+
+    val utcTime = localTime.withZoneSameInstant(ZoneOffset.UTC)
+
+    new Timestamp(utcTime.toInstant.toEpochMilli)
+  }
 
   def editSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("edit" / Segment) { seminarId =>
     put {
