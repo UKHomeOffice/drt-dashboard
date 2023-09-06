@@ -2,7 +2,8 @@ package uk.gov.homeoffice.drt.notifications
 
 import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
-import uk.gov.service.notify.{NotificationClient, NotificationClientApi, SendEmailResponse}
+import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRow}
+import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
 
 import java.util
 import scala.collection.JavaConverters.mapAsJavaMapConverter
@@ -21,6 +22,8 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
 
   val revokeAccessTemplateId = "a50b8424-a8d8-49fe-b826-381623f9aace"
 
+  val seminarReminderTemplateId = "73c1d3a7-9f52-4ccc-a0c4-4c2837b86bf9"
+
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
   }
@@ -30,6 +33,31 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       s"https://$domain"
     else
       s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
+  }
+
+  def sendSeminarReminderEmail(email: String, anyPort: String, seminar: SeminarRow, isSecure: Boolean, baseDomain: String, teamEmail: String) = {
+    val protocol = if (isSecure) "https://" else "http://"
+    val portOrLocal = if (isSecure) anyPort + "." + baseDomain else baseDomain + ":9000"
+    val icsFileLink = s"$protocol$portOrLocal/seminar/calendarInvite/${seminar.id.getOrElse("")}"
+    import SeminarDao._
+    val personalisation = Map(
+      "teamEmail" -> teamEmail,
+      "requesterUsername" -> getFirstName(email),
+      "title" -> seminar.title,
+      "seminarDate" -> getDate(seminar.startTime),
+      "startTime" -> getStartTime(seminar.startTime),
+      "endTime" -> getEndTime(seminar.endTime),
+      "meetingLink" -> seminar.meetingLink.getOrElse(""),
+      "icsFileLink" -> icsFileLink
+    ).asJava
+
+    Try(client.sendEmail(
+      seminarReminderTemplateId,
+      email,
+      personalisation, "Seminar Reminder")).recover {
+      case e => log.error(s"Error sending seminar registration email to user $email", e)
+    }
+
   }
 
   def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String, teamEmail: String): Try[SendEmailResponse] = {

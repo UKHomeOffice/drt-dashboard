@@ -1,8 +1,8 @@
 package uk.gov.homeoffice.drt.db
 
-import slick.lifted.ProvenShape
+import org.joda.time.DateTime
 import slick.jdbc.PostgresProfile.api._
-
+import slick.lifted.ProvenShape
 import java.sql.Timestamp
 import scala.concurrent.Future
 
@@ -31,16 +31,33 @@ class SeminarsRegistrationTable(tag: Tag) extends Table[SeminarsRegistrationRow]
 case class SeminarRegisterDao(db: Database) {
   val seminarsRegistrationTable = TableQuery[SeminarsRegistrationTable]
 
-  //  private def getCurrentTime = new Timestamp(new DateTime().getMillis)
+  private def getCurrentTime = new Timestamp(new DateTime().getMillis)
 
-  def removeUser(seminarId: String,email: String): Future[Int] = {
-    println(s"removeUser: $seminarId, $email")
+  def updateEmailSentTime(seminarId: String) = {
+    val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).map(f => (f.emailSent))
+      .update(Some(getCurrentTime))
+    db.run(query)
+  }
+
+  def removeUser(seminarId: String, email: String): Future[Int] = {
     val query = seminarsRegistrationTable.filter(r => r.seminarId === seminarId.trim.toInt && r.email === email.trim).delete
     db.run(query)
   }
 
   def getRegisterUsers(seminarId: String): Future[Seq[SeminarsRegistrationRow]] = {
     val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).sortBy(_.registerTime.desc).result
+    val result = db.run(query)
+    result
+  }
+
+  def getUsersToNotify(seminarId: String, seminarDate: Timestamp): Future[Seq[SeminarsRegistrationRow]] = {
+
+    val fourteenDaysBeforeSeminar = new Timestamp(seminarDate.getTime - 14L * 24L * 60L * 60L * 1000L)
+
+    val query = seminarsRegistrationTable
+      .filter(r => r.seminarId === seminarId.trim.toInt && r.emailSent.map(es => es < fourteenDaysBeforeSeminar).getOrElse(true))
+      .sortBy(_.registerTime.desc).result
+
     val result = db.run(query)
     result
   }

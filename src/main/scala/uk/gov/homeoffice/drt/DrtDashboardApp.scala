@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem
 import com.typesafe.config.ConfigFactory
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.PortRegion
-import uk.gov.homeoffice.drt.schedule.UserTracking
+import uk.gov.homeoffice.drt.schedule.{SeminarReminder, UserTracking}
 import uk.gov.service.notify.NotificationClient
 
 import scala.concurrent.duration.DurationInt
@@ -29,7 +29,8 @@ object DrtDashboardApp extends App {
     keycloakClientSecret = config.getString("key-cloak.client_secret"),
     keycloakUsername = config.getString("key-cloak.username"),
     keycloakPassword = config.getString("key-cloak.password"),
-    scheduleFrequency = config.getInt("user-tracking.schedule-frequency-minutes"),
+    userTrackingScheduleFrequency = config.getInt("user-tracking.schedule-frequency-minutes"),
+    seminarRegistrationScheduleFrequency = config.getInt("seminar-registration.schedule-frequency-minutes"),
     inactivityDays = config.getInt("user-tracking.inactivity-days"),
     userTrackingFeatureFlag = config.getBoolean("user-tracking.feature-flag"),
     deactivateAfterWarningDays = config.getInt("user-tracking.deactivate-after-warning-days"),
@@ -46,6 +47,7 @@ object DrtDashboardApp extends App {
   val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig, emailNotifications), "DrtDashboard")
   if (serverConfig.userTrackingFeatureFlag) {
     ActorSystem(UserTracking(serverConfig, 1.minutes, 100, emailNotifications), "UserTrackingTimer")
+    ActorSystem(SeminarReminder(serverConfig, 1.minutes, 100, emailNotifications), "SeminarReminderTimer")
   }
 
 }

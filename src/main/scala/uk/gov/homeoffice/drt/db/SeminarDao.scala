@@ -5,9 +5,18 @@ import slick.lifted.ProvenShape
 import slick.jdbc.PostgresProfile.api._
 
 import java.sql.Timestamp
+import java.time.{ZoneId, ZonedDateTime}
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-case class SeminarRow(id: Option[Int], title: String, description: String, startTime: Timestamp, endTime: Timestamp, published: Boolean, meetingLink: Option[String], latestUpdateTime: Timestamp)
+case class SeminarRow(id: Option[Int],
+                      title: String,
+                      description: String,
+                      startTime: Timestamp,
+                      endTime: Timestamp,
+                      published: Boolean,
+                      meetingLink: Option[String],
+                      latestUpdateTime: Timestamp)
 
 class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -29,6 +38,21 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
   def * : ProvenShape[SeminarRow] = (id, title, description, startTime, endTime, published, meetingLink, latestUpdateTime).mapTo[SeminarRow]
 }
 
+object SeminarDao {
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+  val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+  val zonedUKDateTime: Timestamp => ZonedDateTime = timestamp => timestamp.toInstant.atZone(ZoneId.of("Europe/London"))
+
+  def getUKStringDate(timestamp: Timestamp, formatter: DateTimeFormatter): String = zonedUKDateTime(timestamp).format(formatter)
+
+  def getDate(startTime: Timestamp): String = getUKStringDate(startTime, dateFormatter)
+
+  def getStartTime(startTime: Timestamp): String = getUKStringDate(startTime, timeFormatter)
+
+  def getEndTime(endTime: Timestamp): String = getUKStringDate(endTime, timeFormatter)
+}
 
 case class SeminarDao(db: Database) {
   val seminarTable = TableQuery[SeminarTable]
@@ -52,6 +76,16 @@ case class SeminarDao(db: Database) {
   def deleteSeminar(seminarId: String): Future[Int] = {
     val query = seminarTable.filter(_.id === seminarId.trim.toInt).delete
     db.run(query)
+  }
+
+  def getSeminarsWithInNotifyDate(): Future[Seq[SeminarRow]] = {
+    val notifyDate = DateTime.now().withTimeAtStartOfDay.plusDays(15).getMillis
+    val presentDate = DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis
+    val query = seminarTable
+      .filter(r => r.startTime > new Timestamp(presentDate) && r.startTime < new Timestamp(notifyDate))
+      .sortBy(_.startTime).result
+    val result = db.run(query)
+    result
   }
 
   def getSeminars(listAll: Boolean): Future[Seq[SeminarRow]] = {
