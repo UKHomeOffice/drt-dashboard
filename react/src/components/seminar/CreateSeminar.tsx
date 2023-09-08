@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import dayjs, {Dayjs} from 'dayjs';
-import {ListSeminar, stringToUKDate} from "./ListSeminar";
+import {ListSeminar} from "./ListSeminar";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
@@ -16,8 +16,8 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export function seminarFormData(startTime: Dayjs | undefined, endTime: Dayjs | undefined, title: string, description: string, meetingLink: string) {
-    const startTimeString = stringToUKDate(startTime?.format("YYYY-MM-DDTHH:mm:ssX")) as string
-    const endTimeString = stringToUKDate(endTime?.format("YYYY-MM-DDTHH:mm:ssX")) as string
+    const startTimeString = startTime?.format("YYYY-MM-DDTHH:mm:ssZ") as string
+    const endTimeString = endTime?.format("YYYY-MM-DDTHH:mm:ssZ") as string
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
