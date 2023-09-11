@@ -52,7 +52,8 @@ case class SeminarRegisterDao(db: Database) {
 
   def getUsersToNotify(seminarId: String, seminarDate: Timestamp): Future[Seq[SeminarsRegistrationRow]] = {
 
-    val fourteenDaysBeforeSeminar = new Timestamp(seminarDate.getTime - 14L * 24L * 60L * 60L * 1000L)
+    val sevenDaysMilliSeconds = 7L * 24L * 60L * 60L * 1000L
+    val fourteenDaysBeforeSeminar = new Timestamp(seminarDate.getTime - sevenDaysMilliSeconds)
 
     val query = seminarsRegistrationTable
       .filter(r => r.seminarId === seminarId.trim.toInt && r.emailSent.map(es => es < fourteenDaysBeforeSeminar).getOrElse(true))
