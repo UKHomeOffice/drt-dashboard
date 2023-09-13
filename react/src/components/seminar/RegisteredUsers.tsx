@@ -18,8 +18,8 @@ interface Props {
 export interface SeminarRegisteredUsers {
     email: string;
     seminarId: string;
-    registerTime: string;
-    emailSent: string;
+    registeredAt: string;
+    emailSentAt: string;
 }
 
 export function RegisteredUsers(props: Props) {
@@ -36,12 +36,12 @@ export function RegisteredUsers(props: Props) {
             width: 250,
         },
         {
-            field: 'registerTime',
+            field: 'registeredAt',
             headerName: 'Registration Time',
             width: 150,
         },
         {
-            field: 'emailSent',
+            field: 'emailSentAt',
             headerName: 'Email Sent Time',
             width: 150,
         },

@@ -15,12 +15,11 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export function seminarFormData(startTime: Dayjs | undefined, endTime: Dayjs | undefined, title: string, description: string, meetingLink: string) {
+export function seminarFormData(startTime: Dayjs | undefined, endTime: Dayjs | undefined, title: string, meetingLink: string) {
     const startTimeString = startTime?.format("YYYY-MM-DDTHH:mm:ssZ") as string
     const endTimeString = endTime?.format("YYYY-MM-DDTHH:mm:ssZ") as string
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('description', description);
     formData.append('startTime', startTimeString);
     formData.append('endTime', endTimeString);
     formData.append('meetingLink', meetingLink);
@@ -31,7 +30,6 @@ export function CreateSeminar() {
     dayjs.tz.setDefault('Europe/London');
     const [error, setError] = useState(false);
     const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
     const [startTime, setStartTime] = React.useState<Dayjs | undefined>();
     const [endTime, setEndTime] = React.useState<Dayjs | undefined>();
     const [saved, setSaved] = useState(false);
@@ -50,7 +48,7 @@ export function CreateSeminar() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        axios.post('/seminar/save', seminarFormData(startTime, endTime, title, description, meetingLink))
+        axios.post('/seminar/save', seminarFormData(startTime, endTime, title, meetingLink))
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -87,21 +85,6 @@ export function CreateSeminar() {
                                 <Grid item xs={10}>
                                     <TextField required label="Title" type="text" value={title}
                                                onChange={(e) => setTitle(e.target.value)}/>
-                                </Grid>
-                                <Grid item xs={2}>
-                                    <label>Description:</label>
-                                </Grid>
-                                <Grid item xs={10}>
-                                    <TextField required
-                                               fullWidth
-                                               label="Description"
-                                               sx={{width: 400}}
-                                               multiline
-                                               rows={2}
-                                               variant="outlined"
-                                               placeholder="Describe your seminar here"
-                                               value={description}
-                                               onChange={(e) => setDescription(e.target.value)}/>
                                 </Grid>
                                 <Grid item xs={2}>
                                     <label>Meeting Link:</label>

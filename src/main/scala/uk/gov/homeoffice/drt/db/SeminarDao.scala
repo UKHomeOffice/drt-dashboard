@@ -11,7 +11,6 @@ import scala.concurrent.Future
 
 case class SeminarRow(id: Option[Int],
                       title: String,
-                      description: String,
                       startTime: Timestamp,
                       endTime: Timestamp,
                       published: Boolean,
@@ -23,8 +22,6 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def title: Rep[String] = column[String]("title")
 
-  def description: Rep[String] = column[String]("description")
-
   def startTime: Rep[Timestamp] = column[Timestamp]("start_time")
 
   def endTime: Rep[Timestamp] = column[Timestamp]("end_time")
@@ -35,7 +32,7 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def latestUpdateTime: Rep[Timestamp] = column[Timestamp]("latest_update_time")
 
-  def * : ProvenShape[SeminarRow] = (id, title, description, startTime, endTime, published, meetingLink, latestUpdateTime).mapTo[SeminarRow]
+  def * : ProvenShape[SeminarRow] = (id, title, startTime, endTime, published, meetingLink, latestUpdateTime).mapTo[SeminarRow]
 }
 
 object SeminarDao {
@@ -67,8 +64,8 @@ case class SeminarDao(db: Database) {
 
   def updateSeminar(seminarRow: SeminarRow): Future[Int] = seminarRow.id match {
     case Some(id) =>
-      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.description, f.startTime, f.endTime, f.meetingLink, f.latestUpdateTime))
-        .update(seminarRow.title, seminarRow.description, seminarRow.startTime, seminarRow.endTime, seminarRow.meetingLink, getCurrentTime)
+      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.latestUpdateTime))
+        .update(seminarRow.title, seminarRow.startTime, seminarRow.endTime, seminarRow.meetingLink, getCurrentTime)
       db.run(query)
     case None => Future.successful(0)
   }
@@ -94,8 +91,8 @@ case class SeminarDao(db: Database) {
     result
   }
 
-  def insertSeminarForm(title: String, description: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
-    val insertAction = seminarTable += SeminarRow(None, title, description, startTime, endTime, false, meetingLink, getCurrentTime)
+  def insertSeminarForm(title: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
+    val insertAction = seminarTable += SeminarRow(None, title, startTime, endTime, false, meetingLink, getCurrentTime)
     db.run(insertAction)
   }
 }

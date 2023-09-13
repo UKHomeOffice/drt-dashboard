@@ -12,7 +12,6 @@ import {stringToUKDate} from "./ListSeminar";
 interface Props {
     id: string | undefined;
     title: string | undefined;
-    description: string | undefined;
     startTime: string | undefined;
     endTime: string | undefined;
     meetingLink: string | undefined;
@@ -80,12 +79,6 @@ export function ViewSeminar(props: Props) {
                             <label>Seminar Title:</label></Grid>
                         <Grid item xs={9}>
                             <Typography>{props.title}</Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                            <label>Description:</label>
-                        </Grid>
-                        <Grid item xs={9}>
-                            <Typography>{props.description}</Typography>
                         </Grid>
                         <Grid item xs={3}>
                             <label>Start Time:</label>

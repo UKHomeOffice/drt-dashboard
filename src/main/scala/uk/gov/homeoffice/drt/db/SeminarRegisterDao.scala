@@ -8,8 +8,8 @@ import scala.concurrent.Future
 
 case class SeminarsRegistrationRow(email: String,
                                    seminarId: Int,
-                                   registerTime: Timestamp,
-                                   emailSent: Option[Timestamp])
+                                   registeredAt: Timestamp,
+                                   emailSentAt: Option[Timestamp])
 
 class SeminarsRegistrationTable(tag: Tag) extends Table[SeminarsRegistrationRow](tag, "seminar_registration") {
 
@@ -17,11 +17,11 @@ class SeminarsRegistrationTable(tag: Tag) extends Table[SeminarsRegistrationRow]
 
   def seminarId: Rep[Int] = column[Int]("seminar_id")
 
-  def registerTime: Rep[Timestamp] = column[Timestamp]("register_time")
+  def registeredAt: Rep[Timestamp] = column[Timestamp]("registered_at")
 
-  def emailSent: Rep[Option[Timestamp]] = column[Option[Timestamp]]("email_sent")
+  def emailSentAt: Rep[Option[Timestamp]] = column[Option[Timestamp]]("email_sent_at")
 
-  def * : ProvenShape[SeminarsRegistrationRow] = (email, seminarId, registerTime, emailSent).mapTo[SeminarsRegistrationRow]
+  def * : ProvenShape[SeminarsRegistrationRow] = (email, seminarId, registeredAt, emailSentAt).mapTo[SeminarsRegistrationRow]
 
   val pk = primaryKey("seminar_registration_pkey", (email, seminarId))
 
@@ -34,7 +34,7 @@ case class SeminarRegisterDao(db: Database) {
   private def getCurrentTime = new Timestamp(new DateTime().getMillis)
 
   def updateEmailSentTime(seminarId: String) = {
-    val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).map(f => (f.emailSent))
+    val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).map(f => (f.emailSentAt))
       .update(Some(getCurrentTime))
     db.run(query)
   }
@@ -45,7 +45,7 @@ case class SeminarRegisterDao(db: Database) {
   }
 
   def getRegisterUsers(seminarId: String): Future[Seq[SeminarsRegistrationRow]] = {
-    val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).sortBy(_.registerTime.desc).result
+    val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).sortBy(_.registeredAt.desc).result
     val result = db.run(query)
     result
   }
@@ -56,8 +56,8 @@ case class SeminarRegisterDao(db: Database) {
     val fourteenDaysBeforeSeminar = new Timestamp(seminarDate.getTime - sevenDaysMilliSeconds)
 
     val query = seminarsRegistrationTable
-      .filter(r => r.seminarId === seminarId.trim.toInt && r.emailSent.map(es => es < fourteenDaysBeforeSeminar).getOrElse(true))
-      .sortBy(_.registerTime.desc).result
+      .filter(r => r.seminarId === seminarId.trim.toInt && r.emailSentAt.map(es => es < fourteenDaysBeforeSeminar).getOrElse(true))
+      .sortBy(_.registeredAt.desc).result
 
     val result = db.run(query)
     result

@@ -39,7 +39,6 @@ interface Props {
 export interface SeminarData {
     id: string;
     title: string;
-    description: string;
     startTime: string;
     endTime: string;
     meetingLink: string;
@@ -57,11 +56,6 @@ export function ListSeminar(props: Props) {
             field: 'title',
             headerName: 'Title',
             width: 150,
-        },
-        {
-            field: 'description',
-            headerName: 'Description',
-            width: 200,
         },
         {
             field: 'startTime',
@@ -237,7 +231,6 @@ export function ListSeminar(props: Props) {
                         <DeleteSeminar id={rowDetails?.id} showDelete={showDelete} setShowDelete={setShowDelete}
                                        setReceivedData={setReceivedData}/> :
                         showEdit ? <EditSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                                describe={rowDetails?.description}
                                                 startTime={rowDetails?.startTime}
                                                 endTime={rowDetails?.endTime}
                                                 meetingLink={rowDetails?.meetingLink}
@@ -267,7 +260,6 @@ export function ListSeminar(props: Props) {
                                                 onClick={handleBack}>back</Button>
                                     </Box>
                                     <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                                 description={rowDetails?.description}
                                                  startTime={rowDetails?.startTime}
                                                  endTime={rowDetails?.endTime}
                                                  meetingLink={rowDetails?.meetingLink}

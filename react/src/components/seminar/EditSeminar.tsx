@@ -14,7 +14,6 @@ import {seminarFormData} from "./CreateSeminar";
 interface Props {
     id: string | undefined;
     title: string | undefined;
-    describe: string | undefined;
     startTime: string | undefined;
     endTime: string | undefined;
     meetingLink: string | undefined;
@@ -25,7 +24,6 @@ interface Props {
 
 export function EditSeminar(props: Props) {
     const [editTitle, setEditTitle] = React.useState(props.title)
-    const [editDescribe, setEditDescribe] = React.useState(props.describe)
     const [editStartTime, setEditStartTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.startTime)));
     const [editEndTime, setEditEndTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.endTime)));
     const [editMeetingLink, setEditMeetingLink] = React.useState(props.meetingLink);
@@ -54,7 +52,7 @@ export function EditSeminar(props: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         axios.put('/seminar/edit/' + props.id,
-            seminarFormData(editStartTime, editEndTime, editTitle || '', editDescribe || '', editMeetingLink || ''))
+            seminarFormData(editStartTime, editEndTime, editTitle || '', editMeetingLink || ''))
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -87,21 +85,6 @@ export function EditSeminar(props: Props) {
                             <Grid item xs={10}>
                                 <TextField label="Title" type="text" value={editTitle}
                                            onChange={(e) => setEditTitle(e.target.value)}/>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <label>Description:</label>
-                            </Grid>
-                            <Grid item xs={10}>
-                                <TextField
-                                    fullWidth
-                                    label="Description"
-                                    sx={{width: 400}}
-                                    multiline
-                                    rows={2}
-                                    variant="outlined"
-                                    placeholder="Describe your seminar here"
-                                    value={editDescribe}
-                                    onChange={(e) => setEditDescribe(e.target.value)}/>
                             </Grid>
                             <Grid item xs={2}>
                                 <label>Meeting Link:</label>

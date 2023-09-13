@@ -16,7 +16,7 @@ case class SeminarPublished(published: Boolean)
 
 trait SeminarJsonFormats extends DefaultTimeJsonProtocol {
 
-  implicit val seminarRowFormatParser: RootJsonFormat[SeminarRow] = jsonFormat8(SeminarRow)
+  implicit val seminarRowFormatParser: RootJsonFormat[SeminarRow] = jsonFormat7(SeminarRow)
   implicit val seminarPublishedFormatParser: RootJsonFormat[SeminarPublished] = jsonFormat1(SeminarPublished)
 
 }
@@ -36,9 +36,9 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   def editSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("edit" / Segment) { seminarId =>
     put {
       entity(as[Multipart.FormData]) { _ =>
-        formFields(Symbol("title"), Symbol("description"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
-          (title, description, startTime, endTime, meetingLink) =>
-            routeResponse(seminarDao.updateSeminar(SeminarRow(Some(seminarId.toInt), title, description, stringToTimestamp(startTime), stringToTimestamp(endTime), false, Option(meetingLink), new Timestamp(new DateTime().getMillis)))
+        formFields(Symbol("title"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
+          (title, startTime, endTime, meetingLink) =>
+            routeResponse(seminarDao.updateSeminar(SeminarRow(Some(seminarId.toInt), title, stringToTimestamp(startTime), stringToTimestamp(endTime), false, Option(meetingLink), new Timestamp(new DateTime().getMillis)))
               .map(_ => complete(StatusCodes.OK, s"Seminar with Id $seminarId is updated successfully")), "Updating Seminar Form")
         }
       }
@@ -73,9 +73,9 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   def saveForm(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("save") {
     post {
       entity(as[Multipart.FormData]) { _ =>
-        formFields(Symbol("title"), Symbol("description"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
-          (title, description, startTime, endTime, meetingLink) =>
-            routeResponse(seminarDao.insertSeminarForm(title, description, stringToTimestamp(startTime), stringToTimestamp(endTime), Option(meetingLink))
+        formFields(Symbol("title"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
+          (title, startTime, endTime, meetingLink) =>
+            routeResponse(seminarDao.insertSeminarForm(title, stringToTimestamp(startTime), stringToTimestamp(endTime), Option(meetingLink))
               .map(_ => complete(StatusCodes.OK, s"Seminar $title is saved successfully")), "Saving Seminar Form")
         }
       }
