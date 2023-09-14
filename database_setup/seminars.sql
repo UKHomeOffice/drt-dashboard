@@ -1,12 +1,12 @@
 CREATE TABLE seminar
 (
     id                 SERIAL PRIMARY KEY,
-    latest_update_at timestamp NOT NULL,
+    latest_update_at   timestamp NOT NULL,
     title              VARCHAR(255),
     start_time         timestamp NOT NULL,
     end_time           timestamp NOT NULL,
-    meeting_link        VARCHAR(500),
-    isPublished          BOOLEAN   NOT NULL DEFAULT FALSE
+    meeting_link       VARCHAR(500),
+    is_published       BOOLEAN   NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE seminar_registration
@@ -14,6 +14,6 @@ CREATE TABLE seminar_registration
     email         text      NOT NULL,
     seminar_id    integer   NOT NULL,
     registered_at timestamp NOT NULL,
-    email_sent_at    timestamp,
+    email_sent_at timestamp,
     PRIMARY KEY (email, seminar_id)
 );

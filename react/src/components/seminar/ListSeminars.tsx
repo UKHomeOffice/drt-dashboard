@@ -41,6 +41,7 @@ export interface SeminarData {
     startTime: string;
     endTime: string;
     meetingLink: string;
+    isPublished: boolean;
 }
 
 export function ListSeminars(props: Props) {
@@ -89,12 +90,12 @@ export function ListSeminars(props: Props) {
             width: 150,
         },
         {
-            field: 'published',
+            field: 'isPublished',
             headerName: 'Published',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
                 <IconButton aria-label="publish">
-                    {params.row.published === true ?
+                    {params.row.isPublished === true ?
                         <PublishIcon onClick={() => handleUnPublish(params.row as SeminarData)}/> :
                         <UnpublishedIcon onClick={() => handlePublish(params.row as SeminarData)}/>}
                 </IconButton>

@@ -26,7 +26,7 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def endTime: Rep[Timestamp] = column[Timestamp]("end_time")
 
-  def isPublished: Rep[Boolean] = column[Boolean]("isPublished")
+  def isPublished: Rep[Boolean] = column[Boolean]("is_published")
 
   def meetingLink: Rep[Option[String]] = column[Option[String]]("meeting_link")
 
