@@ -15,7 +15,7 @@ case class SeminarRow(id: Option[Int],
                       endTime: Timestamp,
                       isPublished: Boolean,
                       meetingLink: Option[String],
-                      latestUpdateAt: Timestamp)
+                      latestUpdatedAt: Timestamp)
 
 class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -30,9 +30,9 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def meetingLink: Rep[Option[String]] = column[Option[String]]("meeting_link")
 
-  def latestUpdateAt: Rep[Timestamp] = column[Timestamp]("latest_update_at")
+  def latestUpdatedAt: Rep[Timestamp] = column[Timestamp]("latest_updated_at")
 
-  def * : ProvenShape[SeminarRow] = (id, title, startTime, endTime, isPublished, meetingLink, latestUpdateAt).mapTo[SeminarRow]
+  def * : ProvenShape[SeminarRow] = (id, title, startTime, endTime, isPublished, meetingLink, latestUpdatedAt).mapTo[SeminarRow]
 }
 
 object SeminarDao {
@@ -57,14 +57,14 @@ case class SeminarDao(db: Database) {
   private def getCurrentTime = new Timestamp(new DateTime().getMillis)
 
   def updatePublishSeminar(seminarId: String, publish: Boolean) = {
-    val query = seminarTable.filter(_.id === seminarId.trim.toInt).map(f => (f.isPublished, f.latestUpdateAt))
+    val query = seminarTable.filter(_.id === seminarId.trim.toInt).map(f => (f.isPublished, f.latestUpdatedAt))
       .update(publish, getCurrentTime)
     db.run(query)
   }
 
   def updateSeminar(seminarRow: SeminarRow): Future[Int] = seminarRow.id match {
     case Some(id) =>
-      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.latestUpdateAt))
+      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.latestUpdatedAt))
         .update(seminarRow.title, seminarRow.startTime, seminarRow.endTime, seminarRow.meetingLink, getCurrentTime)
       db.run(query)
     case None => Future.successful(0)

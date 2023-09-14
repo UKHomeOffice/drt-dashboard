@@ -1,7 +1,7 @@
 CREATE TABLE seminar
 (
     id                 SERIAL PRIMARY KEY,
-    latest_update_at   timestamp NOT NULL,
+    latest_updated_at   timestamp NOT NULL,
     title              VARCHAR(255),
     start_time         timestamp NOT NULL,
     end_time           timestamp NOT NULL,
