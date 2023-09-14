@@ -19,7 +19,7 @@ import {RegionPage} from "./components/RegionPage";
 import axios from "axios";
 import ApiClient from "./services/ApiClient";
 import UploadForm from "./components/featureGuide/FeatureGuideUploadFile";
-import {CreateSeminar} from "./components/seminar/CreateSeminar";
+import {SeminarLanding} from "./components/seminar/SeminarLanding";
 
 
 const StyledDiv = styled('div')(() => ({
@@ -123,7 +123,7 @@ const App = (props: PropsFromReact) => {
                         <UploadForm/>
                     </Route>
                     <Route exact path="/seminars">
-                        <CreateSeminar/>
+                        <SeminarLanding/>
                     </Route>
                 </Switch>
             </StyledContainer>

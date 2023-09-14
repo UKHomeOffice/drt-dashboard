@@ -1,4 +1,3 @@
-
 import React, {useEffect, useState} from 'react';
 import {DataGrid, GridColDef, GridRenderCellParams, GridRowModel} from "@mui/x-data-grid";
 import IconButton from "@mui/material/IconButton";
@@ -6,7 +5,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {Button} from "@mui/material";
 import Box from "@mui/material/Box";
 import axios, {AxiosResponse} from "axios";
-import {RemoveRegisteredUser} from "./RemoveRegisteredUser";
+import {DialogActionComponent} from "./DialogActionComponent";
 
 interface Props {
     seminarId: string | undefined;
@@ -58,7 +57,6 @@ export function RegisteredUsers(props: Props) {
     ];
 
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    const [receivedData, setReceivedData] = React.useState(false);
     const [rowDetails, setRowDetails] = React.useState({} as SeminarRegisteredUsers | undefined)
     const [error, setError] = useState(false);
     const [unregister, setUnregister] = useState(false);
@@ -71,7 +69,6 @@ export function RegisteredUsers(props: Props) {
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
             setRowsData(response.data)
-            setReceivedData(true);
         } else {
             setError(true);
             response.data
@@ -79,49 +76,50 @@ export function RegisteredUsers(props: Props) {
     }
 
     useEffect(() => {
-        if (!receivedData) {
-            axios.get('/seminar-register/users/'   + props.seminarId )
-                .then(response => handleResponse(response))
-                .then(data => {
-                    console.log(data);
-                }).catch(error => {
-                setError(true);
-                console.error(error);
-            });
-        }
-    }, [receivedData]);
+        axios.get('/seminar-register/users/' + props.seminarId)
+            .then(response => handleResponse(response))
+            .then(data => {
+                console.log(data);
+            }).catch(error => {
+            setError(true);
+            console.error(error);
+        });
+    }, [unregister]);
 
     const handleBack = () => {
         setError(false);
-        setReceivedData(false)
         props.setShowRegisteredUser(false);
     }
 
     return (
-        error ? <div style={{marginTop: '20px', color: 'red'}}> Errored for the task <br/>
+        error ?
+            <div style={{marginTop: '20px', color: 'red'}}> There was a problem booking seminars. Please try reloading
+                the page. <br/>
                 <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={handleBack}>back</Button>
             </div> :
-                    unregister ?
-                        <RemoveRegisteredUser id={rowDetails?.seminarId}
-                                              email={rowDetails?.email}
-                                              showUnregistered={unregister}
-                                              setShowUnregistered={setUnregister}
-                                              setReceivedData={setReceivedData}/> :
-                            <div>
-                                <h1>User registered for seminar {props.seminarTitle}</h1>
-                                <Box sx={{height: 400, width: '100%'}}>
-                                    <DataGrid
-                                        getRowId={(rowsData) => rowsData.email+'_'+rowsData.seminarId}
-                                        rows={rowsData}
-                                        columns={columns}
-                                        pageSize={5}
-                                        rowsPerPageOptions={[5]}
-                                        experimentalFeatures={{newEditingApi: true}}
-                                    />
-                                    <Button style={{float: 'right'}} variant="outlined"
-                                            color="primary"
-                                            onClick={handleBack}>back</Button>
-                                </Box>
-                            </div>
+            <div>
+                <h2>User registered for seminar {props.seminarTitle}</h2>
+                <Box sx={{height: 400, width: '100%'}}>
+                    <DataGrid
+                        getRowId={(rowsData) => rowsData.email + '_' + rowsData.seminarId}
+                        rows={rowsData}
+                        columns={columns}
+                        pageSize={5}
+                        rowsPerPageOptions={[5]}
+                        experimentalFeatures={{newEditingApi: true}}
+                    />
+                    <Button style={{float: 'right'}} variant="outlined"
+                            color="primary"
+                            onClick={handleBack}>back</Button>
+                </Box>
+                <DialogActionComponent id={rowDetails?.seminarId}
+                                       actionString='unregister'
+                                       actionMethod='DELETE'
+                                       showDialog={unregister}
+                                       setShowDialog={setUnregister}
+                                       actionUrl={'/seminar-register/remove/' + rowDetails?.seminarId + '/' + rowDetails?.email}
+                />
+            </div>
+
     )
 }

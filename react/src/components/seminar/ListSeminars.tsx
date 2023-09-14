@@ -8,32 +8,31 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import axios, {AxiosResponse} from "axios";
 import {Button} from "@mui/material";
-import {DeleteSeminar} from "./DeleteSeminar";
-import {EditSeminar} from "./EditSeminar";
 import Box from "@mui/material/Box";
-import {PublishSeminar} from "./PublishSeminar";
 import {ViewSeminar} from "./ViewSeminar";
 import {CalendarViewMonth} from "@mui/icons-material";
-import {RegisteredUsers} from "./RegisteredUsers";
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import dayjs from 'dayjs';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import {DialogActionComponent} from "./DialogActionComponent";
+import moment from 'moment-timezone';
 
 export function stringToUKDate(date?: string): string | undefined {
     if (!date) {
         return undefined;
     }
 
-    const utcDate = dayjs.utc(date, "YYYY-MM-DD HH:mm:ss.S");
-    const ukDatetime = utcDate.tz("Europe/London");
+    const ukDatetime = moment.tz(date, "YYYY-MM-DD HH:mm:ss.S", "Europe/London");
     return ukDatetime.format('YYYY-MM-DD HH:mm');
 }
 
 interface Props {
+    listAll: boolean;
+    rowDetails: SeminarData | undefined;
+    setRowDetails: ((value: (((prevState: SeminarData | undefined) => SeminarData | undefined) | SeminarData | undefined)) => void);
+    showRegisteredUser: boolean;
+    setShowRegisteredUser: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    setListAll: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setViewSeminars: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
+    showEdit: boolean;
+    setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export interface SeminarData {
@@ -44,7 +43,7 @@ export interface SeminarData {
     meetingLink: string;
 }
 
-export function ListSeminar(props: Props) {
+export function ListSeminars(props: Props) {
 
     const seminarColumns: GridColDef[] = [
         {
@@ -144,45 +143,42 @@ export function ListSeminar(props: Props) {
     ];
 
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    const [receivedData, setReceivedData] = React.useState(false);
-    const [rowDetails, setRowDetails] = React.useState({} as SeminarData | undefined)
     const [error, setError] = useState(false);
-    const [showRegisteredUser, setRegisteredUser] = React.useState(false)
-    const [showEdit, setShowEdit] = React.useState(false)
     const [showDelete, setShowDelete] = useState(false);
     const [publish, setPublish] = useState(false);
     const [unPublish, setUnPublish] = useState(false);
     const [view, setView] = useState(false);
-    const [listAll, setListAll] = useState(false);
     const handlePublish = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
+        props.setRowDetails(userData)
         setPublish(true);
     }
 
     const handleUnPublish = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
+        props.setRowDetails(userData)
         setUnPublish(true);
     }
 
     const handleEdit = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
-        setShowEdit(true);
+        props.setRowDetails(userData)
+        props.setViewSeminars(false);
+        props.setShowEdit(true);
     }
 
     const handleRegisteredUsers = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
-        setRegisteredUser(true);
+        props.setRowDetails(userData)
+        props.setViewSeminars(false);
+        props.setShowEdit(false);
+        props.setShowRegisteredUser(true);
     }
 
     const handleDelete = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
+        props.setRowDetails(userData)
         setShowDelete(true);
     }
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
             setRowsData(response.data)
-            setReceivedData(true);
             props.setViewSeminars(true)
         } else {
             setError(true);
@@ -191,82 +187,75 @@ export function ListSeminar(props: Props) {
     }
 
     useEffect(() => {
-        if (!receivedData) {
-            axios.get('/seminar/get/' + listAll)
-                .then(response => handleResponse(response))
-                .then(data => {
-                    console.log(data);
-                }).catch(error => {
-                setError(true);
-                console.error(error);
-            });
-        }
-    }, [receivedData]);
+        axios.get('/seminar/get/' + props.listAll)
+            .then(response => handleResponse(response))
+            .then(data => {
+                console.log(data);
+            }).catch(error => {
+            setError(true);
+            console.error(error);
+        });
+    }, [props.listAll, props.showRegisteredUser, unPublish, publish, showDelete]);
 
     const handleBack = () => {
         setError(false);
         props.setViewSeminars(false)
-        setReceivedData(false)
     }
 
     const rowClickOpen = (userData: SeminarData | undefined) => {
-        setRowDetails(userData)
+        props.setRowDetails(userData)
         setView(true)
     }
 
-    const listAllSeminars = () => {
-        setListAll(!listAll)
-        setReceivedData(false)
-    }
-
     return (
-        error ? <div style={{marginTop: '20px', color: 'red'}}> Errored for the task <br/>
+        error ?
+            <div style={{marginTop: '20px', color: 'red'}}> There was a problem fetching the list of seminars. Please
+                try reloading the page. <br/>
                 <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={handleBack}>back</Button>
             </div> :
-            publish ? <PublishSeminar id={rowDetails?.id} showAction={publish} setShowAction={setPublish}
-                                      setReceivedData={setReceivedData} actionString={"publish"}/> :
-                unPublish ? <PublishSeminar id={rowDetails?.id} showAction={unPublish} setShowAction={setUnPublish}
-                                            setReceivedData={setReceivedData} actionString={"unPublish"}/> :
-                    showDelete ?
-                        <DeleteSeminar id={rowDetails?.id} showDelete={showDelete} setShowDelete={setShowDelete}
-                                       setReceivedData={setReceivedData}/> :
-                        showEdit ? <EditSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                                startTime={rowDetails?.startTime}
-                                                endTime={rowDetails?.endTime}
-                                                meetingLink={rowDetails?.meetingLink}
-                                                showEdit={showEdit} setShowEdit={setShowEdit}
-                                                setReceivedData={setReceivedData}
-                            /> :
-                            showRegisteredUser ?
-                                <RegisteredUsers seminarId={rowDetails?.id} seminarTitle={rowDetails?.title}
-                                                 showRegisteredUser={showRegisteredUser}
-                                                 setShowRegisteredUser={setRegisteredUser}
-                                /> :
-                                <div>
-                                    <h1>Seminar List | <a href="#" style={{marginTop: '20px'}}
-                                                          onClick={listAllSeminars}>{listAll ? "Ahead Only" : "View all"}</a>
-                                    </h1>
-                                    <Box sx={{height: 400, width: '100%'}}>
-                                        <DataGrid
-                                            getRowId={(rowsData) => rowsData.id}
-                                            rows={rowsData}
-                                            columns={seminarColumns}
-                                            pageSize={5}
-                                            rowsPerPageOptions={[5]}
-                                            experimentalFeatures={{newEditingApi: true}}
-                                        />
-                                        <Button style={{float: 'right'}} variant="outlined"
-                                                color="primary"
-                                                onClick={handleBack}>back</Button>
-                                    </Box>
-                                    <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                                 startTime={rowDetails?.startTime}
-                                                 endTime={rowDetails?.endTime}
-                                                 meetingLink={rowDetails?.meetingLink}
-                                                 view={view} setView={setView}
-                                                 setReceivedData={setReceivedData} isEdit={true}
-                                                 showEdit={showEdit} setShowEdit={setShowEdit}/>
-                                </div>
+            <div>
+                <Box sx={{height: 400, width: '100%'}}>
+                    <DataGrid
+                        getRowId={(rowsData) => rowsData.id}
+                        rows={rowsData}
+                        columns={seminarColumns}
+                        pageSize={5}
+                        rowsPerPageOptions={[5]}
+                        experimentalFeatures={{newEditingApi: true}}
+                    />
+                    <Button style={{float: 'right'}} variant="outlined"
+                            color="primary"
+                            onClick={handleBack}>back</Button>
+                </Box>
+                <ViewSeminar id={props.rowDetails?.id} title={props.rowDetails?.title}
+                             startTime={props.rowDetails?.startTime}
+                             endTime={props.rowDetails?.endTime}
+                             meetingLink={props.rowDetails?.meetingLink}
+                             view={view} setView={setView}
+                             isEdit={true}
+                             showEdit={props.showEdit} setShowEdit={props.setShowEdit}/>
+                <DialogActionComponent id={props.rowDetails?.id}
+                                       actionMethod='DELETE'
+                                       actionString='remove seminar'
+                                       actionUrl={'/seminar/delete/' + props.rowDetails?.id}
+                                       showDialog={showDelete}
+                                       setShowDialog={setShowDelete}
+                />
+                <DialogActionComponent id={props.rowDetails?.id}
+                                       actionUrl={'/seminar/published/' + props.rowDetails?.id}
+                                       actionString="publish"
+                                       actionMethod="POST"
+                                       showDialog={publish}
+                                       setShowDialog={setPublish}
+                />
+                <DialogActionComponent id={props.rowDetails?.id}
+                                       actionUrl={'/seminar/published/' + props.rowDetails?.id}
+                                       actionString="unPublish"
+                                       actionMethod="POST"
+                                       showDialog={unPublish}
+                                       setShowDialog={setUnPublish}
+                />
+            </div>
     )
 
 }

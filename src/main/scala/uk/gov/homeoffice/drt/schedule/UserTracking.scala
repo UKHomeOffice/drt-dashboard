@@ -42,7 +42,7 @@ object UserTracking {
         notifications,
         userService,
         timers, timerInitialDelay,
-        serverConfig.userTrackingScheduleFrequency.minutes,
+        serverConfig.dormantUsersCheckFrequency.minutes,
         serverConfig.inactivityDays,
         serverConfig.deactivateAfterWarningDays,
         maxSize, context).userBehaviour)

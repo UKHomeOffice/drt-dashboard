@@ -36,9 +36,6 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
   }
 
   def sendSeminarReminderEmail(email: String, anyPort: String, seminar: SeminarRow, isSecure: Boolean, baseDomain: String, teamEmail: String) = {
-    val protocol = if (isSecure) "https://" else "http://"
-    val portOrLocal = if (isSecure) anyPort + "." + baseDomain else baseDomain + ":9000"
-    val icsFileLink = s"$protocol$portOrLocal/seminar/calendarInvite/${seminar.id.getOrElse("")}"
     import SeminarDao._
     val personalisation = Map(
       "teamEmail" -> teamEmail,
@@ -48,7 +45,6 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       "startTime" -> getStartTime(seminar.startTime),
       "endTime" -> getEndTime(seminar.endTime),
       "meetingLink" -> seminar.meetingLink.getOrElse(""),
-      "icsFileLink" -> icsFileLink
     ).asJava
 
     Try(client.sendEmail(

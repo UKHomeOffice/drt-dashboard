@@ -1,21 +1,25 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.model.{Multipart, StatusCodes}
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRow}
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+
 import java.sql.Timestamp
-import java.time.{LocalDateTime, ZoneId, ZoneOffset}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneId, ZoneOffset}
 import scala.concurrent.ExecutionContext
 
 case class SeminarPublished(published: Boolean)
 
+case class SeminarData(title: String, startTime: String, endTime: String, meetingLink: String)
+
 trait SeminarJsonFormats extends DefaultTimeJsonProtocol {
 
+  implicit val seminarDataFormatParser: RootJsonFormat[SeminarData] = jsonFormat4(SeminarData)
   implicit val seminarRowFormatParser: RootJsonFormat[SeminarRow] = jsonFormat7(SeminarRow)
   implicit val seminarPublishedFormatParser: RootJsonFormat[SeminarPublished] = jsonFormat1(SeminarPublished)
 
@@ -35,12 +39,10 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
 
   def editSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("edit" / Segment) { seminarId =>
     put {
-      entity(as[Multipart.FormData]) { _ =>
-        formFields(Symbol("title"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
-          (title, startTime, endTime, meetingLink) =>
-            routeResponse(seminarDao.updateSeminar(SeminarRow(Some(seminarId.toInt), title, stringToTimestamp(startTime), stringToTimestamp(endTime), false, Option(meetingLink), new Timestamp(new DateTime().getMillis)))
-              .map(_ => complete(StatusCodes.OK, s"Seminar with Id $seminarId is updated successfully")), "Updating Seminar Form")
-        }
+      entity(as[SeminarData]) { seminar =>
+        val updatedSeminarResult = seminarDao.updateSeminar(SeminarRow(Some(seminarId.toInt), seminar.title, stringToTimestamp(seminar.startTime), stringToTimestamp(seminar.endTime), false, Option(seminar.meetingLink), new Timestamp(new DateTime().getMillis)))
+        routeResponse(updatedSeminarResult
+          .map(_ => complete(StatusCodes.OK, s"Seminar with Id $seminarId is updated successfully")), "Editing Seminar")
       }
     }
   }
@@ -48,10 +50,10 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   def publishSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("published" / Segment) { (seminarId) =>
     post {
       entity(as[SeminarPublished]) { featurePublished =>
-        val responseF = seminarDao.updatePublishSeminar(seminarId, featurePublished.published)
+        val publishedSeminarResult = seminarDao.updatePublishSeminar(seminarId, featurePublished.published)
           .map(_ => complete(StatusCodes.OK, s"Seminar $seminarId is published successfully"))
 
-        routeResponse(responseF, "Publishing Seminar")
+        routeResponse(publishedSeminarResult, "Publishing Seminar")
 
       }
     }
@@ -60,29 +62,31 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   def deleteSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) =
     path("delete" / Segment) { seminarId =>
       delete {
-        routeResponse(seminarDao.deleteSeminar(seminarId).map(_ => complete(StatusCodes.OK, s"Seminar $seminarId is deleted successfully")), "Deleting Seminar")
+        val deletedSeminarResult = seminarDao.deleteSeminar(seminarId)
+        routeResponse(deletedSeminarResult.map(_ => complete(StatusCodes.OK, s"Seminar $seminarId is deleted successfully")), "Deleting Seminar")
       }
     }
 
   def getSeminars(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("get" / Segment) { listAll =>
     get {
-      routeResponse(seminarDao.getSeminars(listAll.toBoolean).map(forms => complete(StatusCodes.OK, forms.toJson)), "Getting Seminar Forms")
+      val getSeminarsResult =
+        if (listAll.toBoolean) seminarDao.getSeminars.map(forms => complete(StatusCodes.OK, forms.toJson))
+        else seminarDao.getFutureSeminars.map(forms => complete(StatusCodes.OK, forms.toJson))
+      routeResponse(getSeminarsResult, "Getting Seminar")
     }
   }
 
-  def saveForm(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("save") {
+  def saveSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("save") {
     post {
-      entity(as[Multipart.FormData]) { _ =>
-        formFields(Symbol("title"), Symbol("startTime"), Symbol("endTime"), Symbol("meetingLink")) {
-          (title, startTime, endTime, meetingLink) =>
-            routeResponse(seminarDao.insertSeminarForm(title, stringToTimestamp(startTime), stringToTimestamp(endTime), Option(meetingLink))
-              .map(_ => complete(StatusCodes.OK, s"Seminar $title is saved successfully")), "Saving Seminar Form")
-        }
+      entity(as[SeminarData]) { seminar =>
+        val saveSeminarResult = seminarDao.insertSeminar(seminar.title, stringToTimestamp(seminar.startTime), stringToTimestamp(seminar.endTime), Option(seminar.meetingLink))
+        routeResponse(
+          saveSeminarResult.map(_ => complete(StatusCodes.OK, s"Seminar ${seminar.title} is saved successfully")), "Saving Seminar")
       }
     }
   }
 
   def apply(prefix: String, seminarDao: SeminarDao)(implicit ec: ExecutionContext) = pathPrefix(prefix) {
-    concat(saveForm(seminarDao) ~ getSeminars(seminarDao) ~ deleteSeminar(seminarDao) ~ publishSeminar(seminarDao) ~ editSeminar(seminarDao))
+    concat(saveSeminar(seminarDao) ~ getSeminars(seminarDao) ~ deleteSeminar(seminarDao) ~ publishSeminar(seminarDao) ~ editSeminar(seminarDao))
   }
 }

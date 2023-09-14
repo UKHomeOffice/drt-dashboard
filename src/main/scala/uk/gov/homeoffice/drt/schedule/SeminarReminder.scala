@@ -28,7 +28,7 @@ object SeminarReminder {
         seminarService,
         timers,
         timerInitialDelay,
-        serverConfig.seminarRegistrationScheduleFrequency.minutes,
+        serverConfig.seminarRemindersCheckFrequency.minutes,
         maxSize,
         context).seminarReminderNotification)
     }
@@ -53,11 +53,11 @@ class SeminarReminder(serverConfig: ServerConfig,
     Behaviors.receiveMessage[SeminarCommand] {
       case SeminarUserNotificationCheck =>
         context.log.info("SeminarUserNotificationCheck")
-        seminarService.usersToRemind(notifications)
+        seminarService.sendSeminarReminders(notifications)
         Behaviors.same
 
-      case _ =>
-        logger.info(s"Unknown command to log")
+      case unknown =>
+        logger.info(s"Unknown command: $unknown")
         Behaviors.same
     }
   }

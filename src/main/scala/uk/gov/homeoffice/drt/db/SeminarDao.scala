@@ -13,9 +13,9 @@ case class SeminarRow(id: Option[Int],
                       title: String,
                       startTime: Timestamp,
                       endTime: Timestamp,
-                      published: Boolean,
+                      isPublished: Boolean,
                       meetingLink: Option[String],
-                      latestUpdateTime: Timestamp)
+                      latestUpdateAt: Timestamp)
 
 class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -26,13 +26,13 @@ class SeminarTable(tag: Tag) extends Table[SeminarRow](tag, "seminar") {
 
   def endTime: Rep[Timestamp] = column[Timestamp]("end_time")
 
-  def published: Rep[Boolean] = column[Boolean]("published")
+  def isPublished: Rep[Boolean] = column[Boolean]("isPublished")
 
   def meetingLink: Rep[Option[String]] = column[Option[String]]("meeting_link")
 
-  def latestUpdateTime: Rep[Timestamp] = column[Timestamp]("latest_update_time")
+  def latestUpdateAt: Rep[Timestamp] = column[Timestamp]("latest_update_at")
 
-  def * : ProvenShape[SeminarRow] = (id, title, startTime, endTime, published, meetingLink, latestUpdateTime).mapTo[SeminarRow]
+  def * : ProvenShape[SeminarRow] = (id, title, startTime, endTime, isPublished, meetingLink, latestUpdateAt).mapTo[SeminarRow]
 }
 
 object SeminarDao {
@@ -57,14 +57,14 @@ case class SeminarDao(db: Database) {
   private def getCurrentTime = new Timestamp(new DateTime().getMillis)
 
   def updatePublishSeminar(seminarId: String, publish: Boolean) = {
-    val query = seminarTable.filter(_.id === seminarId.trim.toInt).map(f => (f.published, f.latestUpdateTime))
+    val query = seminarTable.filter(_.id === seminarId.trim.toInt).map(f => (f.isPublished, f.latestUpdateAt))
       .update(publish, getCurrentTime)
     db.run(query)
   }
 
   def updateSeminar(seminarRow: SeminarRow): Future[Int] = seminarRow.id match {
     case Some(id) =>
-      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.latestUpdateTime))
+      val query = seminarTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.latestUpdateAt))
         .update(seminarRow.title, seminarRow.startTime, seminarRow.endTime, seminarRow.meetingLink, getCurrentTime)
       db.run(query)
     case None => Future.successful(0)
@@ -75,9 +75,7 @@ case class SeminarDao(db: Database) {
     db.run(query)
   }
 
-  def getSeminarsWithInNotifyDate(): Future[Seq[SeminarRow]] = {
-    val notifyDate = DateTime.now().withTimeAtStartOfDay.plusDays(15).getMillis
-    val presentDate = DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis
+  def getSeminarsDueForNotifying(notifyDate: Long, presentDate: Long): Future[Seq[SeminarRow]] = {
     val query = seminarTable
       .filter(r => r.startTime > new Timestamp(presentDate) && r.startTime < new Timestamp(notifyDate))
       .sortBy(_.startTime).result
@@ -85,13 +83,19 @@ case class SeminarDao(db: Database) {
     result
   }
 
-  def getSeminars(listAll: Boolean): Future[Seq[SeminarRow]] = {
-    val query = if (listAll) seminarTable.sortBy(_.startTime).result else seminarTable.filter(_.startTime > new Timestamp(DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis)).sortBy(_.startTime).result
+  def getSeminars: Future[Seq[SeminarRow]] = {
+    val query = seminarTable.sortBy(_.startTime).result
     val result = db.run(query)
     result
   }
 
-  def insertSeminarForm(title: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
+  def getFutureSeminars: Future[Seq[SeminarRow]] = {
+    val query = seminarTable.filter(_.startTime > new Timestamp(DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis)).sortBy(_.startTime).result
+    val result = db.run(query)
+    result
+  }
+
+  def insertSeminar(title: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
     val insertAction = seminarTable += SeminarRow(None, title, startTime, endTime, false, meetingLink, getCurrentTime)
     db.run(insertAction)
   }

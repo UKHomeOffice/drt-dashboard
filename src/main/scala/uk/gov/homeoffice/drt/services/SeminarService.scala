@@ -1,5 +1,6 @@
 package uk.gov.homeoffice.drt.services
 
+import org.joda.time.DateTime
 import uk.gov.homeoffice.drt.ServerConfig
 import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRegisterDao, SeminarsRegistrationRow}
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
@@ -8,8 +9,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SeminarService(seminarDao: SeminarDao, seminarRegisterDao: SeminarRegisterDao, serverConfig: ServerConfig) {
 
-  def usersToRemind(notifications: EmailNotifications)(implicit ec: ExecutionContext) = {
-    seminarDao.getSeminarsWithInNotifyDate().map { seminarsToNotify =>
+  def sendSeminarReminders(notifications: EmailNotifications)(implicit ec: ExecutionContext): Future[Unit] = {
+    val notifyDate: Long = DateTime.now().withTimeAtStartOfDay.plusDays(7).getMillis
+    val presentDate: Long = DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis
+    seminarDao.getSeminarsDueForNotifying(notifyDate, presentDate).map { seminarsToNotify =>
       seminarsToNotify.foreach { seminar =>
         seminar.id
           .map(id => seminarRegisterDao

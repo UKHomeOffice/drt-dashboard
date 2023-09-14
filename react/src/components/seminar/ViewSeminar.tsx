@@ -1,13 +1,10 @@
-import React, {useState} from "react";
+import React from "react";
 import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import {DeleteSeminar} from "./DeleteSeminar";
 import Typography from "@mui/material/Typography";
-import {stringToUKDate} from "./ListSeminar";
+import {stringToUKDate} from "./ListSeminars";
 
 interface Props {
     id: string | undefined;
@@ -16,33 +13,22 @@ interface Props {
     endTime: string | undefined;
     meetingLink: string | undefined;
     view: boolean;
+    showDelete: boolean;
+    setShowDelete: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setView: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     showEdit: boolean;
     setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     isEdit: boolean;
 }
 
 export function ViewSeminar(props: Props) {
-    const [showDelete, setShowDelete] = useState(false);
-
-    const handleEdit = () => {
-        props.setShowEdit(true);
-        props.setView(false)
-    }
 
     const handleViewClose = () => {
         props.setView(false)
     }
 
-    const handleDelete = () => {
-        props.setView(false)
-        setShowDelete(true);
-    }
-
     return (
-        showDelete ? <DeleteSeminar id={props.id} showDelete={showDelete} setShowDelete={setShowDelete}
-                                    setReceivedData={props.setReceivedData}/> :
+        <div>
             <Dialog open={props.view} maxWidth="sm" onClose={handleViewClose}>
                 <Grid container spacing={2}>
                     <Grid item xs={8}>
@@ -57,10 +43,6 @@ export function ViewSeminar(props: Props) {
                     </Grid>
                     <Grid item xs={4} sx={{"backgroundColor": "#E6E9F1"}}>
                         <DialogActions>
-                            {props.isEdit ? <div>
-                                <IconButton aria-label="delete" onClick={handleDelete}><DeleteIcon/></IconButton>
-                                <IconButton aria-label="edit" onClick={handleEdit}><EditIcon/></IconButton>
-                            </div> : null}
                             <IconButton aria-label="close"
                                         onClick={handleViewClose}><CloseIcon/></IconButton>
                         </DialogActions>
@@ -101,5 +83,6 @@ export function ViewSeminar(props: Props) {
                     </Grid>
                 </DialogContent>
             </Dialog>
+        </div>
     )
 }

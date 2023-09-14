@@ -4,12 +4,11 @@ import axios, {AxiosResponse} from "axios";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {DateTimePicker} from "@mui/x-date-pickers/DateTimePicker";
 import Box from "@mui/material/Box";
-import dayjs, {Dayjs} from 'dayjs';
-import {stringToUKDate} from "./ListSeminar";
-import {seminarFormData} from "./CreateSeminar";
+import moment from 'moment';
+import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
+import {jsonSeminarData} from "./CreateSeminar";
 
 interface Props {
     id: string | undefined;
@@ -17,15 +16,14 @@ interface Props {
     startTime: string | undefined;
     endTime: string | undefined;
     meetingLink: string | undefined;
-    setReceivedData: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     showEdit: boolean;
     setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export function EditSeminar(props: Props) {
     const [editTitle, setEditTitle] = React.useState(props.title)
-    const [editStartTime, setEditStartTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.startTime)));
-    const [editEndTime, setEditEndTime] = React.useState<Dayjs>(dayjs(stringToUKDate(props.endTime)));
+    const [editStartTime, setEditStartTime] = React.useState(moment(props.startTime));
+    const [editEndTime, setEditEndTime] = React.useState(moment(props.endTime));
     const [editMeetingLink, setEditMeetingLink] = React.useState(props.meetingLink);
     const [updated, setUpdated] = useState(false);
     const [error, setError] = useState(false);
@@ -35,7 +33,6 @@ export function EditSeminar(props: Props) {
     }
 
     const handleBackToList = () => {
-        props.setReceivedData(false);
         props.setShowEdit(false);
     }
 
@@ -52,7 +49,7 @@ export function EditSeminar(props: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         axios.put('/seminar/edit/' + props.id,
-            seminarFormData(editStartTime, editEndTime, editTitle || '', editMeetingLink || ''))
+            jsonSeminarData(editStartTime, editEndTime, editTitle || '', editMeetingLink || ''))
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -64,7 +61,7 @@ export function EditSeminar(props: Props) {
     };
 
     return (
-        error ? <div><h1>Edit Seminar</h1>
+        error ? <div>
                 <div style={{marginTop: '20px', color: 'red'}}>
                     <div>There was a problem saving the feature guide</div>
                     <Button variant="outlined" color="primary" style={{marginTop: '20px'}}
@@ -72,12 +69,11 @@ export function EditSeminar(props: Props) {
                 </div>
             </div> :
             updated ?
-                <div><h1>Edit Seminar</h1>
+                <div>
                     <div style={{marginTop: '20px', color: 'green'}}>Seminar updated</div>
                     <Button variant="outlined" color="primary" style={{marginTop: '20px'}}
                             onClick={handleBackToList}>Another Seminar update</Button></div> :
                 <div>
-                    <h1>Edit Seminar</h1>
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={2}>
@@ -102,7 +98,7 @@ export function EditSeminar(props: Props) {
                                     onChange={(e) => setEditMeetingLink(e.target.value)}/>
                             </Grid>
                             <Grid item xs={3}>
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
                                     <DateTimePicker
                                         renderInput={(props) => <TextField {...props} />}
                                         label="Start Time"
@@ -114,7 +110,7 @@ export function EditSeminar(props: Props) {
                                 </LocalizationProvider>
                             </Grid>
                             <Grid item xs={9}>
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
                                     <DateTimePicker
                                         renderInput={(props) => <TextField {...props} />}
                                         label="End Time"
