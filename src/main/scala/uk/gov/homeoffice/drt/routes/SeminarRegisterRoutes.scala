@@ -21,13 +21,15 @@ object SeminarRegisterRoutes extends BaseRoute with SeminarRegisterJsonFormats {
   def removeUser(seminarRegisterDao: SeminarRegisterDao)(implicit ec: ExecutionContext) =
     path("remove" / Segment / Segment) { (seminarId, email) =>
       delete {
-        routeResponse(seminarRegisterDao.removeUser(seminarId, email).map(_ => complete(StatusCodes.OK, s"User $email is removed from seminar successfully")), "Removing User from Seminar")
+        val removedUserResult = seminarRegisterDao.removeUser(seminarId, email)
+        routeResponse(removedUserResult.map(_ => complete(StatusCodes.OK, s"User $email is removed from seminar successfully")), "Removing User from Seminar")
       }
     }
 
   def getRegisteredUsers(seminarRegisterDao: SeminarRegisterDao)(implicit ec: ExecutionContext) = path("users" / Segment) { seminarId =>
     get {
-      routeResponse(seminarRegisterDao.getRegisterUsers(seminarId).map(forms => complete(StatusCodes.OK, forms.toJson)), "Getting Seminar Forms")
+      val registeredUsersResult = seminarRegisterDao.getRegisteredUsers(seminarId)
+      routeResponse(registeredUsersResult.map(forms => complete(StatusCodes.OK, forms.toJson)), "Getting registered seminar users")
     }
   }
 

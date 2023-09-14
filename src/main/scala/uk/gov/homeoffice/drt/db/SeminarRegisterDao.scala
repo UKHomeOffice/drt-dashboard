@@ -44,7 +44,7 @@ case class SeminarRegisterDao(db: Database) {
     db.run(query)
   }
 
-  def getRegisterUsers(seminarId: String): Future[Seq[SeminarsRegistrationRow]] = {
+  def getRegisteredUsers(seminarId: String): Future[Seq[SeminarsRegistrationRow]] = {
     val query = seminarsRegistrationTable.filter(_.seminarId === seminarId.trim.toInt).sortBy(_.registeredAt.desc).result
     val result = db.run(query)
     result
