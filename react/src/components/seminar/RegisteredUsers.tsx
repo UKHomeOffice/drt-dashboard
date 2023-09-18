@@ -98,7 +98,7 @@ export function RegisteredUsers() {
             setError(true);
             console.error(error);
         });
-    }, [seminarId]);
+    }, [seminarId, unregister]);
 
     const handleBack = () => {
         setError(false);
@@ -132,8 +132,7 @@ export function RegisteredUsers() {
                             color="primary"
                             onClick={handleBack}>back</Button>
                 </Box>
-                <DialogActionComponent id={rowDetails?.seminarId}
-                                       actionString='unregister'
+                <DialogActionComponent actionString='unregister'
                                        actionMethod='DELETE'
                                        showDialog={unregister}
                                        setShowDialog={setUnregister}

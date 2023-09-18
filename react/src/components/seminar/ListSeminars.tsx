@@ -136,8 +136,9 @@ export function ListSeminars() {
             ),
         },
     ];
+
     const {listAll: listAllParam} = useParams<{ listAll?: string }>();
-    const listAll = listAllParam ? listAllParam === 'true' : false;
+    const showAll = listAllParam ? listAllParam === 'true' : false;
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [error, setError] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
@@ -172,7 +173,7 @@ export function ListSeminars() {
     }
 
     useEffect(() => {
-        axios.get('/seminar/getList/' + listAll)
+        axios.get('/seminar/getList/' + showAll)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -180,7 +181,7 @@ export function ListSeminars() {
             setError(true);
             console.error(error);
         });
-    }, [listAll, unPublish, publish, showDelete]);
+    }, [showAll, unPublish, publish, showDelete]);
 
     const handleBack = () => {
         setError(false);
@@ -193,7 +194,7 @@ export function ListSeminars() {
 
     return (
         <div>
-            <h1>Seminar List</h1>
+            <h1>Seminar List | <Link to={`/seminars/list/`+!showAll}>{showAll ? "Ahead Only" : "View all"}</Link></h1>
             <Snackbar
                 anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
                 open={error}
