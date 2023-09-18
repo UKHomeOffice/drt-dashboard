@@ -18,10 +18,10 @@ trait SeminarRegisterJsonFormats extends DefaultTimeJsonProtocol {
 object SeminarRegisterRoutes extends BaseRoute with SeminarRegisterJsonFormats {
   override val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def removeUser(seminarRegisterDao: SeminarRegisterDao)(implicit ec: ExecutionContext) =
+  def removeRegisteredUser(seminarRegisterDao: SeminarRegisterDao)(implicit ec: ExecutionContext) =
     path("remove" / Segment / Segment) { (seminarId, email) =>
       delete {
-        val removedUserResult = seminarRegisterDao.removeUser(seminarId, email)
+        val removedUserResult = seminarRegisterDao.removeRegisteredUser(seminarId, email)
         routeResponse(removedUserResult.map(_ => complete(StatusCodes.OK, s"User $email is removed from seminar successfully")), "Removing User from Seminar")
       }
     }
@@ -34,6 +34,6 @@ object SeminarRegisterRoutes extends BaseRoute with SeminarRegisterJsonFormats {
   }
 
   def apply(prefix: String, seminarRegisterDao: SeminarRegisterDao)(implicit ec: ExecutionContext) = pathPrefix(prefix) {
-    concat(getRegisteredUsers(seminarRegisterDao) ~ removeUser(seminarRegisterDao))
+    concat(getRegisteredUsers(seminarRegisterDao) ~ removeRegisteredUser(seminarRegisterDao))
   }
 }

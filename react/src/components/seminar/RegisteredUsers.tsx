@@ -2,17 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {DataGrid, GridColDef, GridRenderCellParams, GridRowModel} from "@mui/x-data-grid";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {Button} from "@mui/material";
+import {Button, Snackbar} from "@mui/material";
 import Box from "@mui/material/Box";
 import axios, {AxiosResponse} from "axios";
-import {DialogActionComponent} from "./DialogActionComponent";
-
-interface Props {
-    seminarId: string | undefined;
-    seminarTitle: string | undefined;
-    showRegisteredUser: boolean;
-    setShowRegisteredUser: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-}
+import {Alert, DialogActionComponent} from "./DialogActionComponent";
+import {Redirect, useParams} from "react-router-dom";
+import {SeminarData} from "./ListSeminars";
 
 export interface SeminarRegisteredUsers {
     email: string;
@@ -21,7 +16,7 @@ export interface SeminarRegisteredUsers {
     emailSentAt: string;
 }
 
-export function RegisteredUsers(props: Props) {
+export function RegisteredUsers() {
     const columns: GridColDef[] = [
         {
             field: 'seminarId',
@@ -55,15 +50,25 @@ export function RegisteredUsers(props: Props) {
             ),
         },
     ];
-
+    const {seminarId} = useParams<{ seminarId: string }>();
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [rowDetails, setRowDetails] = React.useState({} as SeminarRegisteredUsers | undefined)
+    const [selectedRow, setSelectedRow] = React.useState<SeminarData | null>(null);
     const [error, setError] = useState(false);
     const [unregister, setUnregister] = useState(false);
+    const [redirectTo, setRedirectTo] = useState(null);
 
     const handleRemove = (userData: SeminarRegisteredUsers | undefined) => {
         setRowDetails(userData)
         setUnregister(true);
+    }
+
+    const handleSeminarResponse = (response: AxiosResponse) => {
+        if (response.status === 200) {
+            setSelectedRow(response.data)
+        } else {
+            setError(true);
+        }
     }
 
     const handleResponse = (response: AxiosResponse) => {
@@ -76,7 +81,7 @@ export function RegisteredUsers(props: Props) {
     }
 
     useEffect(() => {
-        axios.get('/seminar-register/users/' + props.seminarId)
+        axios.get('/seminar-register/users/' + seminarId)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -84,21 +89,35 @@ export function RegisteredUsers(props: Props) {
             setError(true);
             console.error(error);
         });
-    }, [unregister]);
+        axios.get('/seminar/get/' + seminarId)
+            .then(response => handleSeminarResponse(response))
+            .then(data => {
+                console.log(data);
+            }).catch(error => {
+            setError(true);
+            console.error(error);
+        });
+    }, [seminarId]);
 
     const handleBack = () => {
         setError(false);
-        props.setShowRegisteredUser(false);
+        setRedirectTo('/seminars/list');
     }
 
     return (
-        error ?
-            <div style={{marginTop: '20px', color: 'red'}}> There was a problem booking seminars. Please try reloading
-                the page. <br/>
-                <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={handleBack}>back</Button>
-            </div> :
-            <div>
-                <h2>User registered for seminar {props.seminarTitle}</h2>
+        <div>
+            {redirectTo && <Redirect to={redirectTo}/>}
+            {<div>
+                <Snackbar
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    open={error}
+                    autoHideDuration={6000}
+                    onClose={() => setError(false)}>
+                    <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
+                        There was a problem booking seminars. Please try reloading the page.
+                    </Alert>
+                </Snackbar>
+                <h1>Seminar registrations - {selectedRow?.title}</h1>
                 <Box sx={{height: 400, width: '100%'}}>
                     <DataGrid
                         getRowId={(rowsData) => rowsData.email + '_' + rowsData.seminarId}
@@ -120,6 +139,6 @@ export function RegisteredUsers(props: Props) {
                                        actionUrl={'/seminar-register/remove/' + rowDetails?.seminarId + '/' + rowDetails?.email}
                 />
             </div>
-
+            } </div>
     )
 }

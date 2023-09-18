@@ -23,24 +23,20 @@ object SeminarReminder {
       val seminarService: SeminarService = new SeminarService(SeminarDao(ProdDatabase.db), SeminarRegisterDao(ProdDatabase.db), serverConfig)
 
       Behaviors.withTimers(timers => new SeminarReminder(
-        serverConfig,
         notifications,
         seminarService,
         timers,
         timerInitialDelay,
         serverConfig.seminarRemindersCheckFrequency.minutes,
-        maxSize,
         context).seminarReminderNotification)
     }
 }
 
-class SeminarReminder(serverConfig: ServerConfig,
-                      notifications: EmailNotifications,
+class SeminarReminder(notifications: EmailNotifications,
                       seminarService: SeminarService,
                       timers: TimerScheduler[SeminarCommand],
                       timerInitialDelay: FiniteDuration,
                       timerInterval: FiniteDuration,
-                      maxSize: Int,
                       context: ActorContext[SeminarCommand]) {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 

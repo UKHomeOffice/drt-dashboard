@@ -37,7 +37,7 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
     new Timestamp(utcTime.toInstant.toEpochMilli)
   }
 
-  def editSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("edit" / Segment) { seminarId =>
+  def updateSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("update" / Segment) { seminarId =>
     put {
       entity(as[SeminarData]) { seminar =>
         val updatedSeminarResult = seminarDao.updateSeminar(SeminarRow(Some(seminarId.toInt), seminar.title, stringToTimestamp(seminar.startTime), stringToTimestamp(seminar.endTime), false, Option(seminar.meetingLink), new Timestamp(new DateTime().getMillis)))
@@ -67,7 +67,15 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
       }
     }
 
-  def getSeminars(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("get" / Segment) { listAll =>
+  def getSeminar(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("get" / Segment) { seminarId =>
+    get {
+      val getSeminarResult =
+        seminarDao.getSeminar(seminarId).map(seminar => complete(StatusCodes.OK, seminar.toJson))
+      routeResponse(getSeminarResult, "Getting Seminar")
+    }
+  }
+
+  def getSeminars(seminarDao: SeminarDao)(implicit ec: ExecutionContext) = path("getList" / Segment) { listAll =>
     get {
       val getSeminarsResult =
         if (listAll.toBoolean) seminarDao.getSeminars.map(forms => complete(StatusCodes.OK, forms.toJson))
@@ -87,6 +95,6 @@ object SeminarRoute extends BaseRoute with SeminarJsonFormats {
   }
 
   def apply(prefix: String, seminarDao: SeminarDao)(implicit ec: ExecutionContext) = pathPrefix(prefix) {
-    concat(saveSeminar(seminarDao) ~ getSeminars(seminarDao) ~ deleteSeminar(seminarDao) ~ publishSeminar(seminarDao) ~ editSeminar(seminarDao))
+    concat(saveSeminar(seminarDao) ~ getSeminar(seminarDao) ~ getSeminars(seminarDao) ~ deleteSeminar(seminarDao) ~ publishSeminar(seminarDao) ~ updateSeminar(seminarDao))
   }
 }

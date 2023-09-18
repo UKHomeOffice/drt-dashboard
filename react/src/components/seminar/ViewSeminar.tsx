@@ -13,12 +13,7 @@ interface Props {
     endTime: string | undefined;
     meetingLink: string | undefined;
     view: boolean;
-    showDelete: boolean;
-    setShowDelete: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     setView: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    showEdit: boolean;
-    setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    isEdit: boolean;
 }
 
 export function ViewSeminar(props: Props) {
@@ -28,7 +23,6 @@ export function ViewSeminar(props: Props) {
     }
 
     return (
-        <div>
             <Dialog open={props.view} maxWidth="sm" onClose={handleViewClose}>
                 <Grid container spacing={2}>
                     <Grid item xs={8}>
@@ -83,6 +77,5 @@ export function ViewSeminar(props: Props) {
                     </Grid>
                 </DialogContent>
             </Dialog>
-        </div>
     )
 }

@@ -35,7 +35,7 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
   }
 
-  def sendSeminarReminderEmail(email: String, anyPort: String, seminar: SeminarRow, isSecure: Boolean, baseDomain: String, teamEmail: String) = {
+  def sendSeminarReminderEmail(email: String, seminar: SeminarRow, teamEmail: String) = {
     import SeminarDao._
     val personalisation = Map(
       "teamEmail" -> teamEmail,

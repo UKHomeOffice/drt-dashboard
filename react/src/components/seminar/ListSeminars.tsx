@@ -7,12 +7,13 @@ import PreviewIcon from "@mui/icons-material/Preview";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import axios, {AxiosResponse} from "axios";
-import {Button} from "@mui/material";
+import {Snackbar} from "@mui/material";
 import Box from "@mui/material/Box";
 import {ViewSeminar} from "./ViewSeminar";
 import {CalendarViewMonth} from "@mui/icons-material";
-import {DialogActionComponent} from "./DialogActionComponent";
+import {Alert, DialogActionComponent} from "./DialogActionComponent";
 import moment from 'moment-timezone';
+import {Link, useParams} from "react-router-dom";
 
 export function stringToUKDate(date?: string): string | undefined {
     if (!date) {
@@ -21,18 +22,6 @@ export function stringToUKDate(date?: string): string | undefined {
 
     const ukDatetime = moment.tz(date, "YYYY-MM-DD HH:mm:ss.S", "Europe/London");
     return ukDatetime.format('YYYY-MM-DD HH:mm');
-}
-
-interface Props {
-    listAll: boolean;
-    rowDetails: SeminarData | undefined;
-    setRowDetails: ((value: (((prevState: SeminarData | undefined) => SeminarData | undefined) | SeminarData | undefined)) => void);
-    showRegisteredUser: boolean;
-    setShowRegisteredUser: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    setListAll: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    setViewSeminars: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    showEdit: boolean;
-    setShowEdit: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export interface SeminarData {
@@ -44,7 +33,7 @@ export interface SeminarData {
     isPublished: boolean;
 }
 
-export function ListSeminars(props: Props) {
+export function ListSeminars() {
 
     const seminarColumns: GridColDef[] = [
         {
@@ -126,9 +115,11 @@ export function ListSeminars(props: Props) {
             headerName: 'Edit',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
-                <IconButton aria-label="delete">
-                    <EditIcon onClick={() => handleEdit(params.row as SeminarData)}/>
-                </IconButton>
+                <Link to={`/seminars/edit/${params.row.id}`}>
+                    <IconButton aria-label="edit">
+                        <EditIcon/>
+                    </IconButton>
+                </Link>
             ),
         },
         {
@@ -136,51 +127,43 @@ export function ListSeminars(props: Props) {
             headerName: 'Users',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
-                <IconButton aria-label="users-registered">
-                    <CalendarViewMonth onClick={() => handleRegisteredUsers(params.row as SeminarData)}/>
-                </IconButton>
+                <Link to={`/seminars/registeredUsers/${params.row.id}`}>
+                    <IconButton aria-label="users-registered">
+                        <CalendarViewMonth/>
+                    </IconButton>
+                </Link>
             ),
         },
     ];
-
+    const {listAll: listAllParam} = useParams<{ listAll?: string }>();
+    const listAll = listAllParam ? listAllParam === 'true' : false;
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [error, setError] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [publish, setPublish] = useState(false);
     const [unPublish, setUnPublish] = useState(false);
     const [view, setView] = useState(false);
+    const [rowDetails, setRowDetails] = React.useState({} as SeminarData | undefined);
+
     const handlePublish = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
+        setRowDetails(userData)
         setPublish(true);
     }
 
     const handleUnPublish = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
+        setRowDetails(userData)
         setUnPublish(true);
     }
 
-    const handleEdit = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
-        props.setViewSeminars(false);
-        props.setShowEdit(true);
-    }
-
-    const handleRegisteredUsers = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
-        props.setViewSeminars(false);
-        props.setShowEdit(false);
-        props.setShowRegisteredUser(true);
-    }
 
     const handleDelete = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
+        setRowDetails(userData)
         setShowDelete(true);
     }
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
             setRowsData(response.data)
-            props.setViewSeminars(true)
         } else {
             setError(true);
             response.data
@@ -188,7 +171,7 @@ export function ListSeminars(props: Props) {
     }
 
     useEffect(() => {
-        axios.get('/seminar/get/' + props.listAll)
+        axios.get('/seminar/getList/' + listAll)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -196,67 +179,67 @@ export function ListSeminars(props: Props) {
             setError(true);
             console.error(error);
         });
-    }, [props.listAll, props.showRegisteredUser, unPublish, publish, showDelete]);
+    }, [listAll, unPublish, publish, showDelete]);
 
     const handleBack = () => {
         setError(false);
-        props.setViewSeminars(false)
     }
 
     const rowClickOpen = (userData: SeminarData | undefined) => {
-        props.setRowDetails(userData)
+        setRowDetails(userData)
         setView(true)
     }
 
     return (
-        error ?
-            <div style={{marginTop: '20px', color: 'red'}}> There was a problem fetching the list of seminars. Please
-                try reloading the page. <br/>
-                <Button style={{float: 'right'}} variant="outlined" color="primary" onClick={handleBack}>back</Button>
-            </div> :
-            <div>
-                <Box sx={{height: 400, width: '100%'}}>
-                    <DataGrid
-                        getRowId={(rowsData) => rowsData.id}
-                        rows={rowsData}
-                        columns={seminarColumns}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
-                        experimentalFeatures={{newEditingApi: true}}
-                    />
-                    <Button style={{float: 'right'}} variant="outlined"
-                            color="primary"
-                            onClick={handleBack}>back</Button>
-                </Box>
-                <ViewSeminar id={props.rowDetails?.id} title={props.rowDetails?.title}
-                             startTime={props.rowDetails?.startTime}
-                             endTime={props.rowDetails?.endTime}
-                             meetingLink={props.rowDetails?.meetingLink}
-                             view={view} setView={setView}
-                             isEdit={true}
-                             showEdit={props.showEdit} setShowEdit={props.setShowEdit}/>
-                <DialogActionComponent id={props.rowDetails?.id}
-                                       actionMethod='DELETE'
-                                       actionString='remove seminar'
-                                       actionUrl={'/seminar/delete/' + props.rowDetails?.id}
-                                       showDialog={showDelete}
-                                       setShowDialog={setShowDelete}
+        <div>
+            <h1>Seminar List</h1>
+            <Snackbar
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                open={error}
+                autoHideDuration={6000}
+                onClose={() => handleBack}>
+                <Alert onClose={handleBack} severity="success" sx={{width: '100%'}}>
+                    There was a problem fetching the list of seminars. Please try reloading the page.
+                </Alert>
+            </Snackbar>
+            <Box sx={{height: 400, width: '100%'}}>
+                <DataGrid
+                    getRowId={(rowsData) => rowsData.id}
+                    rows={rowsData}
+                    columns={seminarColumns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    experimentalFeatures={{newEditingApi: true}}
                 />
-                <DialogActionComponent id={props.rowDetails?.id}
-                                       actionUrl={'/seminar/published/' + props.rowDetails?.id}
-                                       actionString="publish"
-                                       actionMethod="POST"
-                                       showDialog={publish}
-                                       setShowDialog={setPublish}
-                />
-                <DialogActionComponent id={props.rowDetails?.id}
-                                       actionUrl={'/seminar/published/' + props.rowDetails?.id}
-                                       actionString="unPublish"
-                                       actionMethod="POST"
-                                       showDialog={unPublish}
-                                       setShowDialog={setUnPublish}
-                />
-            </div>
+            </Box>
+            <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
+                         startTime={rowDetails?.startTime}
+                         endTime={rowDetails?.endTime}
+                         meetingLink={rowDetails?.meetingLink}
+                         view={view} setView={setView}
+            />
+            <DialogActionComponent id={rowDetails?.id}
+                                   actionMethod='DELETE'
+                                   actionString='remove seminar'
+                                   actionUrl={'/seminar/delete/' + rowDetails?.id}
+                                   showDialog={showDelete}
+                                   setShowDialog={setShowDelete}
+            />
+            <DialogActionComponent id={rowDetails?.id}
+                                   actionUrl={'/seminar/published/' + rowDetails?.id}
+                                   actionString="publish"
+                                   actionMethod="POST"
+                                   showDialog={publish}
+                                   setShowDialog={setPublish}
+            />
+            <DialogActionComponent id={rowDetails?.id}
+                                   actionUrl={'/seminar/published/' + rowDetails?.id}
+                                   actionString="unPublish"
+                                   actionMethod="POST"
+                                   showDialog={unPublish}
+                                   setShowDialog={setUnPublish}
+            />
+        </div>
     )
 
 }

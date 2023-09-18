@@ -122,7 +122,7 @@ const App = (props: PropsFromReact) => {
                     <Route exact path="/feature-guide-upload">
                         <UploadForm/>
                     </Route>
-                    <Route exact path="/seminars">
+                    <Route exact path="/seminars/list">
                         <SeminarLanding/>
                     </Route>
                 </Switch>

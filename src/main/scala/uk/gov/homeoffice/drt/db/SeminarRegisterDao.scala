@@ -39,7 +39,7 @@ case class SeminarRegisterDao(db: Database) {
     db.run(query)
   }
 
-  def removeUser(seminarId: String, email: String): Future[Int] = {
+  def removeRegisteredUser(seminarId: String, email: String): Future[Int] = {
     val query = seminarsRegistrationTable.filter(r => r.seminarId === seminarId.trim.toInt && r.email === email.trim).delete
     db.run(query)
   }
@@ -50,7 +50,7 @@ case class SeminarRegisterDao(db: Database) {
     result
   }
 
-  def getUsersToNotify(seminarId: String, seminarDate: Timestamp): Future[Seq[SeminarsRegistrationRow]] = {
+  def getRegisteredUsersToNotify(seminarId: String, seminarDate: Timestamp): Future[Seq[SeminarsRegistrationRow]] = {
 
     val sevenDaysMilliSeconds = 7L * 24L * 60L * 60L * 1000L
     val numberOfDaysBeforeSeminar = new Timestamp(seminarDate.getTime - sevenDaysMilliSeconds)
