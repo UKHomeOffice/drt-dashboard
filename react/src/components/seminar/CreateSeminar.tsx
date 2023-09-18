@@ -10,7 +10,7 @@ import moment from 'moment-timezone';
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {Moment} from "moment";
 import {Snackbar} from "@mui/material";
-import {Alert} from "./DialogActionComponent";
+import {Alert} from "../DialogComponent";
 import {Redirect} from "react-router-dom";
 
 export function jsonSeminarData(startTime: Moment | undefined, endTime: Moment | undefined, title: string, meetingLink: string) {

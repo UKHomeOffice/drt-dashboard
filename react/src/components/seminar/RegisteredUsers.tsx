@@ -5,9 +5,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {Button, Snackbar} from "@mui/material";
 import Box from "@mui/material/Box";
 import axios, {AxiosResponse} from "axios";
-import {Alert, DialogActionComponent} from "./DialogActionComponent";
+import {DialogActionComponent} from "./DialogActionComponent";
 import {Redirect, useParams} from "react-router-dom";
 import {SeminarData} from "./ListSeminars";
+import {Alert} from "../DialogComponent";
 
 export interface SeminarRegisteredUsers {
     email: string;

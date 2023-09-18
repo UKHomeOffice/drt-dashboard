@@ -11,9 +11,10 @@ import {Snackbar} from "@mui/material";
 import Box from "@mui/material/Box";
 import {ViewSeminar} from "./ViewSeminar";
 import {CalendarViewMonth} from "@mui/icons-material";
-import {Alert, DialogActionComponent} from "./DialogActionComponent";
+import {DialogActionComponent} from "./DialogActionComponent";
 import moment from 'moment-timezone';
 import {Link, useParams} from "react-router-dom";
+import {Alert} from "../DialogComponent";
 
 export function stringToUKDate(date?: string): string | undefined {
     if (!date) {
@@ -218,22 +219,19 @@ export function ListSeminars() {
                          meetingLink={rowDetails?.meetingLink}
                          view={view} setView={setView}
             />
-            <DialogActionComponent id={rowDetails?.id}
-                                   actionMethod='DELETE'
+            <DialogActionComponent actionMethod='DELETE'
                                    actionString='remove seminar'
                                    actionUrl={'/seminar/delete/' + rowDetails?.id}
                                    showDialog={showDelete}
                                    setShowDialog={setShowDelete}
             />
-            <DialogActionComponent id={rowDetails?.id}
-                                   actionUrl={'/seminar/published/' + rowDetails?.id}
+            <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
                                    actionString="publish"
                                    actionMethod="POST"
                                    showDialog={publish}
                                    setShowDialog={setPublish}
             />
-            <DialogActionComponent id={rowDetails?.id}
-                                   actionUrl={'/seminar/published/' + rowDetails?.id}
+            <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
                                    actionString="unPublish"
                                    actionMethod="POST"
                                    showDialog={unPublish}

@@ -1,25 +1,13 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import axios, {AxiosResponse} from "axios";
-import {Dialog, DialogActions, DialogContent, DialogTitle, Snackbar} from "@mui/material";
-import Button from "@mui/material/Button";
-
-import MuiAlert, {AlertProps} from '@mui/material/Alert';
-
-export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-    props,
-    ref,
-) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
+import {DialogComponent} from "../DialogComponent";
 
 interface Props {
-    id: string | undefined;
     showDialog: boolean;
+    setShowDialog: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
     actionUrl: string;
     actionString: string;
     actionMethod: string;
-    setShowDialog: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
 export function DialogActionComponent(props: Props) {
@@ -27,7 +15,6 @@ export function DialogActionComponent(props: Props) {
     const [confirmAction, setConfirmAction] = useState(false);
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
-            setConfirmAction(true);
             props.setShowDialog(false);
             console.log(props.actionString + ' Seminar data');
         } else {
@@ -36,22 +23,18 @@ export function DialogActionComponent(props: Props) {
         }
     }
 
-    const handleErrorDialogClose = () => {
-        setError(false);
-        props.setShowDialog(false);
-    }
-
-    const handleCloseConfirmDialog = () => {
-        setConfirmAction(false);
-        props.setShowDialog(false);
-        // props.setReceivedData(false);
-    }
+    useEffect(() => {
+        handleConfirmDialog();
+    }, [confirmAction]);
 
     const handleConfirmDialog = () => {
-        if (props.actionMethod === 'DELETE')
-            executeDeleteAction();
-        else
-            executePostAction();
+        if (confirmAction) {
+            if (props.actionMethod == "DELETE")
+                executeDeleteAction();
+            else
+                executePostAction();
+        }
+
     }
 
     const executePostAction = () => {
@@ -66,36 +49,13 @@ export function DialogActionComponent(props: Props) {
     }
     return (
         <div>
-            <Snackbar
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                open={error}
-                autoHideDuration={6000}
-                onClose={() => handleErrorDialogClose}>
-                <Alert onClose={handleErrorDialogClose} severity="error" sx={{width: '100%'}}>
-                    Error while {props.actionString} !
-                </Alert>
-            </Snackbar>
-            <Snackbar
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                open={confirmAction}
-                autoHideDuration={6000}
-                onClose={() => handleCloseConfirmDialog}>
-                <Alert onClose={handleCloseConfirmDialog} severity="success" sx={{width: '100%'}}>
-                    Seminar requested is {props.actionString} !
-                </Alert>
-            </Snackbar>
-            <Dialog open={props.showDialog} onClose={handleCloseConfirmDialog}>
-                <DialogTitle>Confirm {props.actionString}</DialogTitle>
-                <DialogContent>
-                    <p>Are you sure you want to {props.actionString} this item?</p>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
-                    <Button onClick={handleConfirmDialog} variant="contained" color="error">
-                        {props.actionString}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <DialogComponent displayText={props.actionString}
+                             showDialog={props.showDialog}
+                             setShowDialog={props.setShowDialog}
+                             error={error}
+                             setError={setError}
+                             confirmAction={confirmAction}
+                             setConfirmAction={setConfirmAction}/>
         </div>
 
     )

@@ -9,9 +9,9 @@ import Box from "@mui/material/Box";
 import moment from 'moment';
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {jsonSeminarData} from "./CreateSeminar";
-import {Alert} from "./DialogActionComponent";
 import {useParams} from 'react-router-dom';
 import {Redirect} from 'react-router-dom';
+import {Alert} from "../DialogComponent";
 
 export function EditSeminar() {
     const [redirectTo, setRedirectTo] = useState(null);
