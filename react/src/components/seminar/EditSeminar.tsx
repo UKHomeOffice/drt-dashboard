@@ -79,7 +79,7 @@ export function EditSeminar() {
         <div>
             {redirectTo && <Redirect to={redirectTo}/>}
             {<div>
-                <h1>Edit Seminar | {redirectTo} </h1>
+                <h1>Edit Seminar</h1>
                 <Snackbar
                     anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
                     open={error}
