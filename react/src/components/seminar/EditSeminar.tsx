@@ -14,20 +14,13 @@ import {Redirect} from 'react-router-dom';
 import {Alert} from "../DialogComponent";
 
 export function EditSeminar() {
-    const [redirectTo, setRedirectTo] = useState(null);
+    const [redirectTo, setRedirectTo] = useState('');
     const {seminarId} = useParams<{ seminarId: string }>();
     const [editTitle, setEditTitle] = React.useState()
     const [editStartTime, setEditStartTime] = React.useState();
     const [editEndTime, setEditEndTime] = React.useState();
     const [editMeetingLink, setEditMeetingLink] = React.useState();
-    const [updated, setUpdated] = useState(false);
     const [error, setError] = useState(false);
-
-    const handleClose = () => {
-        setError(false);
-        setRedirectTo('/seminars/list');
-    };
-
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
@@ -42,7 +35,7 @@ export function EditSeminar() {
 
     const handleUpdateResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
-            setUpdated(true);
+            setRedirectTo('/seminars/list/crud/edited');
             response.data
         } else {
             setError(true);
@@ -89,27 +82,13 @@ export function EditSeminar() {
                         There was a problem saving the seminar guide.
                     </Alert>
                 </Snackbar>
-                <Snackbar
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    open={updated}
-                    autoHideDuration={6000}
-                    onClose={() => handleClose()}>
-                    <Alert onClose={() => handleClose()} severity="success" sx={{width: '100%'}}>
-                        Seminar updated successfully ! Please check the seminar list.
-                    </Alert>
-                </Snackbar>
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3} alignItems="center">
-                        <Grid item xs={2}>
-                            <label>Seminar Title:</label></Grid>
-                        <Grid item xs={10}>
+                        <Grid item xs={12}>
                             <TextField label="Title" type="text" value={editTitle}
                                        onChange={(e) => setEditTitle(e.target.value)}/>
                         </Grid>
-                        <Grid item xs={2}>
-                            <label>Meeting Link:</label>
-                        </Grid>
-                        <Grid item xs={10}>
+                        <Grid item xs={12}>
                             <TextField
                                 fullWidth
                                 label="Meeting Link"
@@ -121,7 +100,7 @@ export function EditSeminar() {
                                 value={editMeetingLink}
                                 onChange={(e) => setEditMeetingLink(e.target.value)}/>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12}>
                             <LocalizationProvider dateAdapter={AdapterMoment}>
                                 <DateTimePicker
                                     renderInput={(props) => <TextField {...props} />}
@@ -133,7 +112,7 @@ export function EditSeminar() {
                                 />
                             </LocalizationProvider>
                         </Grid>
-                        <Grid item xs={9}>
+                        <Grid item xs={12}>
                             <LocalizationProvider dateAdapter={AdapterMoment}>
                                 <DateTimePicker
                                     renderInput={(props) => <TextField {...props} />}

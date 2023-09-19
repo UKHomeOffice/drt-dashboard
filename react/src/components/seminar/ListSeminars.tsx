@@ -13,8 +13,10 @@ import {ViewSeminar} from "./ViewSeminar";
 import {CalendarViewMonth} from "@mui/icons-material";
 import {DialogActionComponent} from "./DialogActionComponent";
 import moment from 'moment-timezone';
-import {Link, useParams} from "react-router-dom";
+import {Link, Redirect, useParams} from "react-router-dom";
 import {Alert} from "../DialogComponent";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
 export function stringToUKDate(date?: string): string | undefined {
     if (!date) {
@@ -40,6 +42,7 @@ export function ListSeminars() {
         {
             field: 'id',
             headerName: 'Id',
+            hide: true,
             width: 50
         },
         {
@@ -74,14 +77,17 @@ export function ListSeminars() {
             ),
         },
         {
-            field: 'latestUpdateTime',
-            headerName: 'Latest Time',
+            field: 'lastUpdatedAt',
+            headerName: 'Updated',
             description: 'This column has a value getter and is not sortable.',
             width: 150,
+            renderCell: (params) => {
+                return <div>{stringToUKDate(params.value)}</div>;
+            }
         },
         {
             field: 'isPublished',
-            headerName: 'Published',
+            headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
                 <IconButton aria-label="publish">
@@ -93,7 +99,7 @@ export function ListSeminars() {
         },
         {
             field: 'view',
-            headerName: 'view',
+            headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
                 <IconButton aria-label="view">
@@ -103,7 +109,7 @@ export function ListSeminars() {
         },
         {
             field: 'delete',
-            headerName: 'Delete',
+            headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
                 <IconButton aria-label="delete">
@@ -113,7 +119,7 @@ export function ListSeminars() {
         },
         {
             field: 'edit',
-            headerName: 'Edit',
+            headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
                 <Link to={`/seminars/edit/${params.row.id}`}>
@@ -125,10 +131,10 @@ export function ListSeminars() {
         },
         {
             field: 'users',
-            headerName: 'Users',
+            headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
-                <Link to={`/seminars/registeredUsers/${params.row.id}`}>
+                <Link to={`/seminars/list/registeredUsers/${params.row.id}`}>
                     <IconButton aria-label="users-registered">
                         <CalendarViewMonth/>
                     </IconButton>
@@ -138,6 +144,7 @@ export function ListSeminars() {
     ];
 
     const {listAll: listAllParam} = useParams<{ listAll?: string }>();
+    const {operations: operationsParam} = useParams<{ operations?: string }>();
     const showAll = listAllParam ? listAllParam === 'true' : false;
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
     const [error, setError] = useState(false);
@@ -146,19 +153,29 @@ export function ListSeminars() {
     const [unPublish, setUnPublish] = useState(false);
     const [view, setView] = useState(false);
     const [rowDetails, setRowDetails] = React.useState({} as SeminarData | undefined);
+    const [checked, setChecked] = useState(false);
+    const [redirectTo, setRedirectTo] = useState('');
+    const [saved, setSaved] = useState(false);
+    const [edited, setEdited] = useState(false);
 
     const handlePublish = (userData: SeminarData | undefined) => {
+        setEdited(false)
+        setSaved(false)
         setRowDetails(userData)
         setPublish(true);
     }
 
     const handleUnPublish = (userData: SeminarData | undefined) => {
+        setEdited(false)
+        setSaved(false)
         setRowDetails(userData)
         setUnPublish(true);
     }
 
 
     const handleDelete = (userData: SeminarData | undefined) => {
+        setEdited(false)
+        setSaved(false)
         setRowDetails(userData)
         setShowDelete(true);
     }
@@ -173,6 +190,14 @@ export function ListSeminars() {
     }
 
     useEffect(() => {
+        if (operationsParam === 'saved') {
+            setSaved(true);
+            setRedirectTo('/seminars/list')
+        }
+        if (operationsParam === 'edited') {
+            setEdited(true);
+            setRedirectTo('/seminars/list')
+        }
         axios.get('/seminar/getList/' + showAll)
             .then(response => handleResponse(response))
             .then(data => {
@@ -192,53 +217,94 @@ export function ListSeminars() {
         setView(true)
     }
 
+    const handleToggle = () => {
+        setChecked(!showAll);
+        setRedirectTo('/seminars/list/' + !showAll)
+    }
+
+    const handleSavedClose = () => {
+        setSaved(false);
+    };
+
+    const handleEditedClose = () => {
+        setEdited(false);
+    };
+
     return (
         <div>
-            <h1>Seminar List | <Link to={`/seminars/list/`+!showAll}>{showAll ? "Ahead Only" : "View all"}</Link></h1>
-            <Snackbar
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                open={error}
-                autoHideDuration={6000}
-                onClose={() => handleBack}>
-                <Alert onClose={handleBack} severity="success" sx={{width: '100%'}}>
-                    There was a problem fetching the list of seminars. Please try reloading the page.
-                </Alert>
-            </Snackbar>
-            <Box sx={{height: 400, width: '100%'}}>
-                <DataGrid
-                    getRowId={(rowsData) => rowsData.id}
-                    rows={rowsData}
-                    columns={seminarColumns}
-                    pageSize={5}
-                    rowsPerPageOptions={[5]}
-                    experimentalFeatures={{newEditingApi: true}}
-                />
-            </Box>
-            <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
-                         startTime={rowDetails?.startTime}
-                         endTime={rowDetails?.endTime}
-                         meetingLink={rowDetails?.meetingLink}
-                         view={view} setView={setView}
-            />
-            <DialogActionComponent actionMethod='DELETE'
-                                   actionString='remove seminar'
-                                   actionUrl={'/seminar/delete/' + rowDetails?.id}
-                                   showDialog={showDelete}
-                                   setShowDialog={setShowDelete}
-            />
-            <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
-                                   actionString="publish"
-                                   actionMethod="POST"
-                                   showDialog={publish}
-                                   setShowDialog={setPublish}
-            />
-            <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
-                                   actionString="unPublish"
-                                   actionMethod="POST"
-                                   showDialog={unPublish}
-                                   setShowDialog={setUnPublish}
-            />
-        </div>
+            {redirectTo && <Redirect to={redirectTo}/>}
+            {
+                <div>
+                    <h1>Seminar List | <Link to={`/seminars/new`}>Create New</Link> | <FormControlLabel
+                        control={<Checkbox
+                            checked={checked}
+                            onChange={handleToggle}
+                            value="singleRadio"
+                            color="primary"
+                        />} label={"include previous seminars"}/></h1>
+                    <Snackbar
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        open={saved}
+                        autoHideDuration={6000}
+                        onClose={() => handleSavedClose()}>
+                        <Alert onClose={() => handleSavedClose()} severity="success" sx={{width: '100%'}}>
+                            Seminar saved successfully ! Please check the seminar list.
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        open={edited}
+                        autoHideDuration={6000}
+                        onClose={() => handleEditedClose()}>
+                        <Alert onClose={() => handleEditedClose()} severity="success" sx={{width: '100%'}}>
+                            Seminar updated successfully ! Please check the seminar list.
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        open={error}
+                        autoHideDuration={6000}
+                        onClose={() => handleBack}>
+                        <Alert onClose={handleBack} severity="success" sx={{width: '100%'}}>
+                            There was a problem fetching the list of seminars. Please try reloading the page.
+                        </Alert>
+                    </Snackbar>
+                    <Box sx={{height: 400, width: '100%'}}>
+                        <DataGrid
+                            getRowId={(rowsData) => rowsData.id}
+                            rows={rowsData}
+                            columns={seminarColumns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            experimentalFeatures={{newEditingApi: true}}
+                        />
+                    </Box>
+                    <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
+                                 startTime={rowDetails?.startTime}
+                                 endTime={rowDetails?.endTime}
+                                 meetingLink={rowDetails?.meetingLink}
+                                 view={view} setView={setView}
+                    />
+                    <DialogActionComponent actionMethod='DELETE'
+                                           actionString='remove seminar'
+                                           actionUrl={'/seminar/delete/' + rowDetails?.id}
+                                           showDialog={showDelete}
+                                           setShowDialog={setShowDelete}
+                    />
+                    <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
+                                           actionString="publish"
+                                           actionMethod="POST"
+                                           showDialog={publish}
+                                           setShowDialog={setPublish}
+                    />
+                    <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
+                                           actionString="unPublish"
+                                           actionMethod="POST"
+                                           showDialog={unPublish}
+                                           setShowDialog={setUnPublish}
+                    />
+                </div>
+            }</div>
     )
 
 }

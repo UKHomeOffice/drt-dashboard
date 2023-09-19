@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import axios, {AxiosResponse} from "axios";
-import {DialogComponent} from "../DialogComponent";
+import {Alert, DialogComponent} from "../DialogComponent";
+import {Snackbar} from "@mui/material";
 
 interface Props {
     showDialog: boolean;
@@ -47,13 +48,41 @@ export function DialogActionComponent(props: Props) {
         axios.delete(props.actionUrl)
             .then(response => handleResponse(response))
     }
+
+    const handleErrorDialogClose = () => {
+        setError(false);
+        setConfirmAction(false);
+    }
+
+
+    const handleCloseSnackBar = () => {
+        setError(false);
+        setConfirmAction(false);
+    }
+
     return (
         <div>
+            <Snackbar
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                open={error}
+                autoHideDuration={6000}
+                onClose={() => handleErrorDialogClose}>
+                <Alert onClose={handleErrorDialogClose} severity="error" sx={{width: '100%'}}>
+                    Error while {props.actionString} !
+                </Alert>
+            </Snackbar>
+            <Snackbar
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                open={confirmAction}
+                autoHideDuration={6000}
+                onClose={() => handleCloseSnackBar}>
+                <Alert onClose={handleCloseSnackBar} severity="success" sx={{width: '100%'}}>
+                    Requested is {props.actionString} !
+                </Alert>
+            </Snackbar>
             <DialogComponent displayText={props.actionString}
                              showDialog={props.showDialog}
                              setShowDialog={props.setShowDialog}
-                             error={error}
-                             setError={setError}
                              confirmAction={confirmAction}
                              setConfirmAction={setConfirmAction}/>
         </div>

@@ -26,22 +26,19 @@ export function jsonSeminarData(startTime: Moment | undefined, endTime: Moment |
 
 export function CreateSeminar() {
     moment.tz.setDefault('Europe/London');
-    const [redirectTo, setRedirectTo] = useState(null);
+    const [redirectTo, setRedirectTo] = useState('');
     const [error, setError] = useState(false);
     const [title, setTitle] = useState('');
     const [startTime, setStartTime] = React.useState();
     const [endTime, setEndTime] = React.useState();
-    const [saved, setSaved] = useState(false);
     const [meetingLink, setMeetingLink] = useState('');
-
-    const handleClose = () => {
-        setError(false);
-        setRedirectTo('/seminars/list');
-    };
+    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [hasFocusStartTime, setHasFocusStartTime] = useState(false);
+    const [hasFocusEndTime, setHasFocusEndTime] = useState(false);
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
-            setSaved(true);
+            setRedirectTo('/seminars/list/crud/saved');
             response.data
         } else {
             setError(true);
@@ -50,6 +47,7 @@ export function CreateSeminar() {
     }
 
     const handleSubmit = (e: React.FormEvent) => {
+        setFormSubmitted(true);
         e.preventDefault();
         axios.post('/seminar/save', jsonSeminarData(startTime, endTime, title, meetingLink))
             .then(response => handleResponse(response))
@@ -76,65 +74,74 @@ export function CreateSeminar() {
                         There was a problem saving the seminar guide.
                     </Alert>
                 </Snackbar>
-                <Snackbar
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    open={saved}
-                    autoHideDuration={6000}
-                    onClose={() => handleClose()}>
-                    <Alert onClose={() => handleClose()} severity="success" sx={{width: '100%'}}>
-                        Seminar saved successfully ! Please check the seminar list.
-                    </Alert>
-                </Snackbar>
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3} alignItems="center">
-                        <Grid item xs={2}>
-                            <label>Seminar Title:</label></Grid>
-                        <Grid item xs={10}>
-                            <TextField required label="Title" type="text" value={title}
+                        <Grid item xs={12}>
+                            <TextField required
+                                       label="Title" type="text" value={title}
+                                       error={formSubmitted && !title}
+                                       helperText={formSubmitted && !title ? "Title is required" : ""}
                                        onChange={(e) => setTitle(e.target.value)}/>
                         </Grid>
-                        <Grid item xs={2}>
-                            <label>Meeting Link:</label>
-                        </Grid>
-                        <Grid item xs={10}>
+                        <Grid item xs={12}>
                             <TextField
                                 fullWidth
                                 label="Meeting Link"
                                 sx={{width: 400}}
-                                multiline
-                                rows={1}
                                 variant="outlined"
                                 placeholder="Copy and paste your meeting link here"
                                 value={meetingLink}
                                 onChange={(e) => setMeetingLink(e.target.value)}/>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12}>
                             <LocalizationProvider dateAdapter={AdapterMoment}>
-                                <DateTimePicker
-                                    renderInput={(props) => <TextField required {...props} />}
+                                {hasFocusStartTime || startTime ? <DateTimePicker
+                                    renderInput={(props) =>
+                                        <TextField required {...props}
+                                                   error={formSubmitted && !startTime}
+                                                   helperText={formSubmitted && !startTime ? "StartTime is required" : ""}/>}
                                     label="Start Time"
                                     value={startTime}
                                     onChange={(newValue) => {
                                         setStartTime(newValue);
                                         setEndTime(newValue);
                                     }}
-                                />
+                                    onFocus={() => setHasFocusStartTime(true)}
+                                /> : (
+                                    <TextField
+                                        label="Start Time"
+                                        onClick={() => setHasFocusStartTime(true)}
+                                        error={formSubmitted && !startTime}
+                                        helperText={formSubmitted && !startTime ? "StartTime is required" : ""}
+                                    />
+                                )}
                             </LocalizationProvider>
                         </Grid>
-                        <Grid item xs={9}>
+                        <Grid item xs={12}>
                             <LocalizationProvider dateAdapter={AdapterMoment}>
-                                <DateTimePicker
-                                    renderInput={(props) => <TextField required {...props} />}
+                                {hasFocusEndTime || endTime ? <DateTimePicker
+                                    renderInput={(props) =>
+                                        <TextField required {...props}
+                                                   error={formSubmitted && !endTime}
+                                                   helperText={formSubmitted && !endTime ? "EndTime is required" : ""}/>}
                                     label="End Time"
                                     value={endTime}
                                     onChange={(newValue) => {
                                         setEndTime(newValue);
                                     }}
-                                />
+                                    onFocus={() => setHasFocusEndTime(true)}
+                                /> : (
+                                    <TextField
+                                        label="End Time"
+                                        onClick={() => setHasFocusEndTime(true)}
+                                        error={formSubmitted && !endTime}
+                                        helperText={formSubmitted && !endTime ? "EndTime is required" : ""}
+                                    />
+                                )}
                             </LocalizationProvider>
                         </Grid>
                         <Grid item xs={12}>
-                            <Box sx={{paddingLeft: "20%"}}>
+                            <Box sx={{paddingLeft: "5%"}}>
                                 <Button variant="outlined" type="submit">Submit</Button>
                             </Box>
                         </Grid>
