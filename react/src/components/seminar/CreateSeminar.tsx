@@ -28,9 +28,10 @@ export function CreateSeminar() {
     moment.tz.setDefault('Europe/London');
     const [redirectTo, setRedirectTo] = useState('');
     const [error, setError] = useState(false);
+    const [errorText, setErrorText] = useState('');
     const [title, setTitle] = useState('');
     const [startTime, setStartTime] = React.useState();
-    const [endTime, setEndTime] = React.useState();
+    const [endTime, setEndTime] = React.useState<Moment>();
     const [meetingLink, setMeetingLink] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [hasFocusStartTime, setHasFocusStartTime] = useState(false);
@@ -46,18 +47,31 @@ export function CreateSeminar() {
         }
     }
 
+    const validateForm = () => {
+       return title && startTime && endTime && endTime.isAfter(startTime)
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
-        setFormSubmitted(true);
-        e.preventDefault();
-        axios.post('/seminar/save', jsonSeminarData(startTime, endTime, title, meetingLink))
-            .then(response => handleResponse(response))
-            .then(data => {
-                console.log(data);
-            })
-            .catch(error => {
-                setError(true);
-                console.error(error);
-            });
+        if(validateForm()){
+            setFormSubmitted(true);
+            e.preventDefault();
+            axios.post('/seminar/save', jsonSeminarData(startTime, endTime, title, meetingLink))
+                .then(response => handleResponse(response))
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    setError(true);
+                    setErrorText('There was a problem saving the seminar guide. Please try again later.');
+                    console.error(error);
+                });
+        } else {
+            e.preventDefault();
+            setFormSubmitted(true);
+            setError(true);
+            setErrorText('Please fill in all required fields. End time greater than start time.');
+        }
+
     };
 
     return (
@@ -71,7 +85,7 @@ export function CreateSeminar() {
                     autoHideDuration={6000}
                     onClose={() => setError(false)}>
                     <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
-                        There was a problem saving the seminar guide.
+                        {errorText}
                     </Alert>
                 </Snackbar>
                 <form onSubmit={handleSubmit}>

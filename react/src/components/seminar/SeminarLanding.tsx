@@ -16,12 +16,11 @@ export function SeminarLanding() {
     const breadcrumbNameMap: { [key: string]: string } = {
         '/seminars': 'Seminars',
         '/seminars/new': 'Create',
-        '/seminars/edit': 'Edit',
+        '/seminars/edit/:seminarId': 'Edit',
         '/seminars/list': 'List',
         '/seminars/list/save': 'List',
-        '/seminars/list/registeredUsers/*': 'registrations',
+        '/seminars/list/registeredUsers/:seminarId': 'registrations',
     };
-
 
     const SeminarsBreadcrumbs: React.FC = () => {
         const location = useLocation();
@@ -30,16 +29,38 @@ export function SeminarLanding() {
         return (
             <Breadcrumbs aria-label="breadcrumb">
                 {pathnames.map((value, index) => {
-                    const last = index === pathnames.length - 1;
                     const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+                    let name = breadcrumbNameMap[to];
+
+                    if (!name) {
+                        for (const key in breadcrumbNameMap) {
+                            const regexPath = '^' + key.split('/').map(segment => {
+                                if (segment.startsWith(':')) {
+                                    return '[^/]+';
+                                } else if (segment === '*') {
+                                    return '.*';
+                                }
+                                return segment;
+                            }).join('/') + '$';
+
+                            if (new RegExp(regexPath).test(to)) {
+                                name = breadcrumbNameMap[key];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!name) return null;
+
+                    const last = index === pathnames.length - 1;
 
                     return last ? (
                         <Typography color="textPrimary" key={to}>
-                            {breadcrumbNameMap[to]}
+                            {name}
                         </Typography>
                     ) : (
                         <Link color="inherit" to={to} key={to}>
-                            {breadcrumbNameMap[to]}
+                            {name}
                         </Link>
                     );
                 })}
@@ -50,7 +71,7 @@ export function SeminarLanding() {
     return (
         <div>
             <Router>
-                <SeminarsBreadcrumbs />
+                <SeminarsBreadcrumbs/>
                 <Switch>
                     <Route exact path="/seminars" component={ListSeminars}/>
                     <Route exact path="/seminars/list/crud/:operations" component={ListSeminars}/>
