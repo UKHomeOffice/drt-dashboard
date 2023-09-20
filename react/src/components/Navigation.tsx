@@ -58,7 +58,7 @@ export default function Navigation(props: IProps) {
                     <MenuItem onClick={handleClose}><Link to="/feature-guide-upload">Feature
                         Guides</Link></MenuItem> : ""}
                 {props.user.roles.includes("manage-users") ?
-                    <MenuItem onClick={handleClose}><Link to="/seminars/list">Manage Seminars</Link></MenuItem> : ""}
+                    <MenuItem onClick={handleClose}><Link to="/drop-ins/list">Manage Drop-ins</Link></MenuItem> : ""}
                 <MenuItem onClick={handleClose}><a href={props.logoutLink} id="proposition-name">Log out</a></MenuItem>
             </Menu>
         </Box>

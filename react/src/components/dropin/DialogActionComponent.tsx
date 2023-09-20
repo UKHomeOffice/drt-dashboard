@@ -17,7 +17,7 @@ export function DialogActionComponent(props: Props) {
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
             props.setShowDialog(false);
-            console.log(props.actionString + ' Seminar data');
+            console.log(props.actionString + ' Drop-In data');
         } else {
             setError(true);
             response.data
@@ -63,7 +63,7 @@ export function DialogActionComponent(props: Props) {
     return (
         <div>
             <Snackbar
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                 open={error}
                 autoHideDuration={6000}
                 onClose={() => handleErrorDialogClose}>
@@ -72,7 +72,7 @@ export function DialogActionComponent(props: Props) {
                 </Alert>
             </Snackbar>
             <Snackbar
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                 open={confirmAction}
                 autoHideDuration={6000}
                 onClose={() => handleCloseSnackBar}>
@@ -83,7 +83,6 @@ export function DialogActionComponent(props: Props) {
             <DialogComponent displayText={props.actionString}
                              showDialog={props.showDialog}
                              setShowDialog={props.setShowDialog}
-                             confirmAction={confirmAction}
                              setConfirmAction={setConfirmAction}/>
         </div>
 

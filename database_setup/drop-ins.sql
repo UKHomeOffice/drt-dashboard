@@ -1,4 +1,4 @@
-CREATE TABLE seminar
+CREATE TABLE drop_in
 (
     id                 SERIAL PRIMARY KEY,
     last_updated_at   timestamp NOT NULL,
@@ -9,11 +9,11 @@ CREATE TABLE seminar
     is_published       BOOLEAN   NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE seminar_registration
+CREATE TABLE drop_in_registration
 (
     email         text      NOT NULL,
-    seminar_id    integer   NOT NULL,
+    drop_in_id    integer   NOT NULL,
     registered_at timestamp NOT NULL,
     email_sent_at timestamp,
-    PRIMARY KEY (email, seminar_id)
+    PRIMARY KEY (email, drop_in_id)
 );

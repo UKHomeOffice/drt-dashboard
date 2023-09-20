@@ -53,7 +53,7 @@ case class IndexRoute(urls: Urls, indexResource: Route, directoryResource: Route
       path("uploadFeatureGuide") {
         indexRouteDirectives(uploadFeatureGuidePathString)
       },
-      path("seminar") {
+      path("drop-in") {
         indexRouteDirectives(SeminarPathString)
       },
       (get & pathPrefix("")) {

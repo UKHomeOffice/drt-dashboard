@@ -13,7 +13,7 @@ import {Snackbar} from "@mui/material";
 import {Alert} from "../DialogComponent";
 import {Redirect} from "react-router-dom";
 
-export function jsonSeminarData(startTime: Moment | undefined, endTime: Moment | undefined, title: string, meetingLink: string) {
+export function jsonDropInData(startTime: Moment | undefined, endTime: Moment | undefined, title: string, meetingLink: string) {
     const startTimeString = startTime?.format()
     const endTimeString = endTime?.format()
     return {
@@ -24,7 +24,7 @@ export function jsonSeminarData(startTime: Moment | undefined, endTime: Moment |
     }
 }
 
-export function CreateSeminar() {
+export function CreateDropIn() {
     moment.tz.setDefault('Europe/London');
     const [redirectTo, setRedirectTo] = useState('');
     const [error, setError] = useState(false);
@@ -39,7 +39,7 @@ export function CreateSeminar() {
 
     const handleResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
-            setRedirectTo('/seminars/list/crud/saved');
+            setRedirectTo('/drop-ins/list/crud/saved');
             response.data
         } else {
             setError(true);
@@ -55,14 +55,14 @@ export function CreateSeminar() {
         if(validateForm()){
             setFormSubmitted(true);
             e.preventDefault();
-            axios.post('/seminar/save', jsonSeminarData(startTime, endTime, title, meetingLink))
+            axios.post('/drop-in/save', jsonDropInData(startTime, endTime, title, meetingLink))
                 .then(response => handleResponse(response))
                 .then(data => {
                     console.log(data);
                 })
                 .catch(error => {
                     setError(true);
-                    setErrorText('There was a problem saving the seminar guide. Please try again later.');
+                    setErrorText('There was a problem saving the drop-in guide. Please try again later.');
                     console.error(error);
                 });
         } else {
@@ -78,9 +78,9 @@ export function CreateSeminar() {
         <div>
             {redirectTo && <Redirect to={redirectTo}/>}
             <Box>
-                <h1>Create Seminar</h1>
+                <h1>Create Drop-In</h1>
                 <Snackbar
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                     open={error}
                     autoHideDuration={6000}
                     onClose={() => setError(false)}>

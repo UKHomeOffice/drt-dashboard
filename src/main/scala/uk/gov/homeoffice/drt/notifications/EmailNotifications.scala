@@ -2,7 +2,7 @@ package uk.gov.homeoffice.drt.notifications
 
 import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
-import uk.gov.homeoffice.drt.db.{SeminarDao, SeminarRow}
+import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow}
 import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
 
 import java.util
@@ -22,7 +22,7 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
 
   val revokeAccessTemplateId = "a50b8424-a8d8-49fe-b826-381623f9aace"
 
-  val seminarReminderTemplateId = "73c1d3a7-9f52-4ccc-a0c4-4c2837b86bf9"
+  val dropInReminderTemplateId = "73c1d3a7-9f52-4ccc-a0c4-4c2837b86bf9"
 
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
@@ -35,23 +35,23 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
   }
 
-  def sendSeminarReminderEmail(email: String, seminar: SeminarRow, teamEmail: String) = {
-    import SeminarDao._
+  def sendDropInReminderEmail(email: String, dropIn: DropInRow, teamEmail: String) = {
+    import DropInDao._
     val personalisation = Map(
       "teamEmail" -> teamEmail,
       "requesterUsername" -> getFirstName(email),
-      "title" -> seminar.title,
-      "seminarDate" -> getDate(seminar.startTime),
-      "startTime" -> getStartTime(seminar.startTime),
-      "endTime" -> getEndTime(seminar.endTime),
-      "meetingLink" -> seminar.meetingLink.getOrElse(""),
+      "title" -> dropIn.title,
+      "dropInDate" -> getDate(dropIn.startTime),
+      "startTime" -> getStartTime(dropIn.startTime),
+      "endTime" -> getEndTime(dropIn.endTime),
+      "meetingLink" -> dropIn.meetingLink.getOrElse(""),
     ).asJava
 
     Try(client.sendEmail(
-      seminarReminderTemplateId,
+      dropInReminderTemplateId,
       email,
-      personalisation, "Seminar Reminder")).recover {
-      case e => log.error(s"Error sending seminar registration email to user $email", e)
+      personalisation, "Drop-In Reminder")).recover {
+      case e => log.error(s"Error sending drop-in registration email to user $email", e)
     }
 
   }

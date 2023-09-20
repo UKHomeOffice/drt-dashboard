@@ -9,7 +9,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import axios, {AxiosResponse} from "axios";
 import {Snackbar} from "@mui/material";
 import Box from "@mui/material/Box";
-import {ViewSeminar} from "./ViewSeminar";
+import {ViewDropIn} from "./ViewDropIn";
 import {CalendarViewMonth} from "@mui/icons-material";
 import {DialogActionComponent} from "./DialogActionComponent";
 import moment from 'moment-timezone';
@@ -36,9 +36,9 @@ export interface SeminarData {
     isPublished: boolean;
 }
 
-export function ListSeminars() {
+export function ListDropIns() {
 
-    const seminarColumns: GridColDef[] = [
+    const dropInColumns: GridColDef[] = [
         {
             field: 'id',
             headerName: 'Id',
@@ -122,7 +122,7 @@ export function ListSeminars() {
             headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
-                <Link to={`/seminars/edit/${params.row.id}`}>
+                <Link to={`/drop-ins/edit/${params.row.id}`}>
                     <IconButton aria-label="edit">
                         <EditIcon/>
                     </IconButton>
@@ -134,7 +134,7 @@ export function ListSeminars() {
             headerName: '',
             width: 50,
             renderCell: (params: GridRenderCellParams) => (
-                <Link to={`/seminars/list/registeredUsers/${params.row.id}`}>
+                <Link to={`/drop-ins/list/registeredUsers/${params.row.id}`}>
                     <IconButton aria-label="users-registered">
                         <CalendarViewMonth/>
                     </IconButton>
@@ -192,13 +192,13 @@ export function ListSeminars() {
     useEffect(() => {
         if (operationsParam === 'saved') {
             setSaved(true);
-            setRedirectTo('/seminars/list')
+            setRedirectTo('/drop-ins/list')
         }
         if (operationsParam === 'edited') {
             setEdited(true);
-            setRedirectTo('/seminars/list')
+            setRedirectTo('/drop-ins/list')
         }
-        axios.get('/seminar/getList/' + showAll)
+        axios.get('/drop-in/getList/' + showAll)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -219,7 +219,7 @@ export function ListSeminars() {
 
     const handleToggle = () => {
         setChecked(!showAll);
-        setRedirectTo('/seminars/list/' + !showAll)
+        setRedirectTo('/drop-ins/list/' + !showAll)
     }
 
     const handleSavedClose = () => {
@@ -235,69 +235,69 @@ export function ListSeminars() {
             {redirectTo && <Redirect to={redirectTo}/>}
             {
                 <div>
-                    <h1>Seminar List | <Link to={`/seminars/new`}>Create New</Link> | <FormControlLabel
+                    <h1>Drop-ins List | <Link to={`/drop-ins/new`}>Create New</Link> | <FormControlLabel
                         control={<Checkbox
                             checked={checked}
                             onChange={handleToggle}
                             value="singleRadio"
                             color="primary"
-                        />} label={"include previous seminars"}/></h1>
+                        />} label={"include previous drop-ins"}/></h1>
                     <Snackbar
-                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                         open={saved}
                         autoHideDuration={6000}
                         onClose={() => handleSavedClose()}>
                         <Alert onClose={() => handleSavedClose()} severity="success" sx={{width: '100%'}}>
-                            Seminar saved successfully ! Please check the seminar list.
+                            Drop-In saved successfully ! Please check the drop-in list.
                         </Alert>
                     </Snackbar>
                     <Snackbar
-                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                         open={edited}
                         autoHideDuration={6000}
                         onClose={() => handleEditedClose()}>
                         <Alert onClose={() => handleEditedClose()} severity="success" sx={{width: '100%'}}>
-                            Seminar updated successfully ! Please check the seminar list.
+                            Drop-In updated successfully ! Please check the drop-in list.
                         </Alert>
                     </Snackbar>
                     <Snackbar
-                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                         open={error}
                         autoHideDuration={6000}
                         onClose={() => handleBack}>
                         <Alert onClose={handleBack} severity="success" sx={{width: '100%'}}>
-                            There was a problem fetching the list of seminars. Please try reloading the page.
+                            There was a problem fetching the list of drop-ins. Please try reloading the page.
                         </Alert>
                     </Snackbar>
                     <Box sx={{height: 400, width: '100%'}}>
                         <DataGrid
                             getRowId={(rowsData) => rowsData.id}
                             rows={rowsData}
-                            columns={seminarColumns}
+                            columns={dropInColumns}
                             pageSize={5}
                             rowsPerPageOptions={[5]}
                             experimentalFeatures={{newEditingApi: true}}
                         />
                     </Box>
-                    <ViewSeminar id={rowDetails?.id} title={rowDetails?.title}
-                                 startTime={rowDetails?.startTime}
-                                 endTime={rowDetails?.endTime}
-                                 meetingLink={rowDetails?.meetingLink}
-                                 view={view} setView={setView}
+                    <ViewDropIn id={rowDetails?.id} title={rowDetails?.title}
+                                startTime={rowDetails?.startTime}
+                                endTime={rowDetails?.endTime}
+                                meetingLink={rowDetails?.meetingLink}
+                                view={view} setView={setView}
                     />
                     <DialogActionComponent actionMethod='DELETE'
-                                           actionString='remove seminar'
-                                           actionUrl={'/seminar/delete/' + rowDetails?.id}
+                                           actionString='remove drop-in'
+                                           actionUrl={'/drop-in/delete/' + rowDetails?.id}
                                            showDialog={showDelete}
                                            setShowDialog={setShowDelete}
                     />
-                    <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
+                    <DialogActionComponent actionUrl={'/drop-in/published/' + rowDetails?.id}
                                            actionString="publish"
                                            actionMethod="POST"
                                            showDialog={publish}
                                            setShowDialog={setPublish}
                     />
-                    <DialogActionComponent actionUrl={'/seminar/published/' + rowDetails?.id}
+                    <DialogActionComponent actionUrl={'/drop-in/published/' + rowDetails?.id}
                                            actionString="unPublish"
                                            actionMethod="POST"
                                            showDialog={unPublish}

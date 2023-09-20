@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
-import {stringToUKDate} from "./ListSeminars";
+import {stringToUKDate} from "./ListDropIns";
 
 interface Props {
     id: string | undefined;
@@ -16,7 +16,7 @@ interface Props {
     setView: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
-export function ViewSeminar(props: Props) {
+export function ViewDropIn(props: Props) {
 
     const handleViewClose = () => {
         props.setView(false)
@@ -32,7 +32,7 @@ export function ViewSeminar(props: Props) {
                         "font-size": "30px",
                         "font-weight": "bold",
                     }}>
-                        Seminar View
+                        Drop-In View
                     </DialogTitle>
                 </Grid>
                 <Grid item xs={4} sx={{"backgroundColor": "#E6E9F1"}}>
@@ -52,7 +52,7 @@ export function ViewSeminar(props: Props) {
             }}>
                 <Grid container spacing={3} alignItems="center">
                     <Grid item xs={3}>
-                        <label>Seminar Title:</label></Grid>
+                        <label>Drop-In Title:</label></Grid>
                     <Grid item xs={9}>
                         <Typography>{props.title}</Typography>
                     </Grid>

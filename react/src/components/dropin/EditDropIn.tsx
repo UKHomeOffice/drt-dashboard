@@ -8,14 +8,14 @@ import {DateTimePicker} from "@mui/x-date-pickers/DateTimePicker";
 import Box from "@mui/material/Box";
 import moment from 'moment';
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
-import {jsonSeminarData} from "./CreateSeminar";
+import {jsonDropInData} from "./CreateDropIn";
 import {useParams} from 'react-router-dom';
 import {Redirect} from 'react-router-dom';
 import {Alert} from "../DialogComponent";
 
-export function EditSeminar() {
+export function EditDropIn() {
     const [redirectTo, setRedirectTo] = useState('');
-    const {seminarId} = useParams<{ seminarId: string }>();
+    const {dropInId} = useParams<{ dropInId: string }>();
     const [editTitle, setEditTitle] = React.useState()
     const [editStartTime, setEditStartTime] = React.useState();
     const [editEndTime, setEditEndTime] = React.useState();
@@ -35,7 +35,7 @@ export function EditSeminar() {
 
     const handleUpdateResponse = (response: AxiosResponse) => {
         if (response.status === 200) {
-            setRedirectTo('/seminars/list/crud/edited');
+            setRedirectTo('/drop-ins/list/crud/edited');
             response.data
         } else {
             setError(true);
@@ -45,8 +45,8 @@ export function EditSeminar() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        axios.put('/seminar/update/' + seminarId,
-            jsonSeminarData(editStartTime, editEndTime, editTitle || '', editMeetingLink || ''))
+        axios.put('/drop-in/update/' + dropInId,
+            jsonDropInData(editStartTime, editEndTime, editTitle || '', editMeetingLink || ''))
             .then(response => handleUpdateResponse(response))
             .then(data => {
                 console.log(data);
@@ -58,7 +58,7 @@ export function EditSeminar() {
     };
 
     useEffect(() => {
-        axios.get('/seminar/get/' + seminarId)
+        axios.get('/drop-in/get/' + dropInId)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -66,20 +66,20 @@ export function EditSeminar() {
             setError(true);
             console.error(error);
         });
-    }, [seminarId]);
+    }, [dropInId]);
 
     return (
         <div>
             {redirectTo && <Redirect to={redirectTo}/>}
             {<div>
-                <h1>Edit Seminar</h1>
+                <h1>Edit Drop-In</h1>
                 <Snackbar
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                     open={error}
                     autoHideDuration={6000}
                     onClose={() => setError(false)}>
                     <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
-                        There was a problem saving the seminar guide.
+                        There was a problem saving the drop-in guide.
                     </Alert>
                 </Snackbar>
                 <form onSubmit={handleSubmit}>

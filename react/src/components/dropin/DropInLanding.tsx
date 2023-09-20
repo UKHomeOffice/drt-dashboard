@@ -1,7 +1,7 @@
-import {CreateSeminar} from "./CreateSeminar";
+import {CreateDropIn} from "./CreateDropIn";
 import React from "react";
-import {ListSeminars} from "./ListSeminars";
-import {EditSeminar} from "./EditSeminar";
+import {ListDropIns} from "./ListDropIns";
+import {EditDropIn} from "./EditDropIn";
 import {
     BrowserRouter as Router,
     Route,
@@ -12,14 +12,14 @@ import {RegisteredUsers} from "./RegisteredUsers";
 import {Breadcrumbs} from "@mui/material";
 import Typography from "@mui/material/Typography";
 
-export function SeminarLanding() {
+export function DropInLanding() {
     const breadcrumbNameMap: { [key: string]: string } = {
-        '/seminars': 'Seminars',
-        '/seminars/new': 'Create',
-        '/seminars/edit/:seminarId': 'Edit',
-        '/seminars/list': 'List',
-        '/seminars/list/save': 'List',
-        '/seminars/list/registeredUsers/:seminarId': 'registrations',
+        '/drop-ins': 'Drop-ins',
+        '/drop-ins/new': 'Create',
+        '/drop-ins/edit/:dropInId': 'Edit',
+        '/drop-ins/list': 'List',
+        '/drop-ins/list/save': 'List',
+        '/drop-ins/list/registeredUsers/:dropInId': 'registrations',
     };
 
     const SeminarsBreadcrumbs: React.FC = () => {
@@ -73,12 +73,12 @@ export function SeminarLanding() {
             <Router>
                 <SeminarsBreadcrumbs/>
                 <Switch>
-                    <Route exact path="/seminars" component={ListSeminars}/>
-                    <Route exact path="/seminars/list/crud/:operations" component={ListSeminars}/>
-                    <Route exact path="/seminars/list/:listAll?" component={ListSeminars}/>
-                    <Route exact path="/seminars/new" component={CreateSeminar}/>
-                    <Route exact path="/seminars/edit/:seminarId" component={EditSeminar}/>
-                    <Route exact path="/seminars/list/registeredUsers/:seminarId" component={RegisteredUsers}/>
+                    <Route exact path="/drop-ins" component={ListDropIns}/>
+                    <Route exact path="/drop-ins/list/crud/:operations" component={ListDropIns}/>
+                    <Route exact path="/drop-ins/list/:listAll?" component={ListDropIns}/>
+                    <Route exact path="/drop-ins/new" component={CreateDropIn}/>
+                    <Route exact path="/drop-ins/edit/:dropInId" component={EditDropIn}/>
+                    <Route exact path="/drop-ins/list/registeredUsers/:dropInId" component={RegisteredUsers}/>
                 </Switch>
             </Router>
         </div>

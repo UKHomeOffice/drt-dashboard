@@ -7,12 +7,12 @@ import Box from "@mui/material/Box";
 import axios, {AxiosResponse} from "axios";
 import {DialogActionComponent} from "./DialogActionComponent";
 import {Redirect, useParams} from "react-router-dom";
-import {SeminarData} from "./ListSeminars";
+import {SeminarData} from "./ListDropIns";
 import {Alert} from "../DialogComponent";
 
-export interface SeminarRegisteredUsers {
+export interface DropInRegisteredUsers {
     email: string;
-    seminarId: string;
+    dropInId: string;
     registeredAt: string;
     emailSentAt: string;
 }
@@ -20,7 +20,7 @@ export interface SeminarRegisteredUsers {
 export function RegisteredUsers() {
     const columns: GridColDef[] = [
         {
-            field: 'seminarId',
+            field: 'dropInId',
             headerName: 'Id',
             width: 200,
             hide: true,
@@ -46,20 +46,20 @@ export function RegisteredUsers() {
             width: 100,
             renderCell: (params: GridRenderCellParams) => (
                 <IconButton aria-label="delete">
-                    <DeleteIcon onClick={() => handleRemove(params.row as SeminarRegisteredUsers)}/>
+                    <DeleteIcon onClick={() => handleRemove(params.row as DropInRegisteredUsers)}/>
                 </IconButton>
             ),
         },
     ];
-    const {seminarId} = useParams<{ seminarId: string }>();
+    const {dropInId} = useParams<{ dropInId: string }>();
     const [rowsData, setRowsData] = React.useState([] as GridRowModel[]);
-    const [rowDetails, setRowDetails] = React.useState({} as SeminarRegisteredUsers | undefined)
+    const [rowDetails, setRowDetails] = React.useState({} as DropInRegisteredUsers | undefined)
     const [selectedRow, setSelectedRow] = React.useState<SeminarData | null>(null);
     const [error, setError] = useState(false);
     const [unregister, setUnregister] = useState(false);
     const [redirectTo, setRedirectTo] = useState(null);
 
-    const handleRemove = (userData: SeminarRegisteredUsers | undefined) => {
+    const handleRemove = (userData: DropInRegisteredUsers | undefined) => {
         setRowDetails(userData)
         setUnregister(true);
     }
@@ -82,7 +82,7 @@ export function RegisteredUsers() {
     }
 
     useEffect(() => {
-        axios.get('/seminar-register/users/' + seminarId)
+        axios.get('/drop-in-register/users/' + dropInId)
             .then(response => handleResponse(response))
             .then(data => {
                 console.log(data);
@@ -90,7 +90,7 @@ export function RegisteredUsers() {
             setError(true);
             console.error(error);
         });
-        axios.get('/seminar/get/' + seminarId)
+        axios.get('/drop-in/get/' + dropInId)
             .then(response => handleSeminarResponse(response))
             .then(data => {
                 console.log(data);
@@ -98,11 +98,11 @@ export function RegisteredUsers() {
             setError(true);
             console.error(error);
         });
-    }, [seminarId, unregister]);
+    }, [dropInId, unregister]);
 
     const handleBack = () => {
         setError(false);
-        setRedirectTo('/seminars/list');
+        setRedirectTo('/drop-ins/list');
     }
 
     return (
@@ -110,18 +110,18 @@ export function RegisteredUsers() {
             {redirectTo && <Redirect to={redirectTo}/>}
             {<div>
                 <Snackbar
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                     open={error}
                     autoHideDuration={6000}
                     onClose={() => setError(false)}>
                     <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
-                        There was a problem booking seminars. Please try reloading the page.
+                        There was a problem booking drop-ins. Please try reloading the page.
                     </Alert>
                 </Snackbar>
-                <h1>Seminar registrations - {selectedRow?.title}</h1>
+                <h1>Drop-In registrations - {selectedRow?.title}</h1>
                 <Box sx={{height: 400, width: '100%'}}>
                     <DataGrid
-                        getRowId={(rowsData) => rowsData.email + '_' + rowsData.seminarId}
+                        getRowId={(rowsData) => rowsData.email + '_' + rowsData.dropInId}
                         rows={rowsData}
                         columns={columns}
                         pageSize={5}
@@ -136,7 +136,7 @@ export function RegisteredUsers() {
                                        actionMethod='DELETE'
                                        showDialog={unregister}
                                        setShowDialog={setUnregister}
-                                       actionUrl={'/seminar-register/remove/' + rowDetails?.seminarId + '/' + rowDetails?.email}
+                                       actionUrl={'/drop-in-register/remove/' + rowDetails?.dropInId + '/' + rowDetails?.email}
                 />
             </div>
             } </div>

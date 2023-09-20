@@ -6,7 +6,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Directives.{concat, getFromResource, getFromResourceDirectory}
 import akka.http.scaladsl.server.Route
-import uk.gov.homeoffice.drt.db.{SeminarRegisterDao, _}
+import uk.gov.homeoffice.drt.db._
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
 import uk.gov.homeoffice.drt.routes._
@@ -40,7 +40,7 @@ case class ServerConfig(host: String,
                         keycloakUsername: String,
                         keycloakPassword: String,
                         dormantUsersCheckFrequency: Int,
-                        seminarRemindersCheckFrequency: Int,
+                        dropInRemindersCheckFrequency: Int,
                         inactivityDays: Int,
                         deactivateAfterWarningDays: Int,
                         userTrackingFeatureFlag: Boolean,
@@ -74,8 +74,8 @@ object Server {
       val urls = Urls(serverConfig.rootDomain, serverConfig.useHttps)
       val userRequestService = UserRequestService(UserAccessRequestDao(ProdDatabase.db))
       val userService = UserService(UserDao(ProdDatabase.db))
-      val seminarDao = SeminarDao(ProdDatabase.db)
-      val seminarRegisterDao = SeminarRegisterDao(ProdDatabase.db)
+      val dropInDao = DropInDao(ProdDatabase.db)
+      val dropInRegistrationDao = DropInRegistrationDao(ProdDatabase.db)
 
       val featureGuideService = FeatureGuideService(FeatureGuideDao(ProdDatabase.db), FeatureGuideViewDao(ProdDatabase.db))
       val neboRoutes = NeboUploadRoutes(serverConfig.neboPortCodes.toList, ProdHttpClient).route
@@ -96,8 +96,8 @@ object Server {
         ExportRoutes(ProdHttpClient, exportUploader.upload, exportDownloader.download, () => SDate.now()),
         UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keycloakUrl),
         FeatureGuideRoutes("guide", featureGuideService, featureUploader, featureDownloader, serverConfig.featureFolderPrefix),
-        SeminarRoute("seminar",seminarDao),
-        SeminarRegisterRoutes("seminar-register",seminarRegisterDao)
+        DropInRoute("drop-in",dropInDao),
+        DropInRegisterRoutes("drop-in-register",dropInRegistrationDao)
       )
 
       val serverBinding: Future[ServerBinding] = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)

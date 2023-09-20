@@ -16,7 +16,6 @@ interface Props {
     displayText: string;
     showDialog: boolean;
     setShowDialog: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
-    confirmAction: boolean;
     setConfirmAction: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
 }
 
