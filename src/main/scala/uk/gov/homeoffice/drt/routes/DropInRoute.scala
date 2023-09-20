@@ -7,6 +7,7 @@ import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow}
+import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
 
 import java.sql.Timestamp
 import java.time.format.DateTimeFormatter

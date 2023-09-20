@@ -1,13 +1,13 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{DropInRegistrationDao, DropInRegistrationRow}
-
-import scala.concurrent.ExecutionContext
+import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
+import scala.concurrent.{ExecutionContext, Future}
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 trait DropInRegistrationJsonFormats extends DefaultTimeJsonProtocol {
 
@@ -28,7 +28,7 @@ object DropInRegisterRoutes extends BaseRoute with DropInRegistrationJsonFormats
 
   def getRegisteredUsers(dropInRegistrationDao: DropInRegistrationDao)(implicit ec: ExecutionContext) = path("users" / Segment) { seminarId =>
     get {
-      val registeredUsersResult = dropInRegistrationDao.getRegisteredUsers(seminarId)
+      val registeredUsersResult: Future[Seq[DropInRegistrationRow]] = dropInRegistrationDao.getRegisteredUsers(seminarId)
       routeResponse(registeredUsersResult.map(forms => complete(StatusCodes.OK, forms.toJson)), "Getting registered drop-in users")
     }
   }
