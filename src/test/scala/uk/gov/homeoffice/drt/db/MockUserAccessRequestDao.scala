@@ -14,6 +14,6 @@ class MockUserAccessRequestDao extends IUserAccessRequestDao {
 
   override def selectForStatus(status: String): Future[Seq[UserAccessRequest]] = Future.successful(userAccessRequestList)
 
-  override def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]] = ???
+  override def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]] = Future.successful(userAccessRequestList)
 
 }
