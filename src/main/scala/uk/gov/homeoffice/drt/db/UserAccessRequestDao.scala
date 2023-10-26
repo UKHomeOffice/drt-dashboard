@@ -1,11 +1,13 @@
 package uk.gov.homeoffice.drt.db
 
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.{ TableQuery, Tag }
+import slick.lifted.{ProvenShape, TableQuery, Tag}
 import spray.json.RootJsonFormat
 import uk.gov.homeoffice.drt.authentication.AccessRequest
 
-import scala.concurrent.{ ExecutionContext, Future }
+import java.sql.Timestamp
+import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
+import scala.concurrent.{ExecutionContext, Future}
 
 trait UserAccessRequestJsonSupport extends DateTimeJsonSupport {
   implicit val userAccessRequestFormatParser: RootJsonFormat[UserAccessRequest] = jsonFormat12(UserAccessRequest)
@@ -27,7 +29,7 @@ case class UserAccessRequest(
 
 class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "user_access_requests") {
 
-  def email = column[String]("email", O.PrimaryKey)
+  def email = column[String]("email")
 
   def allPorts = column[Boolean]("all_ports")
 
@@ -49,9 +51,11 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 
   def status = column[String]("status")
 
-  def requestTime = column[java.sql.Timestamp]("request_time", O.PrimaryKey)
+  def requestTime = column[java.sql.Timestamp]("request_time")
 
-  def * = (email, portsRequested, allPorts, regionsRequested, staffing, lineManager, agreeDeclaration, accountType, portOrRegionText, staffText, status, requestTime).mapTo[UserAccessRequest]
+  val pk = primaryKey("user_access_requests_pkey", (email, requestTime))
+
+  def * : ProvenShape[UserAccessRequest] = (email, portsRequested, allPorts, regionsRequested, staffing, lineManager, agreeDeclaration, accountType, portOrRegionText, staffText, status, requestTime).mapTo[UserAccessRequest]
 }
 
 trait IUserAccessRequestDao {
@@ -77,6 +81,8 @@ trait IUserAccessRequestDao {
 
   def selectForStatus(status: String): Future[Seq[UserAccessRequest]]
 
+  def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]]
+
 }
 
 case class UserAccessRequestDao(db: Database) extends IUserAccessRequestDao {
@@ -92,5 +98,17 @@ case class UserAccessRequestDao(db: Database) extends IUserAccessRequestDao {
 
   def selectForStatus(status: String): Future[Seq[UserAccessRequest]] = {
     db.run(userAccessRequests.filter(_.status === status).result)
+  }
+
+  def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]] = {
+    val specificDate = Timestamp.from(LocalDateTime.of(2023, 9, 1, 0, 0).toInstant(ZoneOffset.UTC))
+    val fifteenDaysAgo = Timestamp.from(Instant.now.minus(Duration.ofDays(15)))
+
+    db.run(userAccessRequests.filter(u =>
+      u.status === "Approved" &&
+        u.requestTime > specificDate &&
+        u.requestTime < fifteenDaysAgo
+    ).result)
+
   }
 }

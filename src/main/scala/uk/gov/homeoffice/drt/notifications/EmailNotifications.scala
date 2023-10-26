@@ -2,17 +2,16 @@ package uk.gov.homeoffice.drt.notifications
 
 import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
-import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{accessGrantedTemplateId, requestTemplateId, lineManagerNotificationTemplateId}
+import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{accessGrantedTemplateId, lineManagerNotificationTemplateId, requestTemplateId}
 import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
-import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow}
-import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
+import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow, UserAccessRequest}
 
 import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.util.Try
 
 case class EmailNotifications(accessRequestEmails: List[String], client: NotificationClientApi) {
-  val log: Logger = LoggerFactory.getLogger(getClass)
+  lazy val log: Logger = LoggerFactory.getLogger(getClass)
 
   val accessRequestEmailTemplateId = "5f34d7bb-293f-481c-826b-62661ba8a736"
 
@@ -25,6 +24,8 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
   val revokeAccessTemplateId = "a50b8424-a8d8-49fe-b826-381623f9aace"
 
   val dropInReminderTemplateId = "73c1d3a7-9f52-4ccc-a0c4-4c2837b86bf9"
+
+  val dropInNotificationTemplateId = "4a71e846-ddac-4b93-bd2d-1d5652dcb8bb"
 
   def getFirstName(email: String): String = {
     Try(email.split("\\.").head.toLowerCase.capitalize).getOrElse(email)
@@ -39,6 +40,20 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
 
   def getDropInLink(curad: ClientUserRequestedAccessData, domain: String): String = {
     s"https://${curad.getListOfPortOrRegion.headOption.map(_.trim.toLowerCase).getOrElse("")}.$domain/#trainingHub/dropInBooking"
+  }
+
+  def getDropInLink(userAccessRequest: UserAccessRequest, domain: String): String = {
+    val getListOfPortOrRegion = {
+      if (userAccessRequest.accountType == "rccu" && userAccessRequest.regionsRequested.nonEmpty) {
+        userAccessRequest.regionsRequested.split(",").toList.map("RCC " + _)
+      } else if (userAccessRequest.portsRequested.nonEmpty) {
+        userAccessRequest.portsRequested.split(",").toList
+      } else {
+        List.empty
+      }
+    }
+
+    s"https://${getListOfPortOrRegion.headOption.map(_.trim.toLowerCase).getOrElse("")}.$domain/#trainingHub/dropInBooking"
   }
 
   def sendDropInReminderEmail(email: String, dropIn: DropInRow, teamEmail: String) = {
@@ -60,6 +75,24 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       case e => log.error(s"Error sending drop-in registration email to user $email", e)
     }
 
+  }
+
+  def sendDropInNotification(userAccessRequest: UserAccessRequest, domain: String, teamEmail: String) = {
+    val personalisation: util.Map[String, String] =
+      Map(
+        "requesterUsername" -> getFirstName(userAccessRequest.email),
+        "dropInLink" -> getDropInLink(userAccessRequest, domain),
+        "teamEmail" -> teamEmail
+      ).asJava
+    Try(client.sendEmail(
+      dropInNotificationTemplateId,
+      userAccessRequest.email,
+      personalisation,
+      "drop-in notification")
+    ).recover {
+      case e => log.error(s"Error while sending email to requester ${userAccessRequest.email} for drop-in notification")
+        throw e
+    }
   }
 
   def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String, teamEmail: String): Try[SendEmailResponse] = {

@@ -23,4 +23,8 @@ case class UserRequestService(userAccessRequestDao: IUserAccessRequestDao) {
     userAccessRequestDao.selectForStatus(status)
   }
 
+  def getApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]] = {
+    userAccessRequestDao.selectApprovedUserAfterSpecificDate()
+  }
+
 }

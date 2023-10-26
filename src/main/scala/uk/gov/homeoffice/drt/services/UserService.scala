@@ -21,4 +21,8 @@ case class UserService(userDao: IUserDao) {
     userDao.insertOrUpdate(userData)
   }
 
+  def getUsersWithoutDropInNotification(implicit ec: ExecutionContext): Future[Seq[User]] = {
+    userDao.getUsersWithoutDropInNotification()
+  }
+
 }

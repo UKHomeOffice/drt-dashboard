@@ -26,7 +26,9 @@ class UserDaoSpec extends Specification with BeforeEach {
     email = "user1@test.com",
     latest_login = new Timestamp(Instant.now().toEpochMilli),
     inactive_email_sent = None,
-    revoked_access = None)
+    revoked_access = None,
+    drop_in_notification = None
+    )
 
   val userActive2: User = User(
     id = "user2",
@@ -34,7 +36,8 @@ class UserDaoSpec extends Specification with BeforeEach {
     email = "user2@test.com",
     latest_login = new Timestamp(Instant.now().toEpochMilli),
     inactive_email_sent = None,
-    revoked_access = None)
+    revoked_access = None,
+    drop_in_notification = None)
 
   val userInactiveMoreThan60days: User = User(
     id = "user3",
@@ -42,7 +45,8 @@ class UserDaoSpec extends Specification with BeforeEach {
     email = "user3@test.com",
     latest_login = new Timestamp(Instant.now().minusSeconds(61 * secondsInADay).toEpochMilli),
     inactive_email_sent = None,
-    revoked_access = None)
+    revoked_access = None,
+    drop_in_notification = None)
 
   val userInactiveMoreThan67days: User = User(
     id = "user4",
@@ -50,7 +54,8 @@ class UserDaoSpec extends Specification with BeforeEach {
     email = "user4@test.com",
     latest_login = new Timestamp(Instant.now().minusSeconds(68 * secondsInADay).toEpochMilli),
     inactive_email_sent = Some(new Timestamp(Instant.now().minusSeconds(8 * secondsInADay).toEpochMilli)),
-    revoked_access = None)
+    revoked_access = None,
+    drop_in_notification = None)
 
   val userWithNoEmail: User = User(
     id = "user5",
@@ -58,7 +63,8 @@ class UserDaoSpec extends Specification with BeforeEach {
     email = "",
     latest_login = new Timestamp(Instant.now().toEpochMilli),
     inactive_email_sent = None,
-    revoked_access = None)
+    revoked_access = None,
+    drop_in_notification = None)
 
   def deleteUserTableData(db: Database, userTable: TableQuery[UserTable])(implicit executionContext: ExecutionContext): Int = {
     Await.result(db.run(userTable.delete), 1.seconds)

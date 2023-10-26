@@ -11,7 +11,7 @@ import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 trait UserJsonSupport extends DateTimeJsonSupport {
-  implicit val userFormatParser: RootJsonFormat[User] = jsonFormat6(User)
+  implicit val userFormatParser: RootJsonFormat[User] = jsonFormat7(User)
 }
 
 case class User(
@@ -20,7 +20,8 @@ case class User(
   email: String,
   latest_login: java.sql.Timestamp,
   inactive_email_sent: Option[java.sql.Timestamp],
-  revoked_access: Option[java.sql.Timestamp])
+  revoked_access: Option[java.sql.Timestamp],
+  drop_in_notification: Option[java.sql.Timestamp])
 
 class UserTable(tag: Tag, tableName: String = "user") extends Table[User](tag, tableName) {
 
@@ -36,7 +37,9 @@ class UserTable(tag: Tag, tableName: String = "user") extends Table[User](tag, t
 
   def revoked_access = column[Option[java.sql.Timestamp]]("revoked_access")
 
-  def * = (id, username, email, latest_login, inactive_email_sent, revoked_access) <> (User.tupled, User.unapply)
+  def drop_in_notification = column[Option[java.sql.Timestamp]]("drop_in_notification")
+
+  def * = (id, username, email,  latest_login, inactive_email_sent, revoked_access,drop_in_notification) <> (User.tupled, User.unapply)
 
 }
 
@@ -48,6 +51,8 @@ trait IUserDao {
   def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]]
+
+  def getUsersWithoutDropInNotification()(implicit executionContext: ExecutionContext): Future[Seq[User]]
 
 }
 
@@ -87,4 +92,7 @@ case class UserDao(db: Database) extends IUserDao {
     db.run(userTable.result).mapTo[Seq[User]]
   }
 
+  override def getUsersWithoutDropInNotification()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
+    db.run(userTable.filter(u => u.drop_in_notification.isEmpty && u.revoked_access.isEmpty).result).mapTo[Seq[User]]
+  }
 }

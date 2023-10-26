@@ -65,6 +65,7 @@ object ApiRoutes extends JsonSupport
                   id = usernameOption.getOrElse(email),
                   username = usernameOption.getOrElse(email),
                   email = email,
+                  drop_in_notification = None,
                   latest_login = new Timestamp(new Date().getTime),
                   inactive_email_sent = None,
                   revoked_access = None))

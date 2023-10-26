@@ -27,4 +27,6 @@ class MockUserDao extends IUserDao {
   override def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[User]] = {
     Future.successful(userList)
   }
+
+  override def getUsersWithoutDropInNotification()(implicit executionContext: ExecutionContext): Future[Seq[User]] = ???
 }

@@ -41,6 +41,7 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     "test1@test.com",
     new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli),
     None,
+    None,
     None)
 
   val user2: User = User(
@@ -48,6 +49,7 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     "poise/test2",
     "test2@test.com",
     new Timestamp(stringToLocalDateTime("2022-12-05T10:15:30.00Z").toEpochMilli),
+    None,
     None,
     None)
 
