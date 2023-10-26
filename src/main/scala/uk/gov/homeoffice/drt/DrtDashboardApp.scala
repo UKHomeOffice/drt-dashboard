@@ -52,8 +52,8 @@ object DrtDashboardApp extends App {
   val system: ActorSystem[Server.Message] = ActorSystem(Server(serverConfig, emailNotifications, emailClient), "DrtDashboard")
   if (serverConfig.userTrackingFeatureFlag) {
     ActorSystem(UserTracking(serverConfig, 1.minutes, 100, emailNotifications), "UserTrackingTimer")
-    ActorSystem(DropInReminder(serverConfig, 1.minutes, 100, emailNotifications), "DropInReminderTimer")
-    ActorSystem(DropInNotification(serverConfig, 1.minutes, 100, emailNotifications), "DropInNotificationReminderTimer")
   }
+  ActorSystem(DropInReminder(serverConfig, 1.minutes, 100, emailNotifications), "DropInReminderTimer")
+  ActorSystem(DropInNotification(serverConfig, 1.minutes, 100, emailNotifications), "DropInNotificationReminderTimer")
 
 }
