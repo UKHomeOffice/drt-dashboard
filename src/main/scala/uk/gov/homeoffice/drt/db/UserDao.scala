@@ -39,7 +39,7 @@ class UserTable(tag: Tag, tableName: String = "user") extends Table[User](tag, t
 
   def drop_in_notification = column[Option[java.sql.Timestamp]]("drop_in_notification")
 
-  def * = (id, username, email,  latest_login, inactive_email_sent, revoked_access,drop_in_notification) <> (User.tupled, User.unapply)
+  def * = (id, username, email, latest_login, inactive_email_sent, revoked_access, drop_in_notification) <> (User.tupled, User.unapply)
 
 }
 

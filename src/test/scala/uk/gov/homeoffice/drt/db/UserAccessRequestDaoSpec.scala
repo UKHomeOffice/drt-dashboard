@@ -19,7 +19,6 @@ class UserAccessRequestDaoSpec extends Specification with BeforeEach {
   lazy val db = TestDatabase.db
 
   override protected def before = {
-    println(s"before ${DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"))}")
     Await.ready(
       db.run(DBIO.seq(
         TestDatabase.userAccessRequestsTable.schema.dropIfExists,

@@ -30,7 +30,7 @@ object DropInNotification {
         timerInitialDelay,
         serverConfig.dropInNotificationFrequency.minutes,
         serverConfig.rootDomain,
-        context).dropInReminderNotification)
+        context).dropInNotificationReminder)
     }
 }
 
@@ -48,10 +48,10 @@ class DropInNotification(notifications: EmailNotifications,
   logger.info(s"Starting timer scheduler for Drop-In notification reminder $timerInterval")
   timers.startTimerWithFixedDelay(DropInNotificationCheck, timerInitialDelay, timerInterval)
 
-  private def dropInReminderNotification()(implicit ec: ExecutionContext): Behavior[DropInNotificationCommand] = {
+  private def dropInNotificationReminder()(implicit ec: ExecutionContext): Behavior[DropInNotificationCommand] = {
     Behaviors.receiveMessage[DropInNotificationCommand] {
       case DropInNotificationCheck =>
-        context.log.info("DropInUserNotificationCheck")
+        context.log.info("DropInNotificationCheck")
         dropInService.sendDropInNotificationToNewUsers(notifications,rootDomain)
         Behaviors.same
 
