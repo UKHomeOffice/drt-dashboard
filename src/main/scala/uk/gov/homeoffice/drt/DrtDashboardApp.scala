@@ -12,7 +12,7 @@ import scala.concurrent.duration.DurationInt
 object DrtDashboardApp extends App {
   val config = ConfigFactory.load()
 
-  lazy val serverConfig = ServerConfig(
+  val serverConfig = ServerConfig(
     host = config.getString("server.host"),
     port = config.getInt("server.port"),
     teamEmail = config.getString("dashboard.team-email"),

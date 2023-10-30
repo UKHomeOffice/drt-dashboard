@@ -26,29 +26,15 @@ class DropInService(dropInDao: DropInDao, dropInRegistrationDao: DropInRegistrat
 
 
   def sendDropInNotificationToNewUsers(notifications: EmailNotifications, rootDomain: String)(implicit ec: ExecutionContext) = {
-    val approvedUsers: Future[Seq[UserAccessRequest]] = userRequestService.getApprovedUserAfterSpecificDate()
-    val usersWithoutDropInNotification: Future[Seq[User]] = userService.getUsersWithoutDropInNotification
-
-    val userToNotify: Future[Seq[UserAccessRequest]] = for {
-      approved <- approvedUsers
-      withoutNotification <- usersWithoutDropInNotification
-    } yield {
-      val notifyEmails = withoutNotification.map(_.email)
-      approved.filter(a => notifyEmails.contains(a.email))
-    }
-
-    userToNotify.flatMap { users =>
+    userService.getUsersWithoutDropInNotification.flatMap { users =>
       Future.sequence(users.map { user =>
-        dropInRegistrationDao.findRegisteredUser(user.email).flatMap {
+        dropInRegistrationDao.findRegistrationsByEmail(user.email).flatMap {
           case list if list.isEmpty =>
-            notifications.sendDropInNotification(user, rootDomain, teamEmail)
-            usersWithoutDropInNotification
-              .map { ud =>
-                ud.filter(_.email == user.email)
-                  .map { u =>
-                    userService.upsertUser(u.copy(drop_in_notification = Option(new Timestamp(new DateTime().getMillis))))
-                  }
-              }
+            userRequestService.getUserRequestByEmail(user.email).map(_.headOption).map { userAccessRequest =>
+              notifications.sendDropInNotification(userAccessRequest, rootDomain, teamEmail)
+              userService.upsertUser(user.copy(drop_in_notification_at = Option(new Timestamp(new DateTime().getMillis))), Some("dropInNotification"))
+            }
+
           case _ =>
             Future.successful(0)
         }

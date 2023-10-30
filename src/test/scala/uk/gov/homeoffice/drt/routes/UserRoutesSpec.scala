@@ -42,6 +42,7 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli),
     None,
     None,
+    None,
     None)
 
   val user2: User = User(
@@ -51,11 +52,12 @@ class UserRoutesSpec extends Specification with Specs2RouteTest with JsonSupport
     new Timestamp(stringToLocalDateTime("2022-12-05T10:15:30.00Z").toEpochMilli),
     None,
     None,
+    None,
     None)
 
   def insertUser(userService: UserService): Future[Int] = {
-    userService.upsertUser(user2)
-    userService.upsertUser(user1)
+    userService.upsertUser(user2,Some("userTracking"))
+    userService.upsertUser(user1,Some("userTracking"))
   }
 
   def userRoutes(userService: UserService, userRequestService: UserRequestService): Route = UserRoutes(

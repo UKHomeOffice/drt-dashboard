@@ -63,7 +63,7 @@ case class DropInRegistrationDao(db: Database) {
     result
   }
 
-  def findRegisteredUser(email: String): Future[Seq[DropInRegistrationRow]] = {
+  def findRegistrationsByEmail(email: String): Future[Seq[DropInRegistrationRow]] = {
     val query = dropInRegistrationTable.filter(r => r.email === email.trim).result
     val result = db.run(query)
     result

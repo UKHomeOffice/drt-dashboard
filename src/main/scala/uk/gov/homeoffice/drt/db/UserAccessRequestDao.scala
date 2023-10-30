@@ -81,7 +81,7 @@ trait IUserAccessRequestDao {
 
   def selectForStatus(status: String): Future[Seq[UserAccessRequest]]
 
-  def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]]
+  def selectByEmail(email: String): Future[Seq[UserAccessRequest]]
 
 }
 
@@ -100,15 +100,5 @@ case class UserAccessRequestDao(db: Database) extends IUserAccessRequestDao {
     db.run(userAccessRequests.filter(_.status === status).result)
   }
 
-  def selectApprovedUserAfterSpecificDate(): Future[Seq[UserAccessRequest]] = {
-    val specificDate = Timestamp.from(LocalDateTime.of(2023, 9, 1, 0, 0).toInstant(ZoneOffset.UTC))
-    val fifteenDaysAgo = Timestamp.from(Instant.now.minus(Duration.ofDays(15)))
-
-    db.run(userAccessRequests.filter(u =>
-      u.status === "Approved" &&
-        u.requestTime > specificDate &&
-        u.requestTime < fifteenDaysAgo
-    ).result)
-
-  }
+  def selectByEmail(email: String): Future[Seq[UserAccessRequest]] = db.run(userAccessRequests.filter(_.email === email).result)
 }

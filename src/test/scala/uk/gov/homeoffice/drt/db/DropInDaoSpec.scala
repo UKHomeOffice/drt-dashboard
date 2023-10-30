@@ -23,17 +23,22 @@ class DropInDaoSpec extends Specification with BeforeEach {
   }
 
   "DropInDao" >> {
-    "should return insert and select drop-ins" >> {
+    "should return the dropIns created" >> {
       val dropInDao = new DropInDao(TestDatabase.db)
       Await.result(dropInDao.getFutureDropIns, 1.second).size mustEqual 0
 
+      val startTime = new Timestamp(Instant.now().minusSeconds(60).toEpochMilli)
+      val endTime = new Timestamp(Instant.now().minusSeconds(30).toEpochMilli)
       dropInDao.insertDropIn(title = "test",
-        startTime = new Timestamp(Instant.now().minusSeconds(60).toEpochMilli),
-        endTime = new Timestamp(Instant.now().minusSeconds(30).toEpochMilli),
+        startTime = startTime,
+        endTime = endTime,
         meetingLink = None)
       val dropIns = Await.result(dropInDao.getFutureDropIns, 1.second)
 
       dropIns.size mustEqual 1
+      dropIns.head.title mustEqual "test"
+      dropIns.head.startTime mustEqual startTime
+      dropIns.head.endTime mustEqual endTime
     }
   }
 }
