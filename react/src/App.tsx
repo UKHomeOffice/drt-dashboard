@@ -20,6 +20,7 @@ import axios from "axios";
 import ApiClient from "./services/ApiClient";
 import UploadForm from "./components/featureGuide/FeatureGuideUploadFile";
 import {DropInLanding} from "./components/dropin/DropInLanding";
+import {CreateFeedback} from "./components/feedback/CreateFeedback";
 
 
 const StyledDiv = styled('div')(() => ({
@@ -124,6 +125,9 @@ const App = (props: PropsFromReact) => {
                     </Route>
                     <Route exact path="/drop-ins/list">
                         <DropInLanding/>
+                    </Route>
+                    <Route exact path="/feedback">
+                        <CreateFeedback/>
                     </Route>
                 </Switch>
             </StyledContainer>

@@ -94,7 +94,7 @@ object Server {
       val userService = UserService(UserDao(ProdDatabase.db))
       val dropInDao = DropInDao(ProdDatabase.db)
       val dropInRegistrationDao = DropInRegistrationDao(ProdDatabase.db)
-
+      val userFeedbackDao = UserFeedbackDao(ProdDatabase.db)
       val featureGuideService = FeatureGuideService(FeatureGuideDao(ProdDatabase.db), FeatureGuideViewDao(ProdDatabase.db))
 
       val (exportUploader, exportDownloader) = S3Service.s3FileUploaderAndDownloader(serverConfig, serverConfig.exportsFolderPrefix)
@@ -116,7 +116,8 @@ object Server {
         UserRoutes("user", serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keycloakUrl),
         FeatureGuideRoutes("guide", featureGuideService, featureUploader, featureDownloader),
         DropInRoute("drop-in", dropInDao),
-        DropInRegisterRoutes("drop-in-register", dropInRegistrationDao)
+        DropInRegisterRoutes("drop-in-register", dropInRegistrationDao),
+        FeedbackRoutes("feedback", userFeedbackDao),
       )
 
       val serverBinding = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
