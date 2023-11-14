@@ -73,6 +73,10 @@ export function CreateFeedback() {
         console.log(feedbackData)
     }
 
+    const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setValue((event.target as HTMLTextAreaElement).value);
+    }
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setValue((event.target as HTMLInputElement).value);
     };
@@ -234,7 +238,7 @@ export function CreateFeedback() {
                 <Typography>If possible, please give examples</Typography>
                 <br/>
                 <textarea
-                    onChange={handleChange}
+                    onChange={handleTextAreaChange}
                     placeholder=""
                     style={{height: '100px', width: '400px'}}/>
                 <br/>
@@ -269,7 +273,7 @@ export function CreateFeedback() {
                 <Typography>If possible, please give examples and provide suggestions</Typography>
                 <br/>
                 <textarea
-                    onChange={handleChange}
+                    onChange={handleTextAreaChange}
                     placeholder=""
                     style={{height: '100px', width: '400px'}}/>
                 <br/>
@@ -355,7 +359,7 @@ export function CreateFeedback() {
 
         <div>
             <Typography
-                variant="h1"
+                variant="h2"
                 sx={{
                     fontWeight: 'bold',
                     color: '#233E82'
