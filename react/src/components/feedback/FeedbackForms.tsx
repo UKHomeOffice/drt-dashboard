@@ -23,7 +23,7 @@ interface FeedbackData {
   question_5: string;
 }
 
-export function FormikFeedback() {
+export function FeedbackForms() {
   const [currentQuestion, setCurrentQuestion] = React.useState(1);
   const [error, setError] = React.useState(false);
   const [question1, setQuestion1] = React.useState('');
@@ -32,8 +32,6 @@ export function FormikFeedback() {
   const [question4, setQuestion4] = React.useState('');
   const [question5, setQuestion5] = React.useState('');
   const [errorText, setErrorText] = React.useState('');
-
-  const logForm = () => console.log(question1 + " " + question2 + " " + question3 + " " + question4);
 
   const questionOneForm = (
     <Formik
@@ -48,13 +46,11 @@ export function FormikFeedback() {
             setQuestion1(values.text)
             setCurrentQuestion(2);
             setError(false);
-            logForm();
           }
         } else {
           setQuestion1(values.question1)
           setCurrentQuestion(2);
           setError(false);
-          logForm();
         }
       }}
     >
@@ -115,7 +111,6 @@ export function FormikFeedback() {
           setQuestion2(values.question2)
           setCurrentQuestion(3);
           setError(false);
-          logForm();
         }
       }}
     >
@@ -167,7 +162,6 @@ export function FormikFeedback() {
     <Formik
       initialValues={{question3: ''}}
       onSubmit={(values) => {
-        console.log('  ' + values.question3);
         if (values.question3 === undefined) {
           setQuestion3('')
         } else {
@@ -287,7 +281,6 @@ export function FormikFeedback() {
         } else {
           setQuestion5(values.question5)
           setError(false);
-          logForm();
 
           const feedbackData: FeedbackData = {
             question_1: question1,

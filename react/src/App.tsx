@@ -22,8 +22,7 @@ import {SnackbarProvider} from 'notistack';
 import Link from "@mui/material/Link";
 import {FeatureGuidesList} from "./components/featureguides/FeatureGuidesList";
 import {AddOrEditFeatureGuide} from "./components/featureguides/AddOrEditFeatureGuide";
-import {CreateFeedback} from "./components/feedback/CreateFeedback";
-import {FormikFeedback} from "./components/feedback/FormikFeedback";
+import {FeedbackForms} from "./components/feedback/FeedbackForms";
 
 const StyledDiv = styled('div')(() => ({
   textAlign: 'center',
@@ -111,7 +110,7 @@ export const App = () => {
             <Route path={"list/registered-users/:dropInId"} element={<DropInSessionRegistrations/>}/>
           </Route>
           <Route path={"/health-checks"} element={<HealthCheckEditor/>}/>
-          <Route path={"/feedback"} element={<FormikFeedback/>}/>
+          <Route path={"/feedback"} element={<FeedbackForms/>}/>
         </Routes>
       </StyledContainer>
       <footer className="group js-footer" id="footer" role="contentinfo">
