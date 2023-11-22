@@ -64,9 +64,11 @@ steps:
       ARTIFACTORY_USERNAME: drt-artifactory-robot
       ENV_LOG_LEVEL: ERROR
     when:
-      branch: leader
+#      branch: leader
       event:
         - push
+    depends_on:
+      - Test back end
 
   - name: sonar-scanner
     pull: if-not-exists
