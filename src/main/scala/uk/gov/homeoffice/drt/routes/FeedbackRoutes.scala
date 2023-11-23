@@ -38,7 +38,7 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
             UserFeedbackRow(
               email = userEmail,
               actionedAt = currentTimestamp,
-              feedbackAt = currentTimestamp,
+              feedbackAt = Option(currentTimestamp),
               closeBanner = false,
               bfRole = feedbackData.question_1,
               drtQuality = feedbackData.question_2,
