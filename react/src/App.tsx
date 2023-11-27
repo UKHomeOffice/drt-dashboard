@@ -110,7 +110,7 @@ export const App = () => {
             <Route path={"list/registered-users/:dropInId"} element={<DropInSessionRegistrations/>}/>
           </Route>
           <Route path={"/health-checks"} element={<HealthCheckEditor/>}/>
-          <Route path={"/feedback"} element={<FeedbackForms/>}/>
+          <Route path={"/feedback/:feedbackType/:aORbTest"} element={<FeedbackForms/>}/>
         </Routes>
       </StyledContainer>
       <footer className="group js-footer" id="footer" role="contentinfo">

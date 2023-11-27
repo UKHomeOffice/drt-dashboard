@@ -14,8 +14,11 @@ import {Stack} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import axios, {AxiosResponse} from "axios";
+import {useParams} from "react-router-dom";
 
 interface FeedbackData {
+  feedbackType: string;
+  aORbTest: string;
   question_1: string;
   question_2: string;
   question_3: string;
@@ -24,6 +27,8 @@ interface FeedbackData {
 }
 
 export function FeedbackForms() {
+  const {feedbackType = ''} = useParams<{ feedbackType?: string }>();
+  const {aORbTest=''} = useParams<{ aORbTest?: string }>();
   const [currentQuestion, setCurrentQuestion] = React.useState(1);
   const [error, setError] = React.useState(false);
   const [question1, setQuestion1] = React.useState('');
@@ -283,6 +288,8 @@ export function FeedbackForms() {
           setError(false);
 
           const feedbackData: FeedbackData = {
+            feedbackType: feedbackType,
+            aORbTest: aORbTest,
             question_1: question1,
             question_2: question2,
             question_3: question3,

@@ -11,12 +11,12 @@ import java.sql.Timestamp
 import java.time.Instant
 import scala.concurrent.ExecutionContext
 
-case class FeedbackData(question_1: String, question_2: String, question_3: String, question_4: String, question_5: String)
+case class FeedbackData(feedbackType: String, aORbTest: String, question_1: String, question_2: String, question_3: String, question_4: String, question_5: String)
 
 trait FeedbackJsonFormats extends DefaultTimeJsonProtocol {
 
-  implicit val feedbackDataFormatParser: RootJsonFormat[FeedbackData] = jsonFormat5(FeedbackData)
-  implicit val userFeedbackRowFormatParser: RootJsonFormat[UserFeedbackRow] = jsonFormat9(UserFeedbackRow)
+  implicit val feedbackDataFormatParser: RootJsonFormat[FeedbackData] = jsonFormat7(FeedbackData)
+  implicit val userFeedbackRowFormatParser: RootJsonFormat[UserFeedbackRow] = jsonFormat11(UserFeedbackRow)
 }
 
 object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
@@ -40,11 +40,14 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
               actionedAt = currentTimestamp,
               feedbackAt = Option(currentTimestamp),
               closeBanner = false,
+              feedbackType = Option(feedbackData.feedbackType),
               bfRole = feedbackData.question_1,
               drtQuality = feedbackData.question_2,
-              drtLikes = feedbackData.question_3,
-              drtImprovements = feedbackData.question_4,
-              participationInterest = feedbackData.question_5.equals("Yes")))
+              drtLikes = Option(feedbackData.question_3),
+              drtImprovements = Option(feedbackData.question_4),
+              participationInterest = feedbackData.question_5.equals("Yes"),
+              aOrBTest = Option(feedbackData.aORbTest)
+            ))
           routeResponse(
             saveFeedbackResult.map(_ => complete(StatusCodes.OK, s"Feedback from user $userEmail is saved successfully")), "Saving feedback")
         }
