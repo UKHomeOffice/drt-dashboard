@@ -159,13 +159,13 @@ export function FeedbackForms() {
     </Formik>
   )
 
-  const handleSkip = (event: React.FormEvent, questionValue: number) => {
+  const handleEvent = (event: React.FormEvent, questionValue: number) => {
     setCurrentQuestion(questionValue);
   }
 
   const questionThreeForm = (
     <Formik
-      initialValues={{question3: ''}}
+      initialValues={{ question3: '' }}
       onSubmit={(values) => {
         if (values.question3 === undefined) {
           setQuestion3('')
@@ -201,6 +201,7 @@ export function FeedbackForms() {
             <Grid container>
               <Grid xs={3}>
                 <Button type="submit"
+                        onClick={(event: React.FormEvent<Element>) => handleEvent(event, 4)}
                         sx={{
                           float: "left",
                           width: 'auto',
@@ -211,7 +212,7 @@ export function FeedbackForms() {
               </Grid>
               <Grid xs={9} sx={{float: "left", padding: '6px 12px'}}>
                 <Link href="#"
-                      onClick={(event: React.FormEvent<Element>) => handleSkip(event, 4)}>Skip</Link>
+                      onClick={(event: React.FormEvent<Element>) => handleEvent(event, 4)}>Skip</Link>
               </Grid>
             </Grid>
           </FormControl>
@@ -258,6 +259,7 @@ export function FeedbackForms() {
             <Grid container>
               <Grid xs={2}>
                 <Button type="submit"
+                        onClick={(event: React.FormEvent<Element>) => handleEvent(event, 5)}
                         sx={{
                           float: "left",
                           width: 'auto',
@@ -268,7 +270,7 @@ export function FeedbackForms() {
               </Grid>
               <Grid xs={10} sx={{float: "left", padding: '6px 12px'}}>
                 <Link href="#"
-                      onClick={(event: React.FormEvent<Element>) => handleSkip(event, 5)}>Skip</Link>
+                      onClick={(event: React.FormEvent<Element>) => handleEvent(event, 5)}>Skip</Link>
               </Grid>
             </Grid>
           </FormControl>
