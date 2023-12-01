@@ -122,7 +122,7 @@ object Server {
         ApiRoutes("api", serverConfig.clientConfig, userService, ScheduledHealthCheckPausePersistenceImpl(db, now)),
         DropInSessionsRoute(dropInDao),
         DropInRegisterRoutes(dropInRegistrationDao),
-        FeedbackRoutes("feedback", userFeedbackDao),
+        FeedbackRoutes(userFeedbackDao),
       )
 
       val serverBinding = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)

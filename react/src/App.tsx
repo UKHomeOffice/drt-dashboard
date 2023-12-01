@@ -23,6 +23,7 @@ import Link from "@mui/material/Link";
 import {FeatureGuidesList} from "./components/featureguides/FeatureGuidesList";
 import {AddOrEditFeatureGuide} from "./components/featureguides/AddOrEditFeatureGuide";
 import {FeedbackForms} from "./components/feedback/FeedbackForms";
+import {FeedbackList} from "./components/feedback/FeedbackList";
 
 const StyledDiv = styled('div')(() => ({
   textAlign: 'center',
@@ -111,6 +112,7 @@ export const App = () => {
           </Route>
           <Route path={"/health-checks"} element={<HealthCheckEditor/>}/>
           <Route path={"/feedback/:feedbackType/:aORbTest"} element={<FeedbackForms/>}/>
+          <Route path={"/user-feedback"} element={<FeedbackList/>}/>
         </Routes>
       </StyledContainer>
       <footer className="group js-footer" id="footer" role="contentinfo">

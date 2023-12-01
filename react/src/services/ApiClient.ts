@@ -22,6 +22,7 @@ export default class ApiClient implements IApiClient {
   public static dropInSessionDeletePublishedEndpoint = "/api/drop-in-sessions";
   public static dropInSessionRegistrationsEndpoint = "/api/drop-in-register";
   public static dropInSessionRegistrationDeleteEndpoint = "/api/drop-in-register";
+  public static getFeedBacksEndpoint = "/api/feedback/all";
 
   public fetchData(userEndPoint: string, handleResponse: (r: AxiosResponse) => void) {
     axios

@@ -1,8 +1,12 @@
 package uk.gov.homeoffice.drt.routes
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.ContentDispositionTypes.attachment
+import akka.http.scaladsl.model.headers.`Content-Disposition`
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import spray.json.{RootJsonFormat, enrichAny}
 import uk.gov.homeoffice.drt.db.{UserFeedbackDao, UserFeedbackRow}
 import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
@@ -20,6 +24,27 @@ trait FeedbackJsonFormats extends DefaultTimeJsonProtocol {
 }
 
 object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
+
+  def exportFeedback(feedbackDao: UserFeedbackDao)(implicit ec:ExecutionContext) = path("export") {
+    get {
+      val csvHeader: String = "Email,ActionedAt,FeedbackAt,CloseBanner,FeedbackType,BfRole,DrtQuality,DrtLikes,DrtImprovements,ParticipationInterest,AOrBTest"
+
+      val fetchDataStream = feedbackDao.selectAllAsStream()
+
+      def toCsvString(feedback: UserFeedbackRow) = s"${feedback.email},${feedback.actionedAt.getTime},${feedback.feedbackAt.map(_.getTime)},${feedback.closeBanner},${feedback.feedbackType},${feedback.bfRole},${feedback.drtQuality},${feedback.drtLikes},${feedback.drtImprovements},${feedback.participationInterest},${feedback.aOrBTest}"
+
+      val csvDataStream: Source[ByteString, _] = Source.single(ByteString(csvHeader + "\n"))
+        .concat(
+          fetchDataStream.map(toCsvString).map(str => ByteString(str + "\n"))
+        )
+
+
+      complete(HttpResponse(
+        headers = List(`Content-Disposition`(attachment, Map("filename" -> s"feedback-export-${Instant.now().toEpochMilli}.csv"))),
+        entity = HttpEntity(ContentTypes.`text/csv(UTF-8)`, csvDataStream)))
+
+    }
+  }
 
   def getFeedbacks(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext) = path("all") {
     get {
@@ -55,9 +80,11 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
     }
   }
 
-  def apply(prefix: String, feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext) = pathPrefix(prefix) {
-    concat(saveFeedback(feedbackDao) ~ getFeedbacks(feedbackDao))
-  }
+
+  def apply(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext) =
+    pathPrefix("api" / "feedback") {
+      concat(saveFeedback(feedbackDao) ~ getFeedbacks(feedbackDao) ~ exportFeedback(feedbackDao))
+    }
 
 
 }
