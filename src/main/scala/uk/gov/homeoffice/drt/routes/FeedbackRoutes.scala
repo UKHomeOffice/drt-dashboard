@@ -13,6 +13,7 @@ import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
 
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 
 case class FeedbackData(feedbackType: String, aORbTest: String, question_1: String, question_2: String, question_3: String, question_4: String, question_5: String)
@@ -25,19 +26,28 @@ trait FeedbackJsonFormats extends DefaultTimeJsonProtocol {
 
 object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
 
-  def exportFeedback(feedbackDao: UserFeedbackDao)(implicit ec:ExecutionContext) = path("export") {
+  val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+  val formattedDate: Timestamp => String = timestamp => timestamp.toLocalDateTime.format(formatter)
+
+  def exportFeedback(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext) = path("export") {
     get {
       val csvHeader: String = "Email,ActionedAt,FeedbackAt,CloseBanner,FeedbackType,BfRole,DrtQuality,DrtLikes,DrtImprovements,ParticipationInterest,AOrBTest"
 
       val fetchDataStream = feedbackDao.selectAllAsStream()
 
-      def toCsvString(feedback: UserFeedbackRow) = s"${feedback.email},${feedback.actionedAt.getTime},${feedback.feedbackAt.map(_.getTime)},${feedback.closeBanner},${feedback.feedbackType},${feedback.bfRole},${feedback.drtQuality},${feedback.drtLikes},${feedback.drtImprovements},${feedback.participationInterest},${feedback.aOrBTest}"
+      val toCsvString: UserFeedbackRow => String = feedback => s"${feedback.email}," +
+        s"${formattedDate(feedback.actionedAt)}," +
+        s"${feedback.feedbackAt.map(formattedDate).getOrElse("")}," +
+        s"${feedback.closeBanner}," +
+        s"${feedback.feedbackType.getOrElse("")}," +
+        s"${feedback.bfRole},${feedback.drtQuality}," +
+        s"${feedback.drtLikes.getOrElse("")}," +
+        s"${feedback.drtImprovements.getOrElse("")}," +
+        s"${feedback.participationInterest}," +
+        s"${feedback.aOrBTest.getOrElse("")}"
 
       val csvDataStream: Source[ByteString, _] = Source.single(ByteString(csvHeader + "\n"))
-        .concat(
-          fetchDataStream.map(toCsvString).map(str => ByteString(str + "\n"))
-        )
-
+        .concat(fetchDataStream.map(toCsvString).map(str => ByteString(str + "\n")))
 
       complete(HttpResponse(
         headers = List(`Content-Disposition`(attachment, Map("filename" -> s"feedback-export-${Instant.now().toEpochMilli}.csv"))),

@@ -15,6 +15,7 @@ import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import axios, {AxiosResponse} from "axios";
 import {useParams} from "react-router-dom";
+import ApiClient from "../../services/ApiClient";
 
 interface FeedbackData {
   feedbackType: string;
@@ -159,23 +160,15 @@ export function FeedbackForms() {
     </Formik>
   )
 
-  const handleEvent = (event: React.FormEvent, questionValue: number) => {
-    setCurrentQuestion(questionValue);
-  }
-
   const questionThreeForm = (
-    <Formik
-      initialValues={{ question3: '' }}
-      onSubmit={(values) => {
-        if (values.question3 === undefined) {
-          setQuestion3('')
-        } else {
-          setQuestion3(values.question3)
-          setCurrentQuestion(4);
-          setError(false);
-        }
-      }}
-    >
+      <Formik
+        initialValues={{question3: ''}}
+        onSubmit={(values) => {
+            setQuestion3(values.question3)
+            setCurrentQuestion(4);
+            setError(false);
+        }}
+      >
       {({handleChange, values}) => (
         <Form>
           <Typography>{"Question 3 of 5"}</Typography>
@@ -201,7 +194,6 @@ export function FeedbackForms() {
             <Grid container>
               <Grid xs={3}>
                 <Button type="submit"
-                        onClick={(event: React.FormEvent<Element>) => handleEvent(event, 4)}
                         sx={{
                           float: "left",
                           width: 'auto',
@@ -225,13 +217,9 @@ export function FeedbackForms() {
     <Formik
       initialValues={{question4: ''}}
       onSubmit={(values) => {
-        if (values.question4 === undefined) {
-          setQuestion4('')
-        } else {
           setQuestion4(values.question4)
           setCurrentQuestion(5);
           setError(false);
-        }
       }}
     >
       {({handleChange, values}) => (
@@ -259,7 +247,6 @@ export function FeedbackForms() {
             <Grid container>
               <Grid xs={2}>
                 <Button type="submit"
-                        onClick={(event: React.FormEvent<Element>) => handleEvent(event, 5)}
                         sx={{
                           float: "left",
                           width: 'auto',
@@ -308,7 +295,7 @@ export function FeedbackForms() {
             }
           }
 
-          axios.post('/feedback/save', feedbackData)
+          axios.post(ApiClient.saveFeedBacksEndpoint, feedbackData)
             .then(response => handleResponse(response))
             .then(data => {
               console.log(data);
@@ -361,6 +348,10 @@ export function FeedbackForms() {
       )}
     </Formik>
   );
+
+  const handleEvent = (event: React.FormEvent, questionValue: number) => {
+    setCurrentQuestion(questionValue);
+  }
 
   const closeFeedback = (
     <Stack>
