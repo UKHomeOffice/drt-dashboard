@@ -1,4 +1,4 @@
-import {Box, Button, Menu, MenuItem} from "@mui/material";
+import {Box, Button, Menu, MenuItem, Link as MuiLink} from "@mui/material";
 import {styled} from '@mui/material/styles';
 import React from "react";
 import {Link} from "react-router-dom";
@@ -34,7 +34,6 @@ export default function Navigation(props: IProps) {
     {label: 'Health checks', link: '/health-checks', roles: ['health-checks:edit']},
     {label: 'Feedback', link: '/user-feedback', roles: ['manage-users']},
     {label: 'Users', link: '/users', roles: ['manage-users']},
-    {label: 'Log out', link: props.logoutLink, roles: []},
   ]
 
   return (
@@ -62,6 +61,9 @@ export default function Navigation(props: IProps) {
             </MenuItem>
           }
         })}
+        <MenuItem onClick={handleClose} key={'logout'}>
+          <MuiLink href={props.logoutLink}>Log out</MuiLink>
+        </MenuItem>
       </Menu>
     </Box>
   );

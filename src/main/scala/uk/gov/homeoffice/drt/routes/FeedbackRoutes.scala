@@ -92,7 +92,7 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
 
 
   def apply(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext) =
-    pathPrefix("api" / "feedback") {
+    pathPrefix( "feedback") {
       concat(saveFeedback(feedbackDao) ~ getFeedbacks(feedbackDao) ~ exportFeedback(feedbackDao))
     }
 
