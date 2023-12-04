@@ -77,7 +77,7 @@ class FeedbackRoutesSpec extends Specification
       new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli))
 
     Await.result(insertUserFeedback(userFeedbackRow, userFeedbackDao), 5.seconds)
-    Get("/api/feedback/all") ~>
+    Get("/feedback/all") ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", "my@email.com") ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val jsonUsers = responseAs[String].parseJson.asInstanceOf[JsArray].elements
@@ -96,7 +96,7 @@ class FeedbackRoutesSpec extends Specification
       question_5 = "true")
     val email = "my@email.com"
 
-    Post("/api/feedback/save", feedbackData.toJson) ~>
+    Post("/feedback/save", feedbackData.toJson) ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val response = responseAs[String]
@@ -127,7 +127,7 @@ class FeedbackRoutesSpec extends Specification
 
     row.size === 1
     //There is issue here that we are not able to get the row from response but only header
-    Get("/api/feedback/export") ~>
+    Get("/feedback/export") ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val responseBytes = Await.result(response.entity.dataBytes.runWith(Sink.seq), 3.seconds)
