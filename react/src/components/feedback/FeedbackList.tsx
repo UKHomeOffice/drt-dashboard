@@ -31,14 +31,14 @@ export function FeedbackList() {
     },
     {
       field: 'closeBanner',
-      headerName: 'Close Banner',
-      description: 'This column has a value getter and is not sortable.',
-      width: 60
+      headerName: 'X Banner',
+      description: 'User closed the banner',
+      width: 75
     },
     {
       field: 'feedbackType',
       headerName: 'Feedback',
-      description: 'This column has a value getter and is not sortable.',
+      description: 'Feedback type',
       width: 80,
     },
     {

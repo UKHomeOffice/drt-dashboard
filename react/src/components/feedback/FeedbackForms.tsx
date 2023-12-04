@@ -71,7 +71,7 @@ export function FeedbackForms() {
               </Typography>
             </FormLabel>
             <Typography sx={{"color": "#DB0F24", fontWeight: 'bold'}}>
-              {error ? "Please select your role at Borderforce" : ""}
+              {error ? "Please select your role at Border force" : ""}
             </Typography>
             <Stack sx={{
               ...(error && {
@@ -164,9 +164,14 @@ export function FeedbackForms() {
       <Formik
         initialValues={{question3: ''}}
         onSubmit={(values) => {
+          if (values.question3 === undefined) {
+            setQuestion3('')
+          } else {
             setQuestion3(values.question3)
-            setCurrentQuestion(4);
-            setError(false);
+          }
+          setCurrentQuestion(4);
+          setError(false);
+
         }}
       >
       {({handleChange, values}) => (
@@ -204,7 +209,7 @@ export function FeedbackForms() {
               </Grid>
               <Grid xs={9} sx={{float: "left", padding: '6px 12px'}}>
                 <Link href="#"
-                      onClick={(event: React.FormEvent<Element>) => handleEvent(event, 4)}>Skip</Link>
+                      onClick={() => handleEvent(4)}>Skip</Link>
               </Grid>
             </Grid>
           </FormControl>
@@ -217,7 +222,11 @@ export function FeedbackForms() {
     <Formik
       initialValues={{question4: ''}}
       onSubmit={(values) => {
+        if (values.question4 === undefined) {
+          setQuestion4('')
+        } else {
           setQuestion4(values.question4)
+        }
           setCurrentQuestion(5);
           setError(false);
       }}
@@ -241,7 +250,7 @@ export function FeedbackForms() {
               onChange={handleChange}
               variant="outlined"
               fullWidth
-              style={{height: '100px', width: '400px'}} // Adjust styling as needed
+              style={{height: '100px', width: '400px'}}
             />
             <br/>
             <Grid container>
@@ -257,7 +266,7 @@ export function FeedbackForms() {
               </Grid>
               <Grid xs={10} sx={{float: "left", padding: '6px 12px'}}>
                 <Link href="#"
-                      onClick={(event: React.FormEvent<Element>) => handleEvent(event, 5)}>Skip</Link>
+                      onClick={() => handleEvent(5)}>Skip</Link>
               </Grid>
             </Grid>
           </FormControl>
@@ -349,7 +358,7 @@ export function FeedbackForms() {
     </Formik>
   );
 
-  const handleEvent = (event: React.FormEvent, questionValue: number) => {
+  const handleEvent = (questionValue: number) => {
     setCurrentQuestion(questionValue);
   }
 
