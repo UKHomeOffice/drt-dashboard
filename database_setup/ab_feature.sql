@@ -1,7 +1,8 @@
 CREATE TABLE ab_feature
 (
-    presented_at  timestamp NOT NULL,
+    email         text NOT NULL,
     function_name text,
+    presented_at  timestamp NOT NULL,
     test_type     text,
-    PRIMARY KEY (presented_at, function_name)
+    PRIMARY KEY (email, function_name)
 );
