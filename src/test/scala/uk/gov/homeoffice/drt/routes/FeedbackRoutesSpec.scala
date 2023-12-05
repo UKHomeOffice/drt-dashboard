@@ -3,11 +3,12 @@ package uk.gov.homeoffice.drt.routes
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.headers.{RawHeader, `Content-Disposition`}
+import akka.http.scaladsl.model.{ContentTypes, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.Specs2RouteTest
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeEach
 import slick.dbio.DBIO
@@ -43,10 +44,9 @@ class FeedbackRoutesSpec extends Specification
     Await.result(db.run(userTable.delete), 5.seconds)
   }
 
-  def getUserFeedBackRow(email: String, feedbackData: FeedbackData, feedbackAt: Timestamp, actionedAt: Timestamp): UserFeedbackRow = {
+  def getUserFeedBackRow(email: String, feedbackData: FeedbackData, createdAt: Timestamp): UserFeedbackRow = {
     UserFeedbackRow(email = email,
-      actionedAt = actionedAt,
-      feedbackAt = Option(feedbackAt),
+      createdAt = createdAt,
       closeBanner = false,
       bfRole = feedbackData.question_1,
       drtQuality = feedbackData.question_2,
@@ -54,7 +54,7 @@ class FeedbackRoutesSpec extends Specification
       drtImprovements = Option(feedbackData.question_4),
       participationInterest = feedbackData.question_5.toBoolean,
       feedbackType = Option(feedbackData.feedbackType),
-      aOrBTest = Option(feedbackData.aORbTest))
+      abVersion = Option(feedbackData.aORbTest))
   }
 
   def insertUserFeedback(userFeedbackRow: UserFeedbackRow, userFeedbackDao: UserFeedbackDao): Future[Int] = {
@@ -73,11 +73,10 @@ class FeedbackRoutesSpec extends Specification
       question_4 = "Staffing",
       question_5 = "true")
     val userFeedbackRow = getUserFeedBackRow("test@test.com", feedbackData,
-      new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli),
       new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli))
 
     Await.result(insertUserFeedback(userFeedbackRow, userFeedbackDao), 5.seconds)
-    Get("/feedback/all") ~>
+    Get("/feedback") ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", "my@email.com") ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val jsonUsers = responseAs[String].parseJson.asInstanceOf[JsArray].elements
@@ -96,12 +95,12 @@ class FeedbackRoutesSpec extends Specification
       question_5 = "true")
     val email = "my@email.com"
 
-    Post("/feedback/save", feedbackData.toJson) ~>
+    Post("/feedback", feedbackData.toJson) ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val response = responseAs[String]
       userFeedbackDao.selectAll().map { userFeedback =>
-        userFeedback.size === 2  && response.contains(s"Feedback from user $email is saved successfully")
+        userFeedback.size === 2 && response.contains(s"Feedback from user $email is saved successfully")
       }
     }
   }
@@ -118,7 +117,6 @@ class FeedbackRoutesSpec extends Specification
     val email = "test1@email.com"
 
     val userFeedbackRow = getUserFeedBackRow(email, feedbackData,
-      new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli),
       new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli))
 
     Await.result(insertUserFeedback(userFeedbackRow, userFeedbackDao), 5.seconds)
@@ -129,12 +127,19 @@ class FeedbackRoutesSpec extends Specification
     //There is issue here that we are not able to get the row from response but only header
     Get("/feedback/export") ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
-      RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
-      val responseBytes = Await.result(response.entity.dataBytes.runWith(Sink.seq), 3.seconds)
-      val responseString = responseBytes.map(_.utf8String).mkString
-      responseString.contains(
-        """Email,ActionedAt,FeedbackAt,CloseBanner,FeedbackType,BfRole,DrtQuality,DrtLikes,DrtImprovements,ParticipationInterest,AOrBTest""".stripMargin)
-    }
+      RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~>
+      check {
+        status shouldBe StatusCodes.OK
+        header[`Content-Disposition`] should not be None
+
+        val responseEntity = Await.result(response.entity.toStrict(3.seconds), 3.seconds)
+        responseEntity.contentType shouldBe ContentTypes.`text/csv(UTF-8)`
+
+        val csvContent = responseEntity.data.utf8String
+
+        csvContent.contains(
+          """Email ,CreatedAt ,CloseBanner ,FeedbackType ,BfRole ,DrtQuality ,DrtLikes ,DrtImprovements ,ParticipationInterest ,ABVersion""".stripMargin)
+      }
   }
 
 }

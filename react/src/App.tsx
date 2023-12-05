@@ -111,7 +111,7 @@ export const App = () => {
             <Route path={"list/registered-users/:dropInId"} element={<DropInSessionRegistrations/>}/>
           </Route>
           <Route path={"/health-checks"} element={<HealthCheckEditor/>}/>
-          <Route path={"/feedback/:feedbackType/:aORbTest"} element={<FeedbackForms/>}/>
+          <Route path={"/feedback/:feedbackType/:abVersion"} element={<FeedbackForms/>}/>
           <Route path={"/user-feedback"} element={<FeedbackList/>}/>
         </Routes>
       </StyledContainer>

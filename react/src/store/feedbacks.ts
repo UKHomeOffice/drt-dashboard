@@ -4,8 +4,7 @@ import ApiClient from "../services/ApiClient";
 
 export interface UserFeedback {
   email: string,
-  actionedAt: string,
-  feedbackAt: string,
+  createdAt: string,
   closeBanner: string,
   feedbackType: string,
   bfRole: string,
@@ -13,7 +12,7 @@ export interface UserFeedback {
   drtLikes: string,
   drtImprovements: string,
   participationInterest: string,
-  aOrBTest: string
+  abVersion: string
 }
 
 export const useUserFeedbacks = (requestedAt : number) => {
@@ -23,7 +22,7 @@ export const useUserFeedbacks = (requestedAt : number) => {
 
   useEffect(() => {
     const fetch = async () => axios
-      .get(`${ApiClient.getFeedBacksEndpoint}`)
+      .get(`${ApiClient.feedBacksEndpoint}`)
       .then(res => setUserFeedbacks(res.data as UserFeedback[]))
       .catch(err => {
         console.log('Failed to get health check pauses: ' + err)

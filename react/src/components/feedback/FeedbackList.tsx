@@ -9,6 +9,7 @@ import Button from "@mui/material/Button";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import {Breadcrumbs, Stack} from "@mui/material";
 import {Link} from "react-router-dom";
+import ApiClient from "../../services/ApiClient";
 
 export function FeedbackList() {
   const [requestedAt, setRequestedAt] = useState(moment().valueOf())
@@ -22,8 +23,8 @@ export function FeedbackList() {
       width: 150,
     },
     {
-      field: 'feedbackAt',
-      headerName: 'Feedback At',
+      field: 'createdAt',
+      headerName: 'Created At',
       width: 150,
       renderCell: (params) => {
         return <div>{moment(params.value).format("HH:mm, Do MMM YYYY")}</div>;
@@ -67,8 +68,8 @@ export function FeedbackList() {
       width: 60,
     },
     {
-      field: 'aOrBTest',
-      headerName: 'AorB',
+      field: 'abVersion',
+      headerName: 'AB Version',
       width: 50,
     },
   ];
@@ -77,7 +78,7 @@ export function FeedbackList() {
   const handleDownload = async () => {
     setRequestedAt(moment().valueOf())
     try {
-      const response = await fetch(`/api/feedback/export`);
+      const response = await fetch(`${ApiClient.feedBacksEndpoint}/export`);
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -112,10 +113,10 @@ export function FeedbackList() {
       <Link to={"/"}>
         Home
       </Link>
-      <Typography color="text.primary">User Feedbacks</Typography>
+      <Typography color="text.primary">User feedback responses</Typography>
     </Breadcrumbs>
     <Stack direction={'row'} justifyContent={'space-between'}>
-      <Button startIcon={<FileDownloadIcon/>} onClick={handleDownload}>Download Feedbacks</Button>
+      <Button startIcon={<FileDownloadIcon/>} onClick={handleDownload}>Download feedback responses</Button>
     </Stack>
     {loading ? <Loading/> :
       failed ?
@@ -124,7 +125,7 @@ export function FeedbackList() {
           <Typography variant={'body1'}>There are no current or upcoming pauses</Typography> :
           <Box sx={{height: 400, width: '100%'}}>
             <DataGrid
-              getRowId={(rowsData) => rowsData.email + '_' + rowsData.actionedAt}
+              getRowId={(rowsData) => rowsData.email + '_' + rowsData.createdAt}
               rows={userFeedbacks}
               columns={abFeatureColumns}
               pageSizeOptions={[5]}

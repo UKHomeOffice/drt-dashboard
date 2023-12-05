@@ -29,7 +29,7 @@ interface FeedbackData {
 
 export function FeedbackForms() {
   const {feedbackType = ''} = useParams<{ feedbackType?: string }>();
-  const {aORbTest=''} = useParams<{ aORbTest?: string }>();
+  const {abVersion=''} = useParams<{ abVersion?: string }>();
   const [currentQuestion, setCurrentQuestion] = React.useState(1);
   const [error, setError] = React.useState(false);
   const [question1, setQuestion1] = React.useState('');
@@ -287,7 +287,7 @@ export function FeedbackForms() {
 
           const feedbackData: FeedbackData = {
             feedbackType: feedbackType,
-            aORbTest: aORbTest,
+            aORbTest: abVersion,
             question_1: question1,
             question_2: question2,
             question_3: question3,
@@ -304,7 +304,7 @@ export function FeedbackForms() {
             }
           }
 
-          axios.post(ApiClient.saveFeedBacksEndpoint, feedbackData)
+          axios.post(ApiClient.feedBacksEndpoint, feedbackData)
             .then(response => handleResponse(response))
             .then(data => {
               console.log(data);
@@ -348,7 +348,7 @@ export function FeedbackForms() {
             <br/>
             <Button type="submit"
                     sx={{float: "left", width: 'auto', maxWidth: '120px', padding: '6px 12px'}}
-                    variant="outlined">Continue</Button>
+                    variant="outlined">Submit feedback</Button>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>
             {errorText ? "Error while sending feedback . Please try again in sometime" : ""}
@@ -365,13 +365,12 @@ export function FeedbackForms() {
   const closeFeedback = (
     <Stack>
       <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
-        Thank you for your feedback
+        Thank you for your feedback !
       </Typography>
       <br/>
-      <Button type="submit"
-              sx={{float: "left", width: 'auto', maxWidth: '120px', padding: '6px 12px'}}
-              onClick={() => window.close()}
-              variant="outlined">Close</Button>
+      <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
+        You may now close this window.
+      </Typography>
     </Stack>
   )
 

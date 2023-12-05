@@ -1,8 +1,7 @@
 CREATE TABLE user_feedback
 (
     email  text NOT NULL,
-    actioned_at timestamp NOT NULL,
-    feedback_at timestamp,
+    created_at timestamp NOT NULL,
     close_banner boolean,
     feedback_type text,
     bf_role     text,
@@ -10,6 +9,6 @@ CREATE TABLE user_feedback
     drt_likes   text,
     drt_improvements text,
     participation_interest text,
-    a_or_b_test text,
-    PRIMARY KEY (email, actioned_at)
+    ab_version text,
+    PRIMARY KEY (email, created_at)
 );
