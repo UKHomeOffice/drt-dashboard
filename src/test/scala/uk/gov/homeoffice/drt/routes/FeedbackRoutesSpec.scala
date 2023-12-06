@@ -35,9 +35,10 @@ class FeedbackRoutesSpec extends Specification
   val stringToLocalDateTime: String => Instant = dateString => Instant.parse(dateString)
 
   override def before = {
-
     Await.result(TestDatabase.db.run(DBIO.seq(TestDatabase.userFeedbackTable.schema.dropIfExists,
       TestDatabase.userFeedbackTable.schema.createIfNotExists)), 5.second)
+      deleteUserTableData(TestDatabase.db, TestDatabase.userFeedbackTable)
+
   }
 
   def deleteUserTableData(db: Database, userTable: TableQuery[UserFeedbackTable]): Int = {
@@ -100,7 +101,7 @@ class FeedbackRoutesSpec extends Specification
       RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val response = responseAs[String]
       userFeedbackDao.selectAll().map { userFeedback =>
-        userFeedback.size === 2 && response.contains(s"Feedback from user $email is saved successfully")
+        userFeedback.size === 1 && response.contains(s"Feedback from user $email is saved successfully")
       }
     }
   }
@@ -138,7 +139,7 @@ class FeedbackRoutesSpec extends Specification
         val csvContent = responseEntity.data.utf8String
 
         csvContent.contains(
-          """Email ,CreatedAt ,CloseBanner ,FeedbackType ,BfRole ,DrtQuality ,DrtLikes ,DrtImprovements ,ParticipationInterest ,ABVersion""".stripMargin)
+          """Email ,Created at ,Close banner ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version""".stripMargin)
       }
   }
 

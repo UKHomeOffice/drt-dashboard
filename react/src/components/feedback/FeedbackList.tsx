@@ -7,7 +7,7 @@ import Loading from "../Loading";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import {Breadcrumbs, Stack} from "@mui/material";
+import {Breadcrumbs, Stack,Link as MuiLink} from "@mui/material";
 import {Link} from "react-router-dom";
 import ApiClient from "../../services/ApiClient";
 
@@ -75,39 +75,6 @@ export function FeedbackList() {
   ];
 
 
-  const handleDownload = async () => {
-    setRequestedAt(moment().valueOf())
-    try {
-      const response = await fetch(`${ApiClient.feedBacksEndpoint}/export`);
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = 'feedback-export.csv'
-
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
-        }
-      }
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error('Download failed', error);
-    }
-  };
-
   return <Stack gap={4} alignItems={'stretch'} sx={{mt: 2}}>
     <Breadcrumbs>
       <Link to={"/"}>
@@ -116,7 +83,13 @@ export function FeedbackList() {
       <Typography color="text.primary">User feedback responses</Typography>
     </Breadcrumbs>
     <Stack direction={'row'} justifyContent={'space-between'}>
-      <Button startIcon={<FileDownloadIcon/>} onClick={handleDownload}>Download feedback responses</Button>
+      <Button
+        startIcon={<FileDownloadIcon/>}
+        component={MuiLink}
+        href={`${ApiClient.feedBacksEndpoint}/export`}
+        target="_blank"
+        onClick={() => setRequestedAt(moment().valueOf())}
+      > Download feedback responses</Button>
     </Stack>
     {loading ? <Loading/> :
       failed ?

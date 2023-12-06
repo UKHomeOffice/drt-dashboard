@@ -347,7 +347,7 @@ export function FeedbackForms() {
             </Stack>
             <br/>
             <Button type="submit"
-                    sx={{float: "left", width: 'auto', maxWidth: '120px', padding: '6px 12px'}}
+                    sx={{float: "left", width: 'auto', maxWidth: '180px', padding: '6px 12px'}}
                     variant="outlined">Submit feedback</Button>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>

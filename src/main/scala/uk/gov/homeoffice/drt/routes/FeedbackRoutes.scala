@@ -30,9 +30,9 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
   private val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
   private val formattedDate: Timestamp => String = timestamp => timestamp.toLocalDateTime.format(formatter)
 
-  def exportFeedback(feedbackDao: UserFeedbackDao): Route = path("export") {
+  def exportFeedback(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext, mat: Materializer): Route = path("export") {
     get {
-      val csvHeader: String = "Email ,CreatedAt ,CloseBanner ,FeedbackType ,BfRole ,DrtQuality ,DrtLikes ,DrtImprovements ,ParticipationInterest ,ABVersion"
+      val csvHeader: String = "Email ,Created at ,Close banner ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version"
 
       val fetchDataStream = feedbackDao.selectAllAsStream()
 
@@ -41,8 +41,8 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
         val createdAt = formattedDate(feedback.createdAt)
         val closeBanner = feedback.closeBanner
         val feedbackType = feedback.feedbackType.getOrElse("")
-        val bfRole= feedback.bfRole
-        val drtQuality =  feedback.drtQuality
+        val bfRole = feedback.bfRole
+        val drtQuality = feedback.drtQuality
         val drtLikes = feedback.drtLikes.getOrElse("")
         val drtImprovements = feedback.drtImprovements.getOrElse("")
         val participationInterest = feedback.participationInterest
