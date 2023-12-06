@@ -8,6 +8,7 @@ import akka.http.scaladsl.model.{ContentTypes, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.Specs2RouteTest
 import akka.stream.Materializer
+import org.scalatest.Sequential
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeEach
@@ -29,20 +30,17 @@ class FeedbackRoutesSpec extends Specification
   with DefaultJsonProtocol
   with BeforeEach {
 
+  Sequential
+
   val testKit: ActorTestKit = ActorTestKit()
   implicit val sys: ActorSystem[Nothing] = testKit.system
   implicit val mat = Materializer(sys.classicSystem)
   val stringToLocalDateTime: String => Instant = dateString => Instant.parse(dateString)
 
   override def before = {
-    Await.result(TestDatabase.db.run(DBIO.seq(TestDatabase.userFeedbackTable.schema.dropIfExists,
+    Await.ready(TestDatabase.db.run(DBIO.seq(TestDatabase.userFeedbackTable.schema.dropIfExists,
       TestDatabase.userFeedbackTable.schema.createIfNotExists)), 5.second)
-      deleteUserTableData(TestDatabase.db, TestDatabase.userFeedbackTable)
 
-  }
-
-  def deleteUserTableData(db: Database, userTable: TableQuery[UserFeedbackTable]): Int = {
-    Await.result(db.run(userTable.delete), 5.seconds)
   }
 
   def getUserFeedBackRow(email: String, feedbackData: FeedbackData, createdAt: Timestamp): UserFeedbackRow = {
@@ -73,13 +71,14 @@ class FeedbackRoutesSpec extends Specification
       question_3 = "Arrivals",
       question_4 = "Staffing",
       question_5 = "true")
-    val userFeedbackRow = getUserFeedBackRow("test@test.com", feedbackData,
+    val email = "test@test.com"
+    val userFeedbackRow = getUserFeedBackRow(email, feedbackData,
       new Timestamp(stringToLocalDateTime("2022-12-06T10:15:30.00Z").toEpochMilli))
 
     Await.result(insertUserFeedback(userFeedbackRow, userFeedbackDao), 5.seconds)
     Get("/feedback") ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
-      RawHeader("X-Auth-Email", "my@email.com") ~> userFeedbackRoute(userFeedbackDao) ~> check {
+      RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
       val jsonUsers = responseAs[String].parseJson.asInstanceOf[JsArray].elements
       jsonUsers.contains(userFeedbackRow.toJson)
     }
@@ -94,15 +93,15 @@ class FeedbackRoutesSpec extends Specification
       question_3 = "Arrivals",
       question_4 = "Staffing",
       question_5 = "true")
-    val email = "my@email.com"
+    val email = "test@email.com"
 
     Post("/feedback", feedbackData.toJson) ~>
       RawHeader("X-Auth-Roles", BorderForceStaff.name) ~>
       RawHeader("X-Auth-Email", email) ~> userFeedbackRoute(userFeedbackDao) ~> check {
-      val response = responseAs[String]
-      userFeedbackDao.selectAll().map { userFeedback =>
-        userFeedback.size === 1 && response.contains(s"Feedback from user $email is saved successfully")
-      }
+      val responseResult = responseAs[String]
+      val dataResult = Await.result(userFeedbackDao.selectByEmail(email), 5.seconds)
+      dataResult.size === 1 && responseResult.contains(s"Feedback from user $email is saved successfully")
+
     }
   }
 
@@ -122,7 +121,7 @@ class FeedbackRoutesSpec extends Specification
 
     Await.result(insertUserFeedback(userFeedbackRow, userFeedbackDao), 5.seconds)
 
-    val row = Await.result(userFeedbackDao.selectAll(), 5.seconds)
+    val row = Await.result(userFeedbackDao.selectByEmail(email), 5.seconds)
 
     row.size === 1
     //There is issue here that we are not able to get the row from response but only header
