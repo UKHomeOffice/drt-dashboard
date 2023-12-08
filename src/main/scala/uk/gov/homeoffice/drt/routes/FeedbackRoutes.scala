@@ -32,7 +32,7 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
 
   def exportFeedback(feedbackDao: UserFeedbackDao): Route = path("export") {
     get {
-      val csvHeader: String = "Email ,Created at ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version"
+      val csvHeader: String = "Email,Created at,Feedback type,Bf role,Drt quality,Drt likes,Drt improvements,Participation interest,AB version"
 
       val fetchDataStream = feedbackDao.selectAllAsStream()
 

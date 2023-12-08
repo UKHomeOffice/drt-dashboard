@@ -16,7 +16,7 @@ import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile.api._
 import spray.json._
 import uk.gov.homeoffice.drt.auth.Roles.BorderForceStaff
-import uk.gov.homeoffice.drt.db.{TestDatabase, UserFeedbackDao, UserFeedbackRow, UserFeedbackTable}
+import uk.gov.homeoffice.drt.db.{TestDatabase, UserFeedbackDao, UserFeedbackRow}
 
 import java.sql.Timestamp
 import java.time.Instant
@@ -29,8 +29,6 @@ class FeedbackRoutesSpec extends Specification
   with SprayJsonSupport
   with DefaultJsonProtocol
   with BeforeEach {
-
-  Sequential
 
   val testKit: ActorTestKit = ActorTestKit()
   implicit val sys: ActorSystem[Nothing] = testKit.system
@@ -137,7 +135,7 @@ class FeedbackRoutesSpec extends Specification
         val csvContent = responseEntity.data.utf8String
 
         csvContent.contains(
-          """Email ,Created at ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version""".stripMargin)
+          """Email,Created at,Feedback type,Bf role,Drt quality,Drt likes,Drt improvements,Participation interest,AB version""".stripMargin)
       }
   }
 
