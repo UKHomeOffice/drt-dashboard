@@ -5,7 +5,6 @@ import ApiClient from "../services/ApiClient";
 export interface UserFeedback {
   email: string,
   createdAt: string,
-  closeBanner: string,
   feedbackType: string,
   bfRole: string,
   drtQuality: string,

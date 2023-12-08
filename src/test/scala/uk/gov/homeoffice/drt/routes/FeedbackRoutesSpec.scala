@@ -46,7 +46,6 @@ class FeedbackRoutesSpec extends Specification
   def getUserFeedBackRow(email: String, feedbackData: FeedbackData, createdAt: Timestamp): UserFeedbackRow = {
     UserFeedbackRow(email = email,
       createdAt = createdAt,
-      closeBanner = false,
       bfRole = feedbackData.question_1,
       drtQuality = feedbackData.question_2,
       drtLikes = Option(feedbackData.question_3),
@@ -138,7 +137,7 @@ class FeedbackRoutesSpec extends Specification
         val csvContent = responseEntity.data.utf8String
 
         csvContent.contains(
-          """Email ,Created at ,Close banner ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version""".stripMargin)
+          """Email ,Created at ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version""".stripMargin)
       }
   }
 

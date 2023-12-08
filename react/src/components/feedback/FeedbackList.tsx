@@ -20,21 +20,15 @@ export function FeedbackList() {
     {
       field: 'email',
       headerName: 'Email',
-      width: 150,
+      width: 200,
     },
     {
       field: 'createdAt',
-      headerName: 'Created At',
+      headerName: 'Created at',
       width: 150,
       renderCell: (params) => {
         return <div>{moment(params.value).format("HH:mm, Do MMM YYYY")}</div>;
       }
-    },
-    {
-      field: 'closeBanner',
-      headerName: 'X Banner',
-      description: 'User closed the banner',
-      width: 75
     },
     {
       field: 'feedbackType',
@@ -44,7 +38,7 @@ export function FeedbackList() {
     },
     {
       field: 'bfRole',
-      headerName: 'BF Role',
+      headerName: 'BF role',
       width: 150
     },
     {
@@ -70,7 +64,7 @@ export function FeedbackList() {
     {
       field: 'abVersion',
       headerName: 'AB Version',
-      width: 50,
+      width: 80,
     },
   ];
 

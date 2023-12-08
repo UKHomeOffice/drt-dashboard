@@ -22,7 +22,7 @@ case class FeedbackData(feedbackType: String, aORbTest: String, question_1: Stri
 trait FeedbackJsonFormats extends DefaultTimeJsonProtocol {
 
   implicit val feedbackDataFormatParser: RootJsonFormat[FeedbackData] = jsonFormat7(FeedbackData)
-  implicit val userFeedbackRowFormatParser: RootJsonFormat[UserFeedbackRow] = jsonFormat10(UserFeedbackRow)
+  implicit val userFeedbackRowFormatParser: RootJsonFormat[UserFeedbackRow] = jsonFormat9(UserFeedbackRow)
 }
 
 object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
@@ -32,14 +32,13 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
 
   def exportFeedback(feedbackDao: UserFeedbackDao): Route = path("export") {
     get {
-      val csvHeader: String = "Email ,Created at ,Close banner ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version"
+      val csvHeader: String = "Email ,Created at ,Feedback type ,Bf role ,Drt quality ,Drt likes ,Drt improvements ,Participation interest ,AB version"
 
       val fetchDataStream = feedbackDao.selectAllAsStream()
 
       val toCsvString: UserFeedbackRow => String = feedback => {
         val email = feedback.email
         val createdAt = formattedDate(feedback.createdAt)
-        val closeBanner = feedback.closeBanner
         val feedbackType = feedback.feedbackType.getOrElse("")
         val bfRole = feedback.bfRole
         val drtQuality = feedback.drtQuality
@@ -48,7 +47,7 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
         val participationInterest = feedback.participationInterest
         val abVersion = feedback.abVersion.getOrElse("")
 
-        s""""$email","$createdAt","$closeBanner","$feedbackType","$bfRole","$drtQuality","$drtLikes","$drtImprovements","$participationInterest","$abVersion"""".stripMargin
+        s""""$email","$createdAt","$feedbackType","$bfRole","$drtQuality","$drtLikes","$drtImprovements","$participationInterest","$abVersion"""".stripMargin
       }
 
       val csvDataStream: Source[ByteString, _] = Source.single(ByteString(csvHeader + "\n"))
@@ -77,7 +76,6 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
             UserFeedbackRow(
               email = userEmail,
               createdAt = currentTimestamp,
-              closeBanner = false,
               feedbackType = Option(feedbackData.feedbackType),
               bfRole = feedbackData.question_1,
               drtQuality = feedbackData.question_2,
