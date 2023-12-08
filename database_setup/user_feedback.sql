@@ -2,7 +2,6 @@ CREATE TABLE user_feedback
 (
     email  text NOT NULL,
     created_at timestamp NOT NULL,
-    close_banner boolean,
     feedback_type text,
     bf_role     text,
     drt_quality text,
