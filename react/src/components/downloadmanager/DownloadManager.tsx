@@ -46,10 +46,6 @@ const DownloadManager = ({status, createdAt, requestDownload, user, config, chec
 
   let interval: {current: ReturnType<typeof setInterval> | null | any} = React.useRef(null);
 
-  React.useCallback(() => {
-    
-  }, [checkDownloadStatus]);
-
   React.useEffect(() => {
     console.log(create, status);
     if (createdAt && status === 'preparing') {
@@ -101,11 +97,11 @@ const DownloadManager = ({status, createdAt, requestDownload, user, config, chec
     const {
       target: { name, checked },
     } = event;
-    let region = userPortsByRegion.filter(region => region.name === name)[0]
+    const region = userPortsByRegion.filter(region => region.name === name)[0]
     if (checked) {
       // add all in region
-      let newSelection = [...selectedPorts, ...region.ports]
-      let deduped = newSelection.filter((element, index) => {
+      const newSelection = [...selectedPorts, ...region.ports]
+      const deduped = newSelection.filter((element, index) => {
         return newSelection.indexOf(element) === index;
       });
       setSelectedPorts(deduped)
@@ -121,7 +117,7 @@ const DownloadManager = ({status, createdAt, requestDownload, user, config, chec
 
   const handleSubmit = () :void => {
 
-    let portsWithTerminals :PortTerminal[] = config.ports.filter((port) => selectedPorts.includes(port.iata)).map(port => {
+    const portsWithTerminals :PortTerminal[] = config.ports.filter((port) => selectedPorts.includes(port.iata)).map(port => {
       return {
         port: port.iata,
         terminals: port.terminals

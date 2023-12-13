@@ -41,6 +41,12 @@ export default function DownloadPorts({ handlePortChange, handlePortCheckboxChan
 
   const allUserPorts :string[] = portsByRegion.map((region) => [...region.ports]).flat();
 
+  const renderPortColumn = (airport: string) => {
+    return (
+      <ListItem key={airport}><FormControlLabel key={airport} control={<Checkbox name={airport} checked={selectedPorts.includes(airport)} onChange={handlePortCheckboxChange} inputProps={{ 'aria-label': 'controlled' }} />} label={airport} /></ListItem>
+    )
+  }
+
   return (
     <Box>
         <h3>Ports / Regions</h3>
@@ -89,34 +95,22 @@ export default function DownloadPorts({ handlePortChange, handlePortCheckboxChan
                 <Grid container spacing={4}>
                   <Grid item>
                     <List sx={{paddingRight: 1, borderRight: region.ports.length > 4 ? '1px solid #eee': 'none'}}>
-                      { region.ports.slice(0,4).map((airport: string) => {
-                          return <ListItem key={airport}><FormControlLabel key={airport} control={<Checkbox name={airport} checked={selectedPorts.includes(airport)} onChange={handlePortCheckboxChange} inputProps={{ 'aria-label': 'controlled' }} />} label={airport} /></ListItem>
-                          
-                      })}
+                      { region.ports.slice(0,4).map((airport: string) => renderPortColumn(airport))}
                     </List>
                   </Grid>
                   <Grid item>
                     { region.ports.length > 4 && <List sx={{paddingRight: 1, borderRight: region.ports.length > 8 ? '1px solid #eee' : ''}}>
-                      { region.ports.slice(4,8).map((airport: string) => {
-                          return <ListItem key={airport}><FormControlLabel key={airport} control={<Checkbox name={airport} checked={selectedPorts.includes(airport)} onChange={handlePortCheckboxChange} inputProps={{ 'aria-label': 'controlled' }} />} label={airport} /></ListItem>
-                          
-                      })}
+                      { region.ports.slice(4,8).map((airport: string) => renderPortColumn(airport))}
                     </List>}
                   </Grid>
                   <Grid item>
                     { region.ports.length > 8 && <List sx={{paddingRight: 1, borderRight: '1px solid #eee'}}>
-                      { region.ports.slice(8,12).map((airport: string) => {
-                          return  <ListItem key={airport}><FormControlLabel key={airport} control={<Checkbox name={airport} checked={selectedPorts.includes(airport)} onChange={handlePortCheckboxChange} inputProps={{ 'aria-label': 'controlled' }} />} label={airport} /></ListItem>
-                          
-                      })}
+                      { region.ports.slice(8,12).map((airport: string) => renderPortColumn(airport))}
                     </List> }
                   </Grid>
                   <Grid item>
                     { region.ports.length > 12 && <List>
-                      { region.ports.slice(12,16).map((airport: string) => {
-                          return  <ListItem key={airport}><FormControlLabel key={airport} control={<Checkbox name={airport} checked={selectedPorts.includes(airport)} onChange={handlePortCheckboxChange} inputProps={{ 'aria-label': 'controlled' }} />} label={airport} /></ListItem>
-                          
-                      })}
+                      { region.ports.slice(12,16).map((airport: string) => renderPortColumn(airport))}
                     </List> }
                   </Grid>
                 </Grid>

@@ -36,7 +36,7 @@ function* handleRequestDownload(action: RequestDownloadActionType) {
   try {
     yield put(setStatus('requested'))
 
-    let payload : RequestDownloadPayload = {
+    const payload : RequestDownloadPayload = {
       ports: action.ports,
       exportType: 'arrivals',
       startDate: action.startDate,
@@ -44,7 +44,7 @@ function* handleRequestDownload(action: RequestDownloadActionType) {
     }
     
     // @ts-expect-error - yield generator always has 'any' type
-    let response = yield call (axios.post, ApiClient.exportEndpoint, payload)
+    const response = yield call (axios.post, ApiClient.exportEndpoint, payload)
     
     yield put(setCreatedAt(response.data.createdAt))
     yield put(setStatus(response.data.status))
@@ -71,8 +71,9 @@ export const checkDownloadStatus = (createdAt: string) :CheckDownloadStatusType 
 
 function* handleCheckDownloadStatus(action: CheckDownloadStatusType) {
   try {
+
     // @ts-expect-error - yield generator always has 'any' type
-    let response = yield call (axios.get, `${ApiClient.exportStatusEndpoint}/${action.createdAt}`)
+    const response = yield call (axios.get, `${ApiClient.exportEndpoint}/${action.createdAt}`)
     if (response.data.status === 'complete') {
       yield put(setStatus(response.data.status))
     }
@@ -81,10 +82,6 @@ function* handleCheckDownloadStatus(action: CheckDownloadStatusType) {
   }
 }
 
-/*
-  Starts requestDownload on each dispatched `USER_FETCH_REQUESTED` action.
-  Allows concurrent fetches of user.
-*/
 export function* checkDownloadStatusSaga() {
   yield takeEvery('CHECK_DOWNLOAD_STATUS', handleCheckDownloadStatus)
 }

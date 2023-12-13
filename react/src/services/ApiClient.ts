@@ -31,7 +31,6 @@ export default class ApiClient implements IApiClient {
 
   public static exportRegionEndpoint = "/api/export-region"
   public static exportEndpoint = "/api/export"
-  public static exportStatusEndpoint = "/api/export"
 
   public static feedBacksEndpoint = "/api/feedback";
 

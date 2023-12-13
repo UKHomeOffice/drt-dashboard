@@ -11,7 +11,6 @@ const downloadManagerSlice = createSlice({
       state.status = action.payload;
     },
     setCreatedAt: (state, action) => {
-      console.log(action.payload);
       state.createdAt = action.payload;
     },
   }
