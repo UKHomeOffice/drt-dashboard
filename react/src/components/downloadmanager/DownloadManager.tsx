@@ -120,7 +120,7 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
   }
 
   const disablePassengerExportType = (): boolean =>  {
-    return (exportType == 'flight') || (Math.abs(dates.start.diff(dates.end, 'days')) < 1)
+    return (exportType == 'arrivals') || (Math.abs(dates.start.diff(dates.end, 'days')) < 1)
   }
 
   const handleSubmit = () :void => {
