@@ -180,7 +180,7 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
             >
               <FormControlLabel value="passengers-port" control={<Radio />} label="By port" />
               <FormControlLabel value="passengers-terminal" control={<Radio />} label="By terminal" />
-              <FormControlLabel value="arrrivals" control={<Radio />} label="By flight" />
+              <FormControlLabel value="arrivals" control={<Radio />} label="By flight" />
             </RadioGroup>
           </FormControl>
           <FormControl>
