@@ -45,7 +45,6 @@ const DownloadManager = ({status, createdAt, requestDownload, user, config, chec
   }
 
   let interval: {current: ReturnType<typeof setInterval> | null | any} = React.useRef(null);
-  console.log(status, createdAt)
 
   React.useCallback(() => {
     
@@ -186,7 +185,7 @@ const DownloadManager = ({status, createdAt, requestDownload, user, config, chec
           <Button disabled={canRequestReport()} onClick={() => handleSubmit()} color='primary' variant='contained'>Create Report</Button>
         </Box>
 
-        <DownloadModal isModalOpen={modalOpen} handleModalClose={handleModalClose} />
+        <DownloadModal status={status} createdAt={createdAt} isModalOpen={modalOpen} handleModalClose={handleModalClose} />
       </Box>
     </Box>
   )

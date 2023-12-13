@@ -73,8 +73,9 @@ function* handleCheckDownloadStatus(action: CheckDownloadStatusType) {
   try {
     // @ts-expect-error - yield generator always has 'any' type
     let response = yield call (axios.get, `${ApiClient.exportStatusEndpoint}/${action.createdAt}`)
-    console.log(response.data);
-    // yield put(setStatus(response.data.status))
+    if (response.data.status === 'complete') {
+      yield put(setStatus(response.data.status))
+    }
   } catch (e) {
     console.log(e)
   }
