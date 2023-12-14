@@ -16,6 +16,7 @@ import Link from "@mui/material/Link";
 import axios, {AxiosResponse} from "axios";
 import {useParams} from "react-router-dom";
 import ApiClient from "../../services/ApiClient";
+import drtTheme from "../../drtTheme";
 
 interface FeedbackData {
   feedbackType: string;
@@ -63,10 +64,6 @@ export function FeedbackForms() {
     >
       {({handleChange, values}) => (
         <Form>
-          <Typography variant="h2" sx={{
-            fontWeight: 'bold',
-            color: '#233E82'
-          }}>DRT Feedback</Typography>
           <Typography>{"Question 1 of 5"}</Typography>
           <FormControl component="fieldset">
             <FormLabel component="legend">
@@ -103,16 +100,14 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button type="submit"
-                    sx={{
-                      textTransform: 'none',
-                      float: "left",
-                      width: 'auto',
-                      maxWidth: '120px',
-                      padding: '6px 12px',
-                      fontSize: "1.25rem"
-                    }}
-                    variant="outlined">Continue</Button>
+            <Button sx={{
+              textTransform: 'none',
+              float: "left",
+              width: 'auto',
+              maxWidth: '120px',
+              padding: '6px 12px',
+              fontSize: drtTheme.typography.button.fontSize
+            }} type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
       )}
@@ -175,7 +170,7 @@ export function FeedbackForms() {
                       width: 'auto',
                       maxWidth: '120px',
                       padding: '6px 12px',
-                      fontSize: "1.25rem"
+                      fontSize: drtTheme.typography.button.fontSize,
                     }}
                     variant="outlined">Continue</Button>
           </FormControl>
@@ -231,7 +226,7 @@ export function FeedbackForms() {
                           width: 'auto',
                           maxWidth: '120px',
                           padding: '6px 12px 6px 12px',
-                          fontSize: "1.25rem"
+                          fontSize: drtTheme.typography.button.fontSize,
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
@@ -291,7 +286,7 @@ export function FeedbackForms() {
                           width: 'auto',
                           maxWidth: '120px',
                           padding: '6px 12px',
-                          fontSize: "1.25rem"
+                          fontSize: drtTheme.typography.button.fontSize,
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
@@ -383,7 +378,7 @@ export function FeedbackForms() {
                       width: 'auto',
                       maxWidth: '200px',
                       padding: '6px 12px',
-                      fontSize: "1.25rem"
+                      fontSize: drtTheme.typography.button.fontSize,
                     }}
                     variant="outlined">Submit feedback</Button>
           </FormControl>
@@ -411,7 +406,7 @@ export function FeedbackForms() {
         </Typography> :
         <Button variant="outlined"
                 sx={{
-                  fontSize: "1.25rem",
+                  fontSize: drtTheme.typography.button.fontSize,
                   textTransform: 'none',
                   float: "left",
                   width: 'auto',
@@ -443,6 +438,11 @@ export function FeedbackForms() {
 
   return (
     <Stack>
+      <Typography variant="h2" sx={{
+        "fontSize": drtTheme.typography.h2.fontSize,
+        "fontWeight": drtTheme.typography.h2.fontWeight,
+        "color": drtTheme.palette.primary.main
+      }}>DRT Feedback</Typography>
       {displayQuestion()}
     </Stack>
   );
