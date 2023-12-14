@@ -29,7 +29,7 @@ interface FeedbackData {
 
 export function FeedbackForms() {
   const {feedbackType = ''} = useParams<{ feedbackType?: string }>();
-  const {abVersion=''} = useParams<{ abVersion?: string }>();
+  const {abVersion = ''} = useParams<{ abVersion?: string }>();
   const [currentQuestion, setCurrentQuestion] = React.useState(1);
   const [error, setError] = React.useState(false);
   const [question1, setQuestion1] = React.useState('');
@@ -38,6 +38,7 @@ export function FeedbackForms() {
   const [question4, setQuestion4] = React.useState('');
   const [question5, setQuestion5] = React.useState('');
   const [errorText, setErrorText] = React.useState('');
+  const [negativeQuality, setNegativeQuality] = React.useState(false);
 
   const questionOneForm = (
     <Formik
@@ -62,11 +63,15 @@ export function FeedbackForms() {
     >
       {({handleChange, values}) => (
         <Form>
+          <Typography variant="h2" sx={{
+            fontWeight: 'bold',
+            color: '#233E82'
+          }}>DRT Feedback</Typography>
           <Typography>{"Question 1 of 5"}</Typography>
           <FormControl component="fieldset">
             <FormLabel component="legend">
               <Typography variant="h5" sx={{fontWeight: 'bold', color: '#111224'}}>
-                How would you describe your role at Border-force ? :
+                How would you describe your role?
                 <div style={{display: 'inline-block', "color": "#DB0F24"}}>*</div>
               </Typography>
             </FormLabel>
@@ -83,10 +88,10 @@ export function FeedbackForms() {
               <Field as={RadioGroup} name="question1" value={values.question1} onChange={handleChange}>
                 <FormControlLabel value="National manager" control={<Radio/>} label="National manager"/>
                 <FormControlLabel value="Regional manager" control={<Radio/>} label="Regional manager"/>
-                <FormControlLabel value="Operational - Front line" control={<Radio/>}
-                                  label="Operational - Front line (including Watch-House and Duty Managers)"/>
+                <FormControlLabel value="Operational - front line" control={<Radio/>}
+                                  label="Operational - front line (eg Watch house and duty managers)"/>
                 <FormControlLabel value="Operational - Back line" control={<Radio/>}
-                                  label="Operational - Back line (including Support, Planning, Rostering, Performance)"/>
+                                  label="Operational - Back line (eg Support, Planning, Rostering, Performance)"/>
                 <FormControlLabel value="other" control={<Radio/>} label="Other"/>
                 {values.question1 === 'other' && (
                   <Field as={TextField}
@@ -99,7 +104,14 @@ export function FeedbackForms() {
             </Stack>
             <br/>
             <Button type="submit"
-                    sx={{float: "left", width: 'auto', maxWidth: '120px', padding: '6px 12px'}}
+                    sx={{
+                      textTransform: 'none',
+                      float: "left",
+                      width: 'auto',
+                      maxWidth: '120px',
+                      padding: '6px 12px',
+                      fontSize: "1.25rem"
+                    }}
                     variant="outlined">Continue</Button>
           </FormControl>
         </Form>
@@ -114,8 +126,13 @@ export function FeedbackForms() {
         if (values.question2 === '' || values.question2 === undefined) {
           setError(true);
         } else {
+          if (values.question2 === 'Bad' || values.question2 === 'Very bad') {
+            setNegativeQuality(true);
+            setCurrentQuestion(4);
+          } else {
+            setCurrentQuestion(3);
+          }
           setQuestion2(values.question2)
-          setCurrentQuestion(3);
           setError(false);
         }
       }}
@@ -152,7 +169,14 @@ export function FeedbackForms() {
             </Stack>
             <br/>
             <Button type="submit"
-                    sx={{float: "left", width: 'auto', maxWidth: '120px', padding: '6px 12px'}}
+                    sx={{
+                      textTransform: 'none',
+                      float: "left",
+                      width: 'auto',
+                      maxWidth: '120px',
+                      padding: '6px 12px',
+                      fontSize: "1.25rem"
+                    }}
                     variant="outlined">Continue</Button>
           </FormControl>
         </Form>
@@ -161,19 +185,21 @@ export function FeedbackForms() {
   )
 
   const questionThreeForm = (
-      <Formik
-        initialValues={{question3: ''}}
-        onSubmit={(values) => {
-          if (values.question3 === undefined) {
-            setQuestion3('')
-          } else {
-            setQuestion3(values.question3)
-          }
-          setCurrentQuestion(4);
-          setError(false);
+    <Formik
+      initialValues={{question3: ''}}
+      onSubmit={(values) => {
+        if (values.question3 === undefined) {
+          setQuestion3('')
+          setQuestion4('')
+        } else {
+          setQuestion3(values.question3)
+          setQuestion4('')
+        }
+        setCurrentQuestion(4);
+        setError(false);
 
-        }}
-      >
+      }}
+    >
       {({handleChange, values}) => (
         <Form>
           <Typography>{"Question 3 of 5"}</Typography>
@@ -200,14 +226,16 @@ export function FeedbackForms() {
               <Grid xs={3}>
                 <Button type="submit"
                         sx={{
+                          textTransform: 'none',
                           float: "left",
                           width: 'auto',
                           maxWidth: '120px',
-                          padding: '6px 12px 6px 12px'
+                          padding: '6px 12px 6px 12px',
+                          fontSize: "1.25rem"
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
-              <Grid xs={9} sx={{float: "left", padding: '6px 12px'}}>
+              <Grid xs={9} sx={{padding: '6px 12px', fontSize: "1.25rem"}}>
                 <Link href="#"
                       onClick={() => handleEvent(4)}>Skip</Link>
               </Grid>
@@ -220,6 +248,7 @@ export function FeedbackForms() {
 
   const questionFourForm = (
     <Formik
+      key={question4}
       initialValues={{question4: ''}}
       onSubmit={(values) => {
         if (values.question4 === undefined) {
@@ -227,17 +256,17 @@ export function FeedbackForms() {
         } else {
           setQuestion4(values.question4)
         }
-          setCurrentQuestion(5);
-          setError(false);
+        setCurrentQuestion(5);
+        setError(false);
       }}
     >
       {({handleChange, values}) => (
         <Form>
-          <Typography>{"Question 4 of 5"}</Typography>
+          <Typography>Question {negativeQuality ? "3 of 4" : "4 of 5"} </Typography>
           <FormControl component="fieldset">
             <FormLabel component="legend">
               <Typography variant="h5" sx={{fontWeight: 'bold', color: '#111224'}}>
-                What did you think could be improved in DRT ? (optional) :
+                What did you think could be improved in DRT? (optional)
               </Typography>
             </FormLabel>
             <Typography>If possible, please give examples and provide suggestions</Typography>
@@ -254,17 +283,19 @@ export function FeedbackForms() {
             />
             <br/>
             <Grid container>
-              <Grid xs={2}>
+              <Grid xs={3}>
                 <Button type="submit"
                         sx={{
+                          textTransform: 'none',
                           float: "left",
                           width: 'auto',
                           maxWidth: '120px',
-                          padding: '6px 12px'
+                          padding: '6px 12px',
+                          fontSize: "1.25rem"
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
-              <Grid xs={10} sx={{float: "left", padding: '6px 12px'}}>
+              <Grid xs={9} sx={{padding: '6px 12px', fontSize: "1.25rem"}}>
                 <Link href="#"
                       onClick={() => handleEvent(5)}>Skip</Link>
               </Grid>
@@ -320,16 +351,15 @@ export function FeedbackForms() {
     >
       {({handleChange, values}) => (
         <Form>
-          <Typography>{"Question 5 of 5"}</Typography>
+          <Typography>Question {negativeQuality ? "4 of 4" : "5 of 5"} </Typography>
           <FormControl component="fieldset">
             <FormLabel component="legend">
               <Typography variant="h5" sx={{fontWeight: 'bold', color: '#111224'}}>
-                Would you be interested in participating in a workshop? (approx. 30 mins) <div
+                Would you be interested in participating in a workshop? (takes 30 minutes) <div
                 style={{display: 'inline-block', "color": "#DB0F24"}}>*</div>
               </Typography>
             </FormLabel>
-            <Typography><p>You can share ideas with other teams and [regional officer] to improve DRT.</p>
-              <p>We'll send you an email to inform you about upcoming sessions.</p></Typography>
+            <Typography><p>This will help us improve DRT for you and your colleagues.</p></Typography>
             <Typography sx={{color: '#DB0F24', fontWeight: 'bold'}}>
               {error ? "Please select if you would be interested in participating in a workshop" : ""}
             </Typography>
@@ -347,7 +377,14 @@ export function FeedbackForms() {
             </Stack>
             <br/>
             <Button type="submit"
-                    sx={{float: "left", width: 'auto', maxWidth: '180px', padding: '6px 12px'}}
+                    sx={{
+                      textTransform: 'none',
+                      float: "left",
+                      width: 'auto',
+                      maxWidth: '200px',
+                      padding: '6px 12px',
+                      fontSize: "1.25rem"
+                    }}
                     variant="outlined">Submit feedback</Button>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>
@@ -365,12 +402,25 @@ export function FeedbackForms() {
   const closeFeedback = (
     <Stack>
       <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
-        Thank you for your feedback !
+        Thank you for your feedback.
       </Typography>
       <br/>
-      <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
-        You may now close this window.
-      </Typography>
+      {feedbackType === 'email' ?
+        <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
+          You may now close this window.
+        </Typography> :
+        <Button variant="outlined"
+                sx={{
+                  fontSize: "1.25rem",
+                  textTransform: 'none',
+                  float: "left",
+                  width: 'auto',
+                  maxWidth: '200px',
+                  padding: '6px 12px'
+                }}
+                onClick={() => window.close()}>Exit Feedback</Button>
+      }
+
     </Stack>
   )
 
@@ -393,10 +443,6 @@ export function FeedbackForms() {
 
   return (
     <Stack>
-      <Typography variant="h2" sx={{
-        fontWeight: 'bold',
-        color: '#233E82'
-      }}>DRT Feedback</Typography>
       {displayQuestion()}
     </Stack>
   );
