@@ -1,4 +1,4 @@
-import Validator from "../../services/ValidationService"
+import ValidationService from "../../services/ValidationService"
 import moment from "moment"
 import { FormValidations } from "../../services/ValidationService";
 
@@ -7,24 +7,24 @@ export const downloadManagerFormValidation :FormValidations = {
   startDate: [
     {
       name: 'isDate',
-      validator: Validator.common.isDate,
+      validator: ValidationService.common.isDate,
       message: 'Please select a valid start date using the datepicker',
     },
     {
       name: 'required',
-      validator: Validator.common.required,
+      validator: ValidationService.common.required,
       message: 'Please select a valid start date using the datepicker',
     },
   ],
   endDate: [
     {
       name: 'isDate',
-      validator: Validator.common.isDate,
+      validator: ValidationService.common.isDate,
       message: 'Please select a valid end date using the datepicker',
     },
     {
       name: 'required',
-      validator: Validator.common.required,
+      validator: ValidationService.common.required,
       message: 'Please select a valid end date using the datepicker',
     },
     {
