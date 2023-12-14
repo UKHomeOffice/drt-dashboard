@@ -1,6 +1,8 @@
 import * as React from 'react';
 import {connect, MapDispatchToProps} from 'react-redux';
 import {
+  Alert,  
+  AlertTitle,
   Box,
   Button,
   Checkbox,
@@ -20,6 +22,7 @@ import {checkDownloadStatus, PortTerminal, requestDownload} from './downloadMana
 import {RootState} from '../../store/redux';
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
+import { FormError } from '../../services/Validator';
 
 interface DownloadDates {
   start: Moment;
@@ -32,12 +35,13 @@ interface DownloadManagerProps {
   downloadUrl: string;
   user: UserProfile;
   config: ConfigValues;
+  errors: FormError[];
   requestDownload: (ports: PortTerminal[], exportType: string, startDate: Moment, endDate: Moment) => void;
   checkDownloadStatus: (createdAt: string) => void;
 }
 
 
-const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user, config, checkDownloadStatus}: DownloadManagerProps) => {
+const DownloadManager = ({status, createdAt, downloadUrl, errors, requestDownload, user, config, checkDownloadStatus}: DownloadManagerProps) => {
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
   const [selectedPorts, setSelectedPorts] = React.useState<string[]>([]);
   const [dates, setDate] = React.useState<DownloadDates>({
@@ -51,10 +55,13 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
     return user.roles.includes("rcc:" + regionName.toLowerCase())
   }
 
+  console.log(errors);
+
   let interval: {current: ReturnType<typeof setInterval> | null | any} = React.useRef(null);
 
   React.useEffect(() => {
     if (createdAt && status === 'preparing') {
+      setModalOpen(true)
       interval.current = setInterval(()=>{
         checkDownloadStatus(createdAt);
       }, 2000);
@@ -62,7 +69,7 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
     return () => {
       clearInterval(interval.current);
     };
-  }, [createdAt, status])
+  }, [createdAt, status, setModalOpen])
 
   const userPortsByRegion: PortRegion[] = config.portsByRegion.map(region => {
     const userPorts: string[] = user.ports.filter(p => region.ports.includes(p));
@@ -77,8 +84,8 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
   }
 
   const handleModalClose = () => {
-    setModalOpen(false)
     clearInterval(interval.current);
+    setModalOpen(false)
   }
 
   const onexportTypeChange = (event: React.ChangeEvent<HTMLInputElement>, exportType: string) => {
@@ -136,22 +143,25 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
     }
 
     requestDownload(portsWithTerminals, exportString, dates.start, dates.end);
-    setModalOpen(true);
-  }
-
-  const canRequestReport = () :boolean => {
-    return (config.ports.filter((port) => selectedPorts.includes(port.iata)).length <= 0)
   }
 
   return (
     <Box>
       <h1>Download Manager</h1>
+      { errors.length > 0 && 
+        <Alert severity="error" sx={{mb: '1em'}}>
+          <AlertTitle>There is an issue with the options you have selected:</AlertTitle>
+          <ul style={{margin: 0}}>
+            { errors.map(((error, index) => <li key={index}>{error.message}</li>))}
+          </ul>
+        </Alert>
+      }
+      
       <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
         <Box>
           <h3>Date Range</h3>
           <DatePicker label="Start" sx={{backgroundColor: '#fff', marginRight: '10px'}}
                                       value={dates.start}
-                                      maxDate={dates.end}
                                       onChange={(newValue: Moment | null) => onDateChange('start', newValue)}/>
           <DatePicker label="End"  sx={{backgroundColor: '#fff'}}
                                       value={dates.end}
@@ -190,7 +200,7 @@ const DownloadManager = ({status, createdAt, downloadUrl, requestDownload, user,
 
 
         <Box sx={{marginTop: '1em'}}>
-          <Button disabled={canRequestReport()} onClick={() => handleSubmit()} color='primary' variant='contained'>Create Report</Button>
+          <Button onClick={() => handleSubmit()} color='primary' variant='contained'>Create Report</Button>
         </Box>
 
         <DownloadModal status={status} downloadUrl={downloadUrl} isModalOpen={modalOpen} handleModalClose={handleModalClose} />
@@ -204,6 +214,7 @@ const mapState = (state: RootState) => {
     status: state.downloadManager?.status,
     createdAt: state.downloadManager?.createdAt,
     downloadUrl: state.downloadManager?.downloadLink,
+    errors: state.downloadManager?.errors,
   };
 }
 

@@ -1,14 +1,65 @@
-import axios, {AxiosResponse} from "axios"
+import validator from 'validator';
 
-
-interface IValidator {
-  validate: (schema: object, values: object) => object[]
+export interface FormError {
+  field: string,
+  message: string,
 }
 
-export default class Validator implements IValidator {
+interface FormFields {
+  [key: string]: any
+}
 
-  public validate(schema: object, values: object) {
-    console.log(schema, values);
-    return []
+interface FieldValidations {
+  name: string;
+  validator: (value: any, otherFields?: FormFields) => boolean;
+  message: string;
+}
+
+export interface FormValidations {
+  [key: string]: FieldValidations[]
+}
+
+interface IValidationService {
+  common: object;
+  validateForm: (validators: FormValidations, values: FormFields) => object[];
+}
+
+
+class ValidationService implements IValidationService {
+
+  public common = {
+    'isDate': (value: string) => {
+      return validator.isDate(value)
+    },
+    'required': (value: string) => {
+      return !!value
+    },
+  }
+
+  public validateForm(validators: FormValidations, values: FormFields) {
+    let formErrors :FormError[] = []
+    Object.keys(values).forEach((fieldName: string) => {
+      const fieldErrors :FormError[] = [];
+      const fieldValidators = validators[fieldName];
+      const value = values[fieldName];
+      fieldValidators.forEach((field) => {
+        let passing = field.validator(value, values);
+        if (!passing) {
+          fieldErrors.push({
+            field: fieldName,
+            message: field.message,
+          })
+        }
+      })
+      formErrors = [
+        ...formErrors,
+        ...fieldErrors
+      ]
+    })
+
+    return formErrors
   }
 }
+
+const vs = new ValidationService();
+export default vs;
