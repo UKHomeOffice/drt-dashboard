@@ -35,12 +35,20 @@ const DownloadModal = ({status, downloadUrl, isModalOpen, handleModalClose}: Dow
             open={isModalOpen}
             onClose={() => handleModalClose()}
           >
-          <DialogTitle sx={{textAlign: 'center'}}>{ titleText }</DialogTitle>
-          <DialogContent sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', textAlign: 'center'}}>
-            { status === 'preparing' && <CircularProgress sx={{margin: '0 auto 1em'}} /> }
-            <Typography>{ paragraphText }</Typography>
-            { status !== 'failed' && <Button sx={{margin: '1em auto'}} component={Link} target={'_blank'} href={downloadUrl} disabled={status !== 'complete'} color='primary'>{ buttonLabel }</Button> }
-          </DialogContent>
+            <DialogTitle sx={{textAlign: 'center'}}>{ titleText }</DialogTitle>
+            <DialogContent sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', textAlign: 'center'}}>
+              { status === 'preparing' && <CircularProgress sx={{margin: '0 auto 1em'}} /> }
+              <Typography>{ paragraphText }</Typography>
+              { status !== 'failed' && <Button 
+                                        sx={{margin: '1em auto'}} 
+                                        component={Link} 
+                                        target={'_blank'} 
+                                        href={downloadUrl} 
+                                        disabled={status !== 'complete'} 
+                                        color='primary'>
+                                          { buttonLabel }
+                                        </Button> }
+            </DialogContent>
           </Dialog>
   )
 }
