@@ -26,7 +26,7 @@ const DownloadModal = ({status, downloadUrl, isModalOpen, handleModalClose}: Dow
       break;
     case 'failed':
       titleText = "There was a problem"
-      paragraphText = "Unfortunately there was a glitch when creating the report you requested. Please accept our apologies. Feel free to try again. If the failure continues to happen then please contact the DRT team at drtpoiseteam@homeoffice.gov.uk"
+      paragraphText = "Unfortunately there was a problem creating the report you requested. Please accept our apologies. Feel free to try again. If the failure continues to happen then please contact the DRT team at drtpoiseteam@homeoffice.gov.uk"
       break;
   }
 

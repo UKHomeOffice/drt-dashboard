@@ -213,7 +213,7 @@ const mapDispatch = (dispatch :MapDispatchToProps<any, DownloadManagerProps>) =>
       dispatch(checkDownloadStatus(createdAt));
     },
     requestDownload: (ports: PortTerminal[], exportType: string, startDate: Moment, endDate: Moment) => {
-      dispatch(requestDownload(ports, exportType, startDate.format('YYYY-mm-dd'), endDate.format('YYYY-mm-dd')))
+      dispatch(requestDownload(ports, exportType, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD')))
     },
   };
 };
