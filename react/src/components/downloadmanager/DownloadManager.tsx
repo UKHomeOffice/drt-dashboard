@@ -10,7 +10,8 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  SelectChangeEvent
+  SelectChangeEvent,
+  TextField
 } from "@mui/material";
 
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
@@ -27,6 +28,10 @@ import { FormError } from '../../services/Validator';
 interface DownloadDates {
   start: Moment;
   end: Moment;
+}
+
+interface ErrorFieldMapping {
+  [key:string]: boolean
 }
 
 interface DownloadManagerProps {
@@ -55,7 +60,8 @@ const DownloadManager = ({status, createdAt, downloadUrl, errors, requestDownloa
     return user.roles.includes("rcc:" + regionName.toLowerCase())
   }
 
-  console.log(errors);
+  const errorFieldMapping: ErrorFieldMapping = {}
+  errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
 
   let interval: {current: ReturnType<typeof setInterval> | null | any} = React.useRef(null);
 
@@ -160,15 +166,33 @@ const DownloadManager = ({status, createdAt, downloadUrl, errors, requestDownloa
       <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
         <Box>
           <h3>Date Range</h3>
-          <DatePicker label="Start" sx={{backgroundColor: '#fff', marginRight: '10px'}}
-                                      value={dates.start}
-                                      onChange={(newValue: Moment | null) => onDateChange('start', newValue)}/>
-          <DatePicker label="End"  sx={{backgroundColor: '#fff'}}
-                                      value={dates.end}
-                                      onChange={(newValue: Moment | null) => onDateChange('end', newValue)}/>
+          <DatePicker 
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: { error: !!errorFieldMapping.startDate }
+            }}
+            label="Start" 
+            sx={{backgroundColor: '#fff', marginRight: '10px'}}
+            value={dates.start}
+            onChange={(newValue: Moment | null) => onDateChange('start', newValue)}/>
+
+          <DatePicker 
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: { error: !!errorFieldMapping.endDate }
+            }}
+            label="End"  
+            sx={{backgroundColor: '#fff'}}
+            value={dates.end}
+            onChange={(newValue: Moment | null) => onDateChange('end', newValue)}/>
         </Box>
 
         <DownloadPorts
+          error={!!errorFieldMapping.ports}
           handlePortChange={handlePortChange}
           handlePortCheckboxChange={handlePortCheckboxChange}
           handlePortCheckboxGroupChange={handlePortCheckboxGroupChange}
