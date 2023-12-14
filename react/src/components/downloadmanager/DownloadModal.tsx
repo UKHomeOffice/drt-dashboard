@@ -19,7 +19,7 @@ const DownloadModal = ({status, downloadUrl, isModalOpen, handleModalClose}: Dow
       paragraphText = "The time required to create the report varies based on its size, this could be up to 10 minutes. Once the report is ready, we will send you an email containing a download link. Alternatively, you can choose to wait and download the report directly from this page after it's finished. Closing this window will not effect creation of your report."
       buttonLabel = "Download pending..."
       break;
-    case 'created':
+    case 'complete':
       titleText = "Your report is ready"
       paragraphText = "Click the download button below to download your report. We have also sent you an email containing a link to download your report."
       buttonLabel = "Download report"
