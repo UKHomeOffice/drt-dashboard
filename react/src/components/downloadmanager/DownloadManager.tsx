@@ -23,7 +23,7 @@ import {checkDownloadStatus, PortTerminal, requestDownload} from './downloadMana
 import {RootState} from '../../store/redux';
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
-import { FormError } from '../../services/Validator';
+import { FormError } from '../../services/ValidationService';
 
 interface DownloadDates {
   start: Moment;

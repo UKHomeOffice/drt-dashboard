@@ -1,6 +1,6 @@
-import Validator from "../../services/Validator"
+import Validator from "../../services/ValidationService"
 import moment from "moment"
-import { FormValidations } from "../../services/Validator";
+import { FormValidations } from "../../services/ValidationService";
 
 
 export const downloadManagerFormValidation :FormValidations = {

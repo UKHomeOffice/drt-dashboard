@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
-import { FormError } from '../../services/Validator'
+import { FormError } from '../../services/ValidationService'
 
 interface DownloadManagerState {
   errors: FormError[],

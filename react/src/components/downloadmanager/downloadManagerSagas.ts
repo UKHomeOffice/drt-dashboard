@@ -1,7 +1,7 @@
 import { put, call, takeEvery } from 'redux-saga/effects'
 import {setStatus, setCreatedAt, setDownloadLink, addErrors, clearErrors} from './downloadManagerState';
 import ApiClient from '../../services/ApiClient';
-import ValidationService from '../../services/Validator';
+import ValidationService from '../../services/ValidationService';
 
 import { downloadManagerFormValidation } from './downloadManagerValidations';
 
@@ -46,7 +46,6 @@ function* handleRequestDownload(action: RequestDownloadActionType) {
       endDate: action.endDate
     });
 
-    console.log(`${formErrors.length} errors detected`, formErrors);
     if (formErrors.length > 0) {
       yield put(addErrors(formErrors))
       throw(formErrors)
