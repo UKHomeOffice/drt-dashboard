@@ -55,7 +55,6 @@ const drtTheme = createTheme({
           textTransform: 'none',
           fontWeight: 400,
           fontSize: '16px',
-          maxWidth: '120px',
           padding: '6px 12px',
         }
       },

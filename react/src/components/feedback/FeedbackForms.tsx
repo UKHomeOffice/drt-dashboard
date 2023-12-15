@@ -102,7 +102,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button type="submit" variant="outlined">Continue</Button>
+            <Button sx={{maxWidth:"120px"}} type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
       )}
@@ -159,7 +159,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button type="submit" variant="outlined">Continue</Button>
+            <Button sx={{maxWidth:"120px"}} type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
       )}
