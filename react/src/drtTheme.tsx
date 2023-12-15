@@ -44,6 +44,7 @@ const drtTheme = createTheme({
     button: {
       fontSize: '1.25rem',
       fontWeight: "bold",
+      textTransform: 'none',
     },
   }
 

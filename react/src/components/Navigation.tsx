@@ -1,13 +1,7 @@
 import {Box, Button, Menu, MenuItem, Link as MuiLink} from "@mui/material";
-import {styled} from '@mui/material/styles';
 import React from "react";
 import {Link} from "react-router-dom";
 import {UserProfile} from "../model/User";
-
-const TriggerButton = styled(Button)(({theme}) => ({
-  marginTop: theme.spacing(-1),
-  padding: theme.spacing(0),
-}));
 
 interface IProps {
   logoutLink: string,
@@ -30,7 +24,7 @@ export default function Navigation(props: IProps) {
     {label: 'Access requests', link: '/access-requests', roles: ['manage-users']},
     {label: 'Alert notices', link: '/alerts', roles: ['manage-users']},
     {label: 'Drop-in sessions', link: '/drop-in-sessions', roles: ['manage-users']},
-    {label: 'Download Manager', link: '/download', roles: ['rcc:central','rcc:heathrow','rcc:north','rcc:south']},
+    {label: 'Download Manager', link: '/download', roles: ['rcc:central', 'rcc:heathrow', 'rcc:north', 'rcc:south']},
     {label: 'Feature guides', link: '/feature-guides', roles: ['manage-users']},
     {label: 'Health checks', link: '/health-checks', roles: ['health-checks:edit']},
     {label: 'Feedback', link: '/user-feedback', roles: ['manage-users']},
@@ -39,15 +33,8 @@ export default function Navigation(props: IProps) {
 
   return (
     <Box>
-      <TriggerButton
-        aria-controls="navigation"
-        aria-haspopup="true"
-        variant={"contained"}
-        onClick={handleClick}
-        sx={{marginTop: '0px'}}
-      >
-        Menu
-      </TriggerButton>
+      <Button sx={{"aria-controls": "navigation", "marginTop": "-1", "padding": "0 15px"}} variant={"contained"}
+              onClick={handleClick}> Menu </Button>
       <Menu
         id="navigation"
         anchorEl={anchorEl}
