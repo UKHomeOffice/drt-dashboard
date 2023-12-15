@@ -16,6 +16,7 @@ import Link from "@mui/material/Link";
 import axios, {AxiosResponse} from "axios";
 import {useParams} from "react-router-dom";
 import ApiClient from "../../services/ApiClient";
+import {styled} from "@mui/material/styles";
 import drtTheme from "../../drtTheme";
 
 interface FeedbackData {
@@ -28,7 +29,17 @@ interface FeedbackData {
   question_5: string;
 }
 
+const StyledButton = styled(Button)(() => ({
+  fontWeight: 400,
+  float: "left",
+  maxWidth: '120px',
+  padding: '6px 12px',
+  fontSize: '16px'
+}));
+
+
 export function FeedbackForms() {
+
   const {feedbackType = ''} = useParams<{ feedbackType?: string }>();
   const {abVersion = ''} = useParams<{ abVersion?: string }>();
   const [currentQuestion, setCurrentQuestion] = React.useState(1);
@@ -82,7 +93,8 @@ export function FeedbackForms() {
                 ml: -1
               })
             }}>
-              <Field as={RadioGroup} name="question1" value={values.question1} onChange={handleChange}>
+              <Field sx={{marginLeft: "5px"}} as={RadioGroup} name="question1" value={values.question1}
+                     onChange={handleChange}>
                 <FormControlLabel value="National manager" control={<Radio/>} label="National manager"/>
                 <FormControlLabel value="Regional manager" control={<Radio/>} label="Regional manager"/>
                 <FormControlLabel value="Operational - front line" control={<Radio/>}
@@ -100,11 +112,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button sx={{
-              float: "left",
-              maxWidth: '120px',
-              padding: '6px 12px',
-            }} type="submit" variant="outlined">Continue</Button>
+            <StyledButton type="submit" variant="outlined">Continue</StyledButton>
           </FormControl>
         </Form>
       )}
@@ -149,7 +157,8 @@ export function FeedbackForms() {
                 ml: -1
               })
             }}>
-              <Field as={RadioGroup} name="question2" value={values.question2} onChange={handleChange}>
+              <Field sx={{marginLeft: "5px"}} as={RadioGroup} name="question2" value={values.question2}
+                     onChange={handleChange}>
                 <FormControlLabel value="Very good" control={<Radio/>} label="Very good"/>
                 <FormControlLabel value="Good" control={<Radio/>} label="Good"/>
                 <FormControlLabel value="Average" control={<Radio/>}
@@ -160,13 +169,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button type="submit"
-                    sx={{
-                      float: "left",
-                      maxWidth: '120px',
-                      padding: '6px 12px',
-                    }}
-                    variant="outlined">Continue</Button>
+            <StyledButton type="submit" variant="outlined">Continue</StyledButton>
           </FormControl>
         </Form>
       )}
@@ -200,6 +203,7 @@ export function FeedbackForms() {
             </FormLabel>
             <Typography>If possible, please give examples</Typography>
             <Field
+              sx={{marginLeft: "5px"}}
               as={TextField}
               name="question3"
               multiline
@@ -213,16 +217,10 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <Button type="submit"
-                        sx={{
-                          float: "left",
-                          maxWidth: '120px',
-                          padding: '6px 12px 6px 12px',
-                        }}
-                        variant="outlined">Continue</Button>
+                <StyledButton type="submit" variant="outlined">Continue</StyledButton>
               </Grid>
               <Grid xs={9}>
-                <div style={{padding: '10px 30px', fontSize: "1.25rem"}}>
+                <div style={{padding: '10px 30px'}}>
                   <Link href="#"
                         onClick={() => handleEvent(4)}>Skip</Link>
                 </div>
@@ -259,6 +257,7 @@ export function FeedbackForms() {
             </FormLabel>
             <Typography>If possible, please give examples and provide suggestions</Typography>
             <Field
+              sx={{marginLeft: "5px"}}
               as={TextField}
               name="question4"
               multiline
@@ -272,17 +271,10 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <Button type="submit"
-                        sx={{
-                          float: "left",
-                          width: 'auto',
-                          maxWidth: '120px',
-                          padding: '6px 12px'
-                        }}
-                        variant="outlined">Continue</Button>
+                <StyledButton type="submit" variant="outlined">Continue</StyledButton>
               </Grid>
               <Grid xs={9}>
-                <div style={{padding: '10px 15px', fontSize: "1.25rem"}}>
+                <div style={{padding: '10px 15px'}}>
                   <Link href="#"
                         onClick={() => handleEvent(5)}>Skip</Link>
                 </div>
@@ -358,19 +350,14 @@ export function FeedbackForms() {
                 ml: -1
               })
             }}>
-              <Field as={RadioGroup} name="question5" value={values.question5} onChange={handleChange}>
+              <Field sx={{marginLeft: "5px"}} as={RadioGroup} name="question5" value={values.question5}
+                     onChange={handleChange}>
                 <FormControlLabel value="Yes" control={<Radio/>} label="Yes"/>
                 <FormControlLabel value="No" control={<Radio/>} label="No"/>
               </Field>
             </Stack>
             <br/>
-            <Button type="submit"
-                    sx={{
-                      float: "left",
-                      maxWidth: '200px',
-                      padding: '6px 12px',
-                    }}
-                    variant="outlined">Submit feedback</Button>
+            <StyledButton type="submit" sx={{maxWidth: '180px'}} variant="outlined">Submit feedback</StyledButton>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>
             {errorText ? "Error while sending feedback . Please try again in sometime" : ""}
@@ -394,13 +381,8 @@ export function FeedbackForms() {
         <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
           You may now close this window.
         </Typography> :
-        <Button variant="outlined"
-                sx={{
-                  float: "left",
-                  maxWidth: '200px',
-                  padding: '6px 12px'
-                }}
-                onClick={() => window.close()}>Exit Feedback</Button>
+        <StyledButton variant="outlined" sx={{maxWidth: '150px'}}
+                      onClick={() => window.close()}>Exit Feedback</StyledButton>
       }
 
     </Stack>
@@ -425,7 +407,8 @@ export function FeedbackForms() {
 
   return (
     <Stack>
-      <Typography variant="h2" sx={{"color": drtTheme.palette.primary.main}}>DRT Feedback</Typography>
+      <Typography variant="h2" sx={{color: drtTheme.palette.primary.main, padding: "10px 0px"}}>DRT
+        Feedback</Typography>
       {displayQuestion()}
     </Stack>
   );

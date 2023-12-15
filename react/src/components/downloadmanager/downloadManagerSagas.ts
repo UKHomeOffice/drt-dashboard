@@ -6,7 +6,7 @@ import axios from 'axios';
 export type RequestDownloadActionType = {
   type: "REQUEST_DOWNLOAD",
   ports: PortTerminal[],
-  breakdown: string,
+  exportType: string,
   startDate: string,
   endDate: string,
 };
@@ -22,11 +22,11 @@ type RequestDownloadPayload = {
   endDate: string,
 };
 
-export const requestDownload = (ports: PortTerminal[], breakdown: string, startDate: string, endDate: string) :RequestDownloadActionType => {
+export const requestDownload = (ports: PortTerminal[], exportType: string, startDate: string, endDate: string) :RequestDownloadActionType => {
   return {
     "type": "REQUEST_DOWNLOAD",
     ports,
-    breakdown,
+    exportType,
     startDate,
     endDate
   };
@@ -34,11 +34,9 @@ export const requestDownload = (ports: PortTerminal[], breakdown: string, startD
 
 function* handleRequestDownload(action: RequestDownloadActionType) {
   try {
-    yield put(setStatus('requested'))
-
     const payload : RequestDownloadPayload = {
       ports: action.ports,
-      exportType: 'arrivals',
+      exportType: action.exportType,
       startDate: action.startDate,
       endDate: action.endDate
     }
@@ -85,9 +83,7 @@ function* handleCheckDownloadStatus(action: CheckDownloadStatusType) {
       }
     }
     const response: Response = yield call (axios.get, `${ApiClient.exportStatusEndpoint}/${action.createdAt}`)
-    if (response.data.status === 'complete') {
-      yield put(setStatus(response.data.status))
-    }
+    yield put(setStatus(response.data.status))
   } catch (e) {
     console.log(e)
   }

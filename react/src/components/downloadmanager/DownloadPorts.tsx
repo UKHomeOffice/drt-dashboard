@@ -40,6 +40,7 @@ export default function DownloadPorts({ handlePortChange, handlePortCheckboxChan
   const theme = useTheme();
 
   const allUserPorts :string[] = portsByRegion.map((region) => [...region.ports]).flat();
+  portsByRegion.forEach((region) => region.ports.sort());
 
   const renderPortColumn = (airport: string) => {
     return (
