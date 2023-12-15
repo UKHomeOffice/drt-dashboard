@@ -33,7 +33,7 @@ export default function Navigation(props: IProps) {
 
   return (
     <Box>
-      <Button sx={{"aria-controls": "navigation", marginTop: "-7px", "padding": "0px 15px"}} variant={"contained"}
+      <Button sx={{"aria-controls": "navigation", marginTop: "-7px", "padding": "0px 15px" , fontWeight:"Bold"}} variant={"contained"}
               onClick={handleClick}> Menu </Button>
       <Menu
         id="navigation"

@@ -16,7 +16,6 @@ import Link from "@mui/material/Link";
 import axios, {AxiosResponse} from "axios";
 import {useParams} from "react-router-dom";
 import ApiClient from "../../services/ApiClient";
-import {styled} from "@mui/material/styles";
 import drtTheme from "../../drtTheme";
 
 interface FeedbackData {
@@ -28,15 +27,6 @@ interface FeedbackData {
   question_4: string;
   question_5: string;
 }
-
-const StyledButton = styled(Button)(() => ({
-  fontWeight: 400,
-  float: "left",
-  maxWidth: '120px',
-  padding: '6px 12px',
-  fontSize: '16px'
-}));
-
 
 export function FeedbackForms() {
 
@@ -112,7 +102,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <StyledButton type="submit" variant="outlined">Continue</StyledButton>
+            <Button type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
       )}
@@ -169,7 +159,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <StyledButton type="submit" variant="outlined">Continue</StyledButton>
+            <Button type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
       )}
@@ -217,7 +207,7 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <StyledButton type="submit" variant="outlined">Continue</StyledButton>
+                <Button type="submit" variant="outlined">Continue</Button>
               </Grid>
               <Grid xs={9}>
                 <div style={{padding: '10px 30px'}}>
@@ -271,7 +261,7 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <StyledButton type="submit" variant="outlined">Continue</StyledButton>
+                <Button type="submit" variant="outlined">Continue</Button>
               </Grid>
               <Grid xs={9}>
                 <div style={{padding: '10px 15px'}}>
@@ -357,7 +347,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <StyledButton type="submit" sx={{maxWidth: '180px'}} variant="outlined">Submit feedback</StyledButton>
+            <Button type="submit" sx={{maxWidth: '180px'}} variant="outlined">Submit feedback</Button>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>
             {errorText ? "Error while sending feedback . Please try again in sometime" : ""}
@@ -381,8 +371,8 @@ export function FeedbackForms() {
         <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
           You may now close this window.
         </Typography> :
-        <StyledButton variant="outlined" sx={{maxWidth: '150px'}}
-                      onClick={() => window.close()}>Exit Feedback</StyledButton>
+        <Button  variant="outlined" sx={{maxWidth: '150px'}}
+                      onClick={() => window.close()}>Exit Feedback</Button>
       }
 
     </Stack>

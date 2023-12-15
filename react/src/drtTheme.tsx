@@ -42,11 +42,25 @@ const drtTheme = createTheme({
       fontSize: "12px",
     },
     button: {
-      fontSize: '1.25rem',
+      fontSize: '18px',
       fontWeight: "bold",
       textTransform: 'none',
     },
-  }
+  },
+
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 400,
+          fontSize: '16px',
+          maxWidth: '120px',
+          padding: '6px 12px',
+        }
+      },
+    },
+  },
 
 
 });
