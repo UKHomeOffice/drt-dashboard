@@ -3,7 +3,7 @@ package uk.gov.homeoffice.drt
 import akka.actor.typed.ActorSystem
 import com.typesafe.config.ConfigFactory
 import uk.gov.homeoffice.drt.notifications.{EmailClientImpl, EmailNotifications}
-import uk.gov.homeoffice.drt.ports.PortRegion
+import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
 import uk.gov.homeoffice.drt.ports.config.AirportConfigs
 import uk.gov.homeoffice.drt.schedule.{DropInNotification, DropInReminder, UserTracking}
 import uk.gov.service.notify.NotificationClient
@@ -13,7 +13,12 @@ import scala.concurrent.duration.DurationInt
 object DrtDashboardApp extends App {
   val config = ConfigFactory.load()
 
-  private val portTerminals = AirportConfigs.confByPort.view.mapValues(_.terminals.toSeq).toMap
+  private val enabledPorts: Seq[PortCode] = config.getString("enabled-ports") match {
+    case "" => PortRegion.regions.flatMap(_.ports).toSeq
+    case portList => portList.toUpperCase.split(",").map(PortCode(_)).toSeq
+  }
+
+  private val portTerminals = AirportConfigs.confByPort.view.filterKeys(enabledPorts.contains).mapValues(_.terminals.toSeq).toMap
 
   val serverConfig = ServerConfig(
     host = config.getString("server.host"),
