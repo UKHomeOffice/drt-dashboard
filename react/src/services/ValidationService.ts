@@ -1,4 +1,4 @@
-import validator from 'validator';
+import moment from "moment";
 
 export interface FormError {
   field: string,
@@ -29,7 +29,7 @@ class ValidationService implements IValidationService {
 
   public common = {
     'isDate': (value: string) => {
-      return validator.isDate(value)
+      return moment(value).isValid()
     },
     'required': (value: string) => {
       return !!value

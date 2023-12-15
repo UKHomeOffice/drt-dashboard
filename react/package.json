@@ -39,8 +39,7 @@
     "redux": "^4.2.1",
     "redux-saga": "^1.2.3",
     "typed-react-markdown": "^0.1.0",
-    "typescript": "^5.2.2",
-    "validator": "^13.11.0"
+    "typescript": "^5.2.2"
   },
   "scripts": {
     "start": "react-scripts start",
