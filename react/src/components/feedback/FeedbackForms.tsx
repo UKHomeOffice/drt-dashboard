@@ -101,12 +101,9 @@ export function FeedbackForms() {
             </Stack>
             <br/>
             <Button sx={{
-              textTransform: 'none',
               float: "left",
-              width: 'auto',
               maxWidth: '120px',
               padding: '6px 12px',
-              fontSize: drtTheme.typography.button.fontSize
             }} type="submit" variant="outlined">Continue</Button>
           </FormControl>
         </Form>
@@ -165,12 +162,9 @@ export function FeedbackForms() {
             <br/>
             <Button type="submit"
                     sx={{
-                      textTransform: 'none',
                       float: "left",
-                      width: 'auto',
                       maxWidth: '120px',
                       padding: '6px 12px',
-                      fontSize: drtTheme.typography.button.fontSize,
                     }}
                     variant="outlined">Continue</Button>
           </FormControl>
@@ -221,18 +215,17 @@ export function FeedbackForms() {
               <Grid xs={3}>
                 <Button type="submit"
                         sx={{
-                          textTransform: 'none',
                           float: "left",
-                          width: 'auto',
                           maxWidth: '120px',
                           padding: '6px 12px 6px 12px',
-                          fontSize: drtTheme.typography.button.fontSize,
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
-              <Grid xs={9} sx={{padding: '6px 12px', fontSize: "1.25rem"}}>
-                <Link href="#"
-                      onClick={() => handleEvent(4)}>Skip</Link>
+              <Grid xs={9}>
+                <div style={{padding: '10px 30px', fontSize: "1.25rem"}}>
+                  <Link href="#"
+                        onClick={() => handleEvent(4)}>Skip</Link>
+                </div>
               </Grid>
             </Grid>
           </FormControl>
@@ -281,18 +274,18 @@ export function FeedbackForms() {
               <Grid xs={3}>
                 <Button type="submit"
                         sx={{
-                          textTransform: 'none',
                           float: "left",
                           width: 'auto',
                           maxWidth: '120px',
-                          padding: '6px 12px',
-                          fontSize: drtTheme.typography.button.fontSize,
+                          padding: '6px 12px'
                         }}
                         variant="outlined">Continue</Button>
               </Grid>
-              <Grid xs={9} sx={{padding: '6px 12px', fontSize: "1.25rem"}}>
-                <Link href="#"
-                      onClick={() => handleEvent(5)}>Skip</Link>
+              <Grid xs={9}>
+                <div style={{padding: '10px 15px', fontSize: "1.25rem"}}>
+                  <Link href="#"
+                        onClick={() => handleEvent(5)}>Skip</Link>
+                </div>
               </Grid>
             </Grid>
           </FormControl>
@@ -349,7 +342,7 @@ export function FeedbackForms() {
           <Typography>Question {negativeQuality ? "4 of 4" : "5 of 5"} </Typography>
           <FormControl component="fieldset">
             <FormLabel component="legend">
-              <Typography variant="h5" sx={{fontWeight: 'bold', color: '#111224'}}>
+              <Typography variant="h5" sx={{color: '#111224'}}>
                 Would you be interested in participating in a workshop? (takes 30 minutes) <div
                 style={{display: 'inline-block', "color": "#DB0F24"}}>*</div>
               </Typography>
@@ -373,12 +366,9 @@ export function FeedbackForms() {
             <br/>
             <Button type="submit"
                     sx={{
-                      textTransform: 'none',
                       float: "left",
-                      width: 'auto',
                       maxWidth: '200px',
                       padding: '6px 12px',
-                      fontSize: drtTheme.typography.button.fontSize,
                     }}
                     variant="outlined">Submit feedback</Button>
           </FormControl>
@@ -406,10 +396,7 @@ export function FeedbackForms() {
         </Typography> :
         <Button variant="outlined"
                 sx={{
-                  fontSize: drtTheme.typography.button.fontSize,
-                  textTransform: 'none',
                   float: "left",
-                  width: 'auto',
                   maxWidth: '200px',
                   padding: '6px 12px'
                 }}
@@ -438,11 +425,7 @@ export function FeedbackForms() {
 
   return (
     <Stack>
-      <Typography variant="h2" sx={{
-        "fontSize": drtTheme.typography.h2.fontSize,
-        "fontWeight": drtTheme.typography.h2.fontWeight,
-        "color": drtTheme.palette.primary.main
-      }}>DRT Feedback</Typography>
+      <Typography variant="h2" sx={{"color": drtTheme.palette.primary.main}}>DRT Feedback</Typography>
       {displayQuestion()}
     </Stack>
   );
