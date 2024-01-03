@@ -21,9 +21,11 @@ object ExportConfigRoutes {
   def getMergePortConfig()(implicit ec: ExecutionContext, mat: Materializer): Route = get {
     implicit val system = mat.system
 
-    val endpoints = AirportConfigs.portGroups.map { portCode =>
+    val endpoints = { //AirportConfigs.portGroups.map { portCode =>
+      List("LHR","LGW").map{ portCode =>
       (portCode, s"http://${portCode.toLowerCase}:9000/export/port-config")
     }
+  }
 
     def generateExcelContent(): Source[ByteString, _] = {
       val workbook = new XSSFWorkbook()
