@@ -121,7 +121,7 @@ object Server {
             DropInSessionsRoute(dropInDao),
             DropInRegisterRoutes(dropInRegistrationDao),
             FeedbackRoutes(userFeedbackDao),
-
+            ExportConfigRoutes()
           )
         }
       )
