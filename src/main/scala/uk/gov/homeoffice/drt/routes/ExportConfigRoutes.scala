@@ -45,6 +45,8 @@ object ExportConfigRoutes {
             val lines = data.split("\n")
             (portCode, lines.toSeq)
           }
+        }.recover { case e: Throwable =>
+          (portCode, Seq(s"Error while requesting export for $uriString, ${e.getMessage}"))
         }
       }.runForeach { case (portCode, lines) =>
         writeToWorkbook(portCode, lines)
