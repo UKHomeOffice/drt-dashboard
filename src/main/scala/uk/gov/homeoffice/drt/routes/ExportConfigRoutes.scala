@@ -41,7 +41,7 @@ object ExportConfigRoutes {
         }
       }
 
-      val customTimeout = 10.seconds
+      val customTimeout = 5.seconds
 
       val processData = Source(endpoints).mapAsync(4) { case (portCode, uriString) =>
         val request = HttpRequest(uri = Uri(uriString))
