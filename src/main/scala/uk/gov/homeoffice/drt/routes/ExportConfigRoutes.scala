@@ -11,7 +11,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import uk.gov.homeoffice.drt.ports.config.AirportConfigs
+import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.time.SDate
 
 import java.io.ByteArrayOutputStream
@@ -20,11 +20,11 @@ import scala.concurrent.duration.DurationInt
 
 object ExportConfigRoutes {
 
-  def getMergePortConfig()(implicit ec: ExecutionContext, mat: Materializer): Route = get {
+  def getMergePortConfig(enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route = get {
     implicit val system = mat.system
 
-    val endpoints = AirportConfigs.portGroups.map { portCode =>
-      (portCode, s"http://${portCode.toLowerCase}:9000/export/port-config")
+    val endpoints = enabledPorts.map { portCode =>
+      (portCode.iata, s"http://${portCode.iata.toLowerCase}:9000/export/port-config")
     }
 
 
@@ -80,10 +80,10 @@ object ExportConfigRoutes {
     ))
   }
 
-  def apply()(implicit ec: ExecutionContext, mat: Materializer): Route =
+  def apply(enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route =
     pathPrefix("export-config") {
       concat(
-        getMergePortConfig()
+        getMergePortConfig(enabledPorts)
       )
     }
 }

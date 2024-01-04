@@ -65,6 +65,7 @@ case class ServerConfig(host: String,
                         healthCheckResolvedNotifyTemplateId: String,
                         healthCheckEmailRecipient: String,
                         healthCheckFrequencyMinutes: Int,
+                        enabledPorts: Seq[PortCode]
                        ) {
   val portIataCodes: Iterable[String] = portTerminals.keys.map(_.iata)
   val clientConfig: ClientConfig = ClientConfig(portRegions, portTerminals, rootDomain, teamEmail)
@@ -121,7 +122,7 @@ object Server {
             DropInSessionsRoute(dropInDao),
             DropInRegisterRoutes(dropInRegistrationDao),
             FeedbackRoutes(userFeedbackDao),
-            ExportConfigRoutes()
+            ExportConfigRoutes(serverConfig.enabledPorts),
           )
         }
       )
@@ -174,15 +175,15 @@ object Server {
     }
 
   private def startHealthCheckMonitor(serverConfig: ServerConfig,
-                                      emailClient: EmailClient,
-                                      urls: Urls,
-                                      db: AppDatabase,
-                                     )
-                                     (implicit
-                                      system: ActorSystem[Nothing],
-                                      ec: ExecutionContext,
-                                      mat: Materializer,
-                                     ): Cancellable = {
+    emailClient: EmailClient,
+    urls: Urls,
+    db: AppDatabase,
+  )
+    (implicit
+      system: ActorSystem[Nothing],
+      ec: ExecutionContext,
+      mat: Materializer,
+    ): Cancellable = {
     implicit val timeout: Timeout = new Timeout(1.second)
     implicit val scheduler: Scheduler = system.scheduler
 
