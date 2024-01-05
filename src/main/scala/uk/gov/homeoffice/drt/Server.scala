@@ -66,7 +66,7 @@ case class ServerConfig(host: String,
                         healthCheckEmailRecipient: String,
                         healthCheckFrequencyMinutes: Int,
                         enabledPorts: Seq[PortCode]
-                        ) {
+                       ) {
   val portIataCodes: Iterable[String] = portTerminals.keys.map(_.iata)
   val clientConfig: ClientConfig = ClientConfig(portRegions, portTerminals, rootDomain, teamEmail)
   val keyClockConfig: KeyClockConfig = KeyClockConfig(keycloakUrl, keycloakTokenUrl, keycloakClientId, keycloakClientSecret)
@@ -84,9 +84,9 @@ object Server {
   private case object Stop extends Message
 
   def apply(serverConfig: ServerConfig,
-    notifications: EmailNotifications,
-    emailClient: EmailClient,
-  ): Behavior[Message] =
+            notifications: EmailNotifications,
+            emailClient: EmailClient,
+           ): Behavior[Message] =
     Behaviors.setup { ctx: ActorContext[Message] =>
       implicit val system: ActorSystem[Nothing] = ctx.system
       implicit val ec: ExecutionContextExecutor = system.executionContext
@@ -123,9 +123,9 @@ object Server {
             DropInRegisterRoutes(dropInRegistrationDao),
             FeedbackRoutes(userFeedbackDao),
             ExportConfigRoutes(ProdHttpClient, serverConfig.enabledPorts),
-          )
+            )
         }
-      )
+        )
 
       val serverBinding = Http().newServerAt(serverConfig.host, serverConfig.port).bind(routes)
 
@@ -175,15 +175,15 @@ object Server {
     }
 
   private def startHealthCheckMonitor(serverConfig: ServerConfig,
-    emailClient: EmailClient,
-    urls: Urls,
-    db: AppDatabase,
-  )
-    (implicit
-      system: ActorSystem[Nothing],
-      ec: ExecutionContext,
-      mat: Materializer,
-    ): Cancellable = {
+                                      emailClient: EmailClient,
+                                      urls: Urls,
+                                      db: AppDatabase,
+                                     )
+                                     (implicit
+                                      system: ActorSystem[Nothing],
+                                      ec: ExecutionContext,
+                                      mat: Materializer,
+                                     ): Cancellable = {
     implicit val timeout: Timeout = new Timeout(1.second)
     implicit val scheduler: Scheduler = system.scheduler
 
@@ -193,7 +193,7 @@ object Server {
         "name" -> checkName,
         "level" -> priority.toString,
         "link" -> urls.urlForPort(portCode.toString())
-      ))
+        ))
     }
 
     val soundAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) =>
