@@ -1,27 +1,25 @@
 package uk.gov.homeoffice.drt.routes
 
-import akka.http.scaladsl.Http
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{ContentDispositionTypes, `Content-Disposition`}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.settings.ConnectionPoolSettings
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import uk.gov.homeoffice.drt.HttpClient
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.time.SDate
-
 import java.io.ByteArrayOutputStream
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 
 object ExportConfigRoutes {
 
-  def getMergePortConfig(enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route = get {
-    implicit val system = mat.system
+  def getMergePortConfig(httpClient: HttpClient, enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route = get {
+    implicit val system: ActorSystem = mat.system
 
     val endpoints = enabledPorts.map { portCode =>
       (portCode.iata, s"http://${portCode.iata.toLowerCase}:9000/export/port-config")
@@ -41,14 +39,9 @@ object ExportConfigRoutes {
         }
       }
 
-      val customTimeout = 5.seconds
-
       val processData = Source(endpoints).mapAsync(10) { case (portCode, uriString) =>
         val request = HttpRequest(uri = Uri(uriString))
-        Http().singleRequest(request,
-          connectionContext = Http().defaultClientHttpsContext,
-          settings = ConnectionPoolSettings(system).withIdleTimeout(customTimeout)
-        ).flatMap { response =>
+        httpClient.send(request).flatMap { response =>
           Unmarshal(response.entity).to[String].map { data =>
             val lines = data.split("\n")
             (portCode, lines.toSeq)
@@ -69,7 +62,8 @@ object ExportConfigRoutes {
     }
 
     val excelSource: Source[ByteString, _] = generateExcelContent()
-    val excelContentType = ContentType.parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").right.get
+    val excelContentType = ContentType.parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").getOrElse(ContentTypes.`application/octet-stream`)
+
 
     val contentDispositionHeader = `Content-Disposition`(ContentDispositionTypes.attachment, Map("filename" -> s"port-config-${SDate.now()}.xlsx"))
 
@@ -80,10 +74,10 @@ object ExportConfigRoutes {
     ))
   }
 
-  def apply(enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route =
+  def apply(httpClient: HttpClient, enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route =
     pathPrefix("export-config") {
       concat(
-        getMergePortConfig(enabledPorts)
+        getMergePortConfig(httpClient, enabledPorts)
       )
     }
 }

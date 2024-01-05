@@ -122,7 +122,7 @@ object Server {
             DropInSessionsRoute(dropInDao),
             DropInRegisterRoutes(dropInRegistrationDao),
             FeedbackRoutes(userFeedbackDao),
-            ExportConfigRoutes(serverConfig.enabledPorts),
+            ExportConfigRoutes(ProdHttpClient, serverConfig.enabledPorts),
           )
         }
       )
