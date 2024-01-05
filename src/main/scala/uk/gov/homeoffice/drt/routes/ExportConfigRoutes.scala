@@ -9,12 +9,14 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import org.apache.commons.csv.{CSVFormat, CSVParser}
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import uk.gov.homeoffice.drt.HttpClient
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.time.SDate
 import java.io.ByteArrayOutputStream
 import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 object ExportConfigRoutes {
 
@@ -26,15 +28,19 @@ object ExportConfigRoutes {
     }
 
 
-    def generateExcelContent(): Source[ByteString, _] = {
+    val excelSource: Source[ByteString, _]  = {
       val workbook = new XSSFWorkbook()
 
       def writeToWorkbook(sheetName: String, data: Seq[String]): Unit = {
         val sheet = workbook.createSheet(sheetName)
-        data.zipWithIndex.foreach { case (value, index) =>
-          val row = sheet.createRow(index)
-          value.split(",").zipWithIndex.foreach { case (cellValue, cellIndex) =>
-            row.createCell(cellIndex).setCellValue(cellValue)
+        data.zipWithIndex.foreach { case (value, rowIndex) =>
+          val row = sheet.createRow(rowIndex)
+          val records = CSVParser.parse(value, CSVFormat.DEFAULT).iterator().asScala.toList
+
+          records.foreach { record =>
+            record.iterator().asScala.zipWithIndex.foreach { case (cellValue, cellIndex) =>
+              row.createCell(cellIndex).setCellValue(cellValue)
+            }
           }
         }
       }
@@ -47,7 +53,7 @@ object ExportConfigRoutes {
             (portCode, lines.toSeq)
           }
         }.recover { case e: Throwable =>
-          (portCode, Seq(s"Error while requesting export for $uriString, ${e.getMessage}"))
+          (portCode, Seq(s"We couldn't fetch the config for this port. Please try exporting the file again"))
         }
       }.runForeach { case (portCode, lines) =>
         writeToWorkbook(portCode, lines)
@@ -61,7 +67,6 @@ object ExportConfigRoutes {
       })
     }
 
-    val excelSource: Source[ByteString, _] = generateExcelContent()
     val excelContentType = ContentType.parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").getOrElse(ContentTypes.`application/octet-stream`)
 
 

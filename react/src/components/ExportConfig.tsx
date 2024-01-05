@@ -12,7 +12,6 @@ export function ExportConfig() {
       startIcon={<FileDownloadIcon/>}
       href={`${ApiClient.exportConfigEndpoint}`}
       target="_blank"
-      onClick={() => console.log(moment().valueOf())}
     > Download ports config</Button>
   </div>
 }
