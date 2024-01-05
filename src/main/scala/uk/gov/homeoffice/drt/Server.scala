@@ -66,7 +66,7 @@ case class ServerConfig(host: String,
                         healthCheckEmailRecipient: String,
                         healthCheckFrequencyMinutes: Int,
                         enabledPorts: Seq[PortCode]
-                       ) {
+                        ) {
   val portIataCodes: Iterable[String] = portTerminals.keys.map(_.iata)
   val clientConfig: ClientConfig = ClientConfig(portRegions, portTerminals, rootDomain, teamEmail)
   val keyClockConfig: KeyClockConfig = KeyClockConfig(keycloakUrl, keycloakTokenUrl, keycloakClientId, keycloakClientSecret)
@@ -84,9 +84,9 @@ object Server {
   private case object Stop extends Message
 
   def apply(serverConfig: ServerConfig,
-            notifications: EmailNotifications,
-            emailClient: EmailClient,
-           ): Behavior[Message] =
+    notifications: EmailNotifications,
+    emailClient: EmailClient,
+  ): Behavior[Message] =
     Behaviors.setup { ctx: ActorContext[Message] =>
       implicit val system: ActorSystem[Nothing] = ctx.system
       implicit val ec: ExecutionContextExecutor = system.executionContext
