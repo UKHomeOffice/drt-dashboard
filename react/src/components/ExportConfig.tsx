@@ -2,7 +2,6 @@ import React from "react";
 import Button from "@mui/material/Button";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ApiClient from "../services/ApiClient";
-import moment from "moment-timezone";
 
 export function ExportConfig() {
   return <div>
