@@ -19,7 +19,7 @@ lazy val slickVersion = "3.4.1"
 lazy val awsJava2SdkVersion = "2.16.104"
 lazy val postgresqlVersion = "42.7.0"
 lazy val mockitoVersion = "4.6.1"
-lazy val poiScalaVersion ="0.23"
+lazy val poiScalaVersion ="0.24"
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
