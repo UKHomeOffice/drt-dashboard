@@ -193,7 +193,14 @@ object Server {
     def sendSlackNotification(portCode: PortCode, checkName: String, priority: IncidentPriority): Unit = {
       val port = portCode.toString.toUpperCase
       val link = urls.urlForPort(port)
-      val message = s"Health check triggered for $port: $checkName ($priority) - $link"
+      val message =
+       s"""
+          Health Check Alert
+          port: $port
+          name: $checkName
+          priority: ${priority.toString}
+          link: $link
+        """
       slackClient.notify(message)
     }
 
