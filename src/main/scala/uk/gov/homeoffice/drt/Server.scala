@@ -190,17 +190,16 @@ object Server {
     implicit val timeout: Timeout = new Timeout(1.second)
     implicit val scheduler: Scheduler = system.scheduler
 
-    def sendSlackNotification(portCode: PortCode, checkName: String, priority: IncidentPriority): Unit = {
+    def sendSlackNotification(portCode: PortCode, checkName: String, priority: IncidentPriority, status: String): Unit = {
       val port = portCode.toString.toUpperCase
       val link = urls.urlForPort(port)
-      val message =
-       s"""
-          Health Check Alert
-          port: $port
-          name: $checkName
-          priority: ${priority.toString}
-          link: $link
-        """
+      val message = {
+        s"""Health Check Alert - $status
+           |port: $port
+           |name: $checkName
+           |priority: ${priority.toString}
+           |link: $link""".stripMargin
+      }
       slackClient.notify(message)
     }
 
@@ -215,12 +214,12 @@ object Server {
 
     val soundAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
       sendEmail(portCode, checkName, priority, serverConfig.healthCheckTriggeredNotifyTemplateId)
-      sendSlackNotification(portCode, checkName, priority)
+      sendSlackNotification(portCode, checkName, priority,"triggered")
     }
 
     val silenceAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
       sendEmail(portCode, checkName, priority, serverConfig.healthCheckResolvedNotifyTemplateId)
-      sendSlackNotification(portCode, checkName, priority)
+      sendSlackNotification(portCode, checkName, priority, "resolved")
     }
 
     val healthChecksActor = system.systemActorOf(HealthChecksActor(Map.empty, soundAlarm, silenceAlarm, () => SDate.now().millisSinceEpoch, 3), "health-checks")
