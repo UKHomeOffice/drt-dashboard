@@ -30,7 +30,7 @@ export default class ApiClient implements IApiClient {
   public static featureGuidesUpdatePublishedEndpoint = "/api/feature-guides/update-published"
 
   public static exportRegionEndpoint = "/api/export-region"
-  public static exportEndpoint = "/api/exportfghfghgf"
+  public static exportEndpoint = "/api/export"
   public static exportStatusEndpoint = "/api/export/status"
 
   public static feedBacksEndpoint = "/api/feedback";

@@ -112,7 +112,6 @@ const DownloadManager = ({status, createdAt, downloadUrl, errors, requestDownloa
   };
 
   const handlePortCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
     const {
       target: { name },
     } = event;
@@ -120,7 +119,6 @@ const DownloadManager = ({status, createdAt, downloadUrl, errors, requestDownloa
   }
 
   const handlePortCheckboxGroupChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
     const {
       target: { name, checked },
     } = event;

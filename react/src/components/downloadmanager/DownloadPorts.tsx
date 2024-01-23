@@ -64,7 +64,6 @@ export default function DownloadPorts({error, handlePortChange, handleRemovePort
         } else {
           //user is checking region
           isClosed && setExpandedTab(regionName);
-          console.log('checking', isClosed)
         }
         break;
       case 'DIV':
@@ -74,7 +73,6 @@ export default function DownloadPorts({error, handlePortChange, handleRemovePort
       default:
         break;
     }
-    console.log((event.target as HTMLElement).tagName, isClosed, regionName, regionPorts);
   }
 
   return (
