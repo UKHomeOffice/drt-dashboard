@@ -126,9 +126,6 @@ export default function DownloadPorts({error, handlePortChange, handleRemovePort
               key={region.name} 
               expanded={expandedTab === region.name} 
               onChange={(event, isClosed) => accordionChange(event, isClosed, region.name, region.ports)}
-              sx={{
-
-              }}
               >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
