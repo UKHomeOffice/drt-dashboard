@@ -1,6 +1,6 @@
-import {call, takeEvery } from 'redux-saga/effects'
+import { call, put, takeEvery } from 'redux-saga/effects';
+import { setSearchType, setStartDate, setEndDate } from './regionalPressureState';
 import ApiClient from '../../services/ApiClient';
-
 import axios from 'axios';
 
 export type RequestPaxTotalsType = {
@@ -29,13 +29,18 @@ export const requestPaxTotals = (port: string, searchType: string, startDate: st
 function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
   try {
 
+    const ports = ['stn','lhr'];
+    const granularity = 'hourly'
+    const start = '2024-01-29'
+    const end = '2024-01-29'
 
-    type Response = {
-      data: object;
-    }
-    const result: Response = yield call(axios.get, `${ApiClient.paxTotals}/${action.port}/${action.startDate}/${action.endDate}`);
+    const response: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${start}/${end}?granularity=${granularity}&port-codes=${ports.join()}`);
+    console.log(response)
 
-    console.log(result);
+    yield(console.log, action);
+    yield(put(setSearchType(action.searchType)));
+    yield(put(setStartDate(action.startDate)));
+    yield(put(setEndDate(action.endDate)));
 
   } catch (e) {
     console.log(e)

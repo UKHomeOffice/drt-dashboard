@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import {Link} from "react-router-dom";
 import { CheckCircle } from '@mui/icons-material';
+import ErrorIcon from '@mui/icons-material/Error';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -43,7 +44,7 @@ const doesExceed = (forecast: number, historic: number): boolean => {
 const RegionalPressureChart = ({regionName, data}: RegionalPressureChartProps) => {
   const theme = useTheme();
  
-  const forecasts = data.datasets[0].data;
+  const forecasts: (number | null)[] = data.datasets[0]!.data;
   const historics = data.datasets[1].data;
 
   const exceededForecasts = forecasts.map((forecast, index) => {return (doesExceed(forecast!, historics[index]!))});
@@ -55,6 +56,7 @@ const RegionalPressureChart = ({regionName, data}: RegionalPressureChartProps) =
     },
     scales: {
       r: {
+        suggestedMax: Math.max(...forecasts as number[]) * 1.6,
         pointLabels: {
           callback: (label: string, index: number): string | number | string[] | number[] => {
             return doesExceed(forecasts[index]!, historics[index]!) ? `⚠ ${label}` : `${label}`;
@@ -81,7 +83,7 @@ const RegionalPressureChart = ({regionName, data}: RegionalPressureChartProps) =
           <Button component={Link} to={`/national-pressure/${regionName.toLocaleLowerCase()}`} fullWidth variant='contained'>More Info</Button>
 
           { exceededCount > 0 ?
-              <Alert icon={<CheckCircle fontSize="inherit" />} severity="warning">
+              <Alert icon={<ErrorIcon fontSize="inherit" />} severity="info">
                 {`PAX arrivals exceeds historic average across ${exceededCount} airports`}
               </Alert>
             :

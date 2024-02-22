@@ -56,6 +56,9 @@ const drtTheme = createTheme({
           fontWeight: 400,
           fontSize: '16px',
           padding: '6px 12px',
+        },
+        outlined: {
+          backgroundColor: '#fff'
         }
       },
     },

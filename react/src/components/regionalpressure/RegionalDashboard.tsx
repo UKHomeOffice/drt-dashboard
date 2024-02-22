@@ -10,6 +10,7 @@ import {
   Radio,
   TextField,
   Alert,
+  Button,
 } from "@mui/material";
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {UserProfile} from "../../model/User";
@@ -26,6 +27,9 @@ interface RegionalPressureDashboardProps {
   user: UserProfile;
   config: ConfigValues;
   errors: FormError[];
+  type?: string;
+  start?: string;
+  end?: string;
   requestRegion: (port: string, searchType: string, startDate: string, endDate: string) => void;
 }
 
@@ -42,11 +46,11 @@ const generateTestData = (ports: string[]) => {
   return ports.map(() => Math.floor(Math.random() * (100 - -100 + 1) + -100))
 }
 
-const RegionalPressureDashboard = ({config, user, errors, requestRegion}: RegionalPressureDashboardProps) => {
-  const [searchType, setSearchType] = React.useState<string>('range');
+const RegionalPressureDashboard = ({config, user, errors, type, start, end, requestRegion}: RegionalPressureDashboardProps) => {
+  const [searchType, setSearchType] = React.useState<string>(type || 'single');
   const [dates, setDate] = React.useState<RegionalPressureDates>({
-    start: moment().subtract(1, 'day'),
-    end: moment(),
+    start: moment(start).subtract(1, 'day'),
+    end: moment(end),
   });
   const errorFieldMapping: ErrorFieldMapping = {}
   errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
@@ -61,7 +65,7 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
   }).filter(r => r.ports.length > 0 || isRccRegion(r.name))
 
   React.useEffect(() => {
-    user.ports.map(port => requestRegion(port, searchType, `${dates.start.unix()}`, `${dates.end.unix()}`));
+    user.ports.map(port => requestRegion(port, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD')));
   }, [user, requestRegion, searchType, dates])
 
   const handleSearchTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +78,9 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
       ...dates,
       [type]: date
     });
+    if (type === 'start') {
+      requestRegion('', searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
+    }
   }
 
   return (
@@ -84,7 +91,7 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
         <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
             <Grid item xs={12}>
               <h1>National Dashboard</h1>
-              <h2>Compare PAX arrivals vs historic average</h2>
+              <h2>Compare pax arrivals vs previous year</h2>
             </Grid>
             <Grid item xs={12}>
               <FormControl>
@@ -139,9 +146,18 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
           </Grid>
         
 
-        <Grid container spacing={2} justifyItems='stretch'>
+        <Grid container columnSpacing={2} justifyItems='stretch'>
             <Grid item xs={12}>
-              <h4>Regional Overview</h4>
+              <h3>Regional Overview</h3>
+            </Grid>
+            <Grid item xs={8}>
+              <p style={{lineHeight: 1.6, marginTop: 0}}>
+                <strong>Pax from selected date:</strong> { moment(start).format('ddd Do MMM YYYY') } to { moment(end).format('dd Do MMM YYYY') }
+                <br/><strong>Pax from previous year:</strong> { moment(start).subtract(1,'y').format('ddd Do MMM YYYY') } to { moment(end).subtract(1,'y').format('dd Do MMM YYYY') }
+              </p>
+            </Grid>
+            <Grid item xs={4} style={{textAlign: 'right'}}>
+              <Button variant="outlined" sx={{backgroundColor: '#fff'}}>Export</Button>
             </Grid>
           {userPortsByRegion.map((region) => {
 
@@ -168,7 +184,7 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
                 },
               ],
             };
-            return <Grid key={region.name} item xs={3}><RegionalPressureChart regionName={region.name} data={chartData} /></Grid>
+            return <Grid key={region.name} item xs={12} md={6} lg={3}><RegionalPressureChart regionName={region.name} data={chartData} /></Grid>
           })}
         </Grid>
       </Box>
@@ -180,6 +196,9 @@ const RegionalPressureDashboard = ({config, user, errors, requestRegion}: Region
 const mapState = (state: RootState) => {
   return { 
     errors: state.pressureDashboard?.errors,
+    type: state.pressureDashboard?.type,
+    startDate: state.pressureDashboard?.start,
+    endDate: state.pressureDashboard?.end,
    };
 }
 

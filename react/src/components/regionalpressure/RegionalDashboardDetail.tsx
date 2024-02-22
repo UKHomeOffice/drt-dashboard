@@ -8,7 +8,11 @@ import {
   CardContent,
   CardHeader,
   Divider,
+  Button,
+  Stack
 } from "@mui/material";
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import {UserProfile} from "../../model/User";
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
@@ -42,6 +46,8 @@ interface RegionalPressureDetailProps {
   user: UserProfile;
   config: ConfigValues;
   title?: string;
+  start?: string;
+  end?: string;
 }
 
 const generateRandomTimeSeries = (count: number, startDate: Moment) => {
@@ -56,16 +62,9 @@ const generateRandomTimeSeries = (count: number, startDate: Moment) => {
 }
 
 
-const RegionalPressureDetail = ({config, user}: RegionalPressureDetailProps) => {
+const RegionalPressureDetail = ({config, start, end}: RegionalPressureDetailProps) => {
   const { region } = useParams()
-  
-  // const isRccRegion = (regionName : string) => {
-  //   return user.roles.includes("rcc:" + regionName.toLowerCase())
-  // }
-
-  console.log(config.portsByRegion, user, region);
   const regionPorts = config.portsByRegion.filter((r) => r.name.toLowerCase() === region)[0].ports;
-  console.log(regionPorts);
 
   return (
     <Box>
@@ -73,25 +72,53 @@ const RegionalPressureDetail = ({config, user}: RegionalPressureDetailProps) => 
 
         <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
             <Grid item xs={12}>
-              <h1 style={{textTransform: 'capitalize'}}>{`${region} Region`}</h1>
-              <h2>Compare PAX arrivals vs historic average</h2>
-
+              <h1 style={{textTransform: 'capitalize', marginTop: '0.2em'}}>{`${region} Region`}</h1>
+              <h2>Compare pax arrivals vs previous year</h2>
+            </Grid>
+            <Grid item xs={10}>
+              <p style={{lineHeight: 1.6, marginTop: 0}}>
+                <strong>Pax from selected date:</strong> { moment(start).format('ddd Do MMM YYYY') } to { moment(end).format('dd Do MMM YYYY') }
+                <br/><strong>Pax from previous year:</strong> { moment(start).subtract(1,'y').format('ddd Do MMM YYY') } to { moment(end).subtract(1,'y').format('dd Do MMM YYYY') }
+              </p>
               <p>Airports: { regionPorts.join(', ')}</p>
             </Grid>
-            {
-              regionPorts && regionPorts.map((port) => {
+            <Grid item xs={2}>
+              <Stack spacing={2}>
+               <Button variant="outlined"><FilterAltIcon />Filter</Button>
+                <Button variant="outlined"><ArrowDownwardIcon />Export</Button>
+              </Stack>
+            </Grid>
+            { regionPorts && regionPorts.map((port) => {
 
                 const startDate = moment(new Date(new Date().valueOf() - Math.random()*(1e+12)));
                 return (
                   <Grid item xs={12}>
                     <Card>
-                      <CardHeader title={port} />
+                      <CardHeader 
+                        title={port}
+                        action={
+                          <Button variant="contained" href={`http://${port}.drt.homeoffice.gov.uk`}>View {port} arrivals</Button>
+                        } 
+                        />
                       <CardContent>
                         <Divider />
                         <Line 
                           id={port}
                           key={port}
                           options={{
+                            layout: {
+                              padding: {
+                                top: 10
+                              }
+                            },
+                            plugins: {
+                              legend: {
+                                align: 'start',
+                                title: {
+                                  padding: 20
+                                }
+                              }
+                            },
                             scales: {
                               x: {
                                 type: 'time',
@@ -100,14 +127,29 @@ const RegionalPressureDetail = ({config, user}: RegionalPressureDetailProps) => 
                                 }
                               },
                               y: {
-                                grace: '10%'
+                                grace: '10%',
                               }
                             }
                           }}
+                          plugins={[
+                            {
+                              id: "increase-legend-spacing",
+                              beforeInit(chart) {
+                                // Get reference to the original fit function
+                                const originalFit = (chart.legend as any).fit;
+                                // Override the fit function
+                                (chart.legend as any).fit = function fit() {
+                                  // Call original function and bind scope in order to use `this` correctly inside it
+                                  originalFit.bind(chart.legend)();
+                                  this.height += 20;
+                                };
+                              }
+                            }
+                          ]}
                           data={ {
                             datasets: [
                               {
-                                label: 'Pax: <date>',
+                                label: `Pax: ${moment(start).format('ddd Do MMM YYYY') } to ${ moment(end).format('ddd Do MMM YYYY') }`,
                                 backgroundColor: 'rgba(0, 94, 165, 0.2)',
                                 borderColor: drtTheme.palette.primary.main,
                                 borderDash: [5, 5],
@@ -120,7 +162,7 @@ const RegionalPressureDetail = ({config, user}: RegionalPressureDetailProps) => 
                                 data: generateRandomTimeSeries(20, startDate)
                               },
                               {
-                                label: 'Pax previous year: <date>',
+                                label: `Pax previous year: ${ moment(start).subtract(1,'y').format('ddd Do MMM YYYY') } to ${ moment(end).subtract(1,'y').format('ddd Do MMM YYYY') }`,
                                 backgroundColor: 'transparent',
                                 borderColor: '#547a00',
                                 borderDash: [0,0],
@@ -148,6 +190,8 @@ const RegionalPressureDetail = ({config, user}: RegionalPressureDetailProps) => 
 const mapState = (state: RootState) => {
   return { 
     errors: state.pressureDashboard?.errors,
+    startDate: state.pressureDashboard?.start,
+    endDate: state.pressureDashboard?.end,
    };
 }
 
