@@ -1,5 +1,5 @@
 import {  call, put, takeEvery } from 'redux-saga/effects';
-import { setSearchType, setStartDate, setEndDate, addPortData, setPortTotals, addHistoricPortData, setHistoricPortTotals, setInterval } from './regionalPressureState';
+import {setRegionalDashboardState } from './regionalPressureState';
 import StubService from '../../services/stub-service';
 import moment from 'moment';
 import ApiClient from '../../services/ApiClient';
@@ -73,37 +73,38 @@ function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
       historic = historicResponse.data;
     }
 
-    const ports: PortsObject = {};
+    const portData: PortsObject = {};
     const portTotals: PortTotals = {};
-    const historicPorts: PortsObject = {};
+    const historicPortData: PortsObject = {};
     const historicPortTotals: PortTotals = {};
 
     current!.forEach((datapoint) => {
       datapoint.queueCounts.forEach(passengerCount => {
         portTotals[datapoint.portCode] = (portTotals[datapoint.portCode] ? portTotals[datapoint.portCode] : 0) + passengerCount.count
       })
-      ports[datapoint.portCode] ?
-      ports[datapoint.portCode].push(datapoint)
-        : ports[datapoint.portCode] = [datapoint]
+      portData[datapoint.portCode] ?
+      portData[datapoint.portCode].push(datapoint)
+        : portData[datapoint.portCode] = [datapoint]
     })
 
     historic!.forEach((datapoint) => {
       datapoint.queueCounts.forEach(passengerCount => {
         historicPortTotals[datapoint.portCode] = (historicPortTotals[datapoint.portCode] ? historicPortTotals[datapoint.portCode] : 0) + passengerCount.count
       })
-      historicPorts[datapoint.portCode] ?
-      historicPorts[datapoint.portCode].push(datapoint)
-        : historicPorts[datapoint.portCode] = [datapoint]
+      historicPortData[datapoint.portCode] ?
+      historicPortData[datapoint.portCode].push(datapoint)
+        : historicPortData[datapoint.portCode] = [datapoint]
     })
-
-    yield(put(addPortData(ports)));
-    yield(put(setPortTotals(portTotals)));
-    yield(put(addHistoricPortData(historicPorts)));
-    yield(put(setHistoricPortTotals(historicPortTotals)));
-    yield(put(setSearchType(action.searchType)));
-    yield(put(setStartDate(action.startDate)));
-    yield(put(setEndDate(action.endDate)));
-    yield(put(setInterval(action.searchType === 'single' ? 'hour' : 'day')))
+    yield(put(setRegionalDashboardState({
+      portData,
+      portTotals,
+      historicPortData,
+      historicPortTotals,
+      type: action.searchType,
+      start,
+      end,
+      interval: action.searchType === 'single' ? 'hour' : 'day'
+    })))
 
   } catch (e) {
     console.log(e)

@@ -22,6 +22,25 @@ interface RegionalPressureState {
   }
 }
 
+type SetStatePayload = {
+  type: string,
+  start: string,
+  end: string,
+  interval: string,
+  portData: {
+    [key: string] : TerminalDataPoint[]
+  },
+  portTotals: {
+    [key: string] : number
+  },
+  historicPortData: {
+    [key: string] : TerminalDataPoint[]
+  },
+  historicPortTotals: {
+    [key: string] : number
+  }
+}
+
 const regionalPressureSlice = createSlice({
   name: 'regionalPressure',
   initialState: {
@@ -59,7 +78,17 @@ const regionalPressureSlice = createSlice({
     },
     setHistoricPortTotals: (state: RegionalPressureState, action: PayloadAction<object>) => {
       state.historicPortTotals = {...action.payload}
-    }
+    },
+    setRegionalDashboardState: (state: RegionalPressureState, action: PayloadAction<SetStatePayload>) => {
+      state.portData = {...action.payload.portData}
+      state.portTotals = {...action.payload.portTotals}
+      state.historicPortData = {...action.payload.historicPortData}
+      state.historicPortTotals = {...action.payload.historicPortTotals}
+      state.type = action.payload.type;
+      state.start = action.payload.start;
+      state.end = action.payload.end;
+      state.interval = action.payload.interval;
+    },
   }
 });
 
@@ -71,7 +100,8 @@ export const {
   setPortTotals,
   addHistoricPortData,
   setHistoricPortTotals,
-  setInterval
+  setInterval,
+  setRegionalDashboardState
 } = regionalPressureSlice.actions;
 
 export default regionalPressureSlice.reducer;

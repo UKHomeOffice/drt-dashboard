@@ -21,6 +21,7 @@ import {RootState} from '../../store/redux';
 import { FormError } from '../../services/ValidationService';
 
 import { requestPaxTotals } from './regionalPressureSagas';
+import RegionalPressureDates from './RegionalPressureDates';
 
 interface RegionalPressureDashboardProps {
   user: UserProfile;
@@ -36,7 +37,7 @@ interface ErrorFieldMapping {
   [key:string]: boolean
 }
 
-interface RegionalPressureDates {
+interface RegionalPressureDatesState {
   start: Moment;
   end: Moment;
 }
@@ -44,7 +45,7 @@ interface RegionalPressureDates {
 
 const RegionalPressureDashboard = ({config, user, errors, type, start, end, requestRegion}: RegionalPressureDashboardProps) => {
   const [searchType, setSearchType] = React.useState<string>(type || 'single');
-  const [dates, setDate] = React.useState<RegionalPressureDates>({
+  const [dates, setDate] = React.useState<RegionalPressureDatesState>({
     start: moment(start).subtract(1, 'day'),
     end: moment(end),
   });
@@ -59,8 +60,6 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
     const userPorts: string[] = user.ports.filter(p => region.ports.includes(p));
     return {...region, ports: userPorts} as PortRegion
   }).filter(r => r.ports.length > 0 || isRccRegion(r.name))
-
-  console.log(userPortsByRegion);
 
   React.useEffect(() => {
     requestRegion(user.ports, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
@@ -147,10 +146,7 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
             <h3>Regional Overview</h3>
           </Grid>
           <Grid item xs={8}>
-            <p style={{lineHeight: 1.6, marginTop: 0}}>
-              <strong>Pax from selected date:</strong> { moment(start).format('ddd Do MMM YYYY') } to { moment(end).format('dd Do MMM YYYY') }
-              <br/><strong>Pax from previous year:</strong> { moment(start).subtract(1,'y').format('ddd Do MMM YYYY') } to { moment(end).subtract(1,'y').format('dd Do MMM YYYY') }
-            </p>
+            <RegionalPressureDates />
           </Grid>
           <Grid item xs={4} style={{textAlign: 'right'}}>
             <Button variant="outlined" sx={{backgroundColor: '#fff'}}>Export</Button>
