@@ -14,11 +14,11 @@ class StubService implements IStubService {
     let durationInterval = 0;
     let randomRange = 0;
     switch (interval) {
-      case 'days':
+      case 'daily':
         durationInterval = duration.asDays();
         randomRange = 2000
         break;
-      case 'weeks':
+      case 'weekly':
         durationInterval = duration.asWeeks();
         randomRange = 10000
         break;
@@ -27,7 +27,6 @@ class StubService implements IStubService {
         randomRange = 300
         break;
     }
-    console.log(interval);
     const results: TerminalDataPoint[] = []
     portCodes.forEach((portCode) => { 
       for (var index = 0; index < durationInterval; index++) {

@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {UserProfile} from "../../model/User";
-import {ConfigValues} from "../../model/Config";
+import {ConfigValues, PortRegion} from "../../model/Config";
 import RegionalPressureChart from './ RegionalPressureChart';
 import moment, {Moment} from 'moment';
 import {RootState} from '../../store/redux';
@@ -24,7 +24,7 @@ import { requestPaxTotals } from './regionalPressureSagas';
 
 interface RegionalPressureDashboardProps {
   user: UserProfile;
-  config?: ConfigValues;
+  config: ConfigValues;
   errors: FormError[];
   type?: string;
   start?: string;
@@ -42,7 +42,7 @@ interface RegionalPressureDates {
 }
 
 
-const RegionalPressureDashboard = ({user, errors, type, start, end, requestRegion}: RegionalPressureDashboardProps) => {
+const RegionalPressureDashboard = ({config, user, errors, type, start, end, requestRegion}: RegionalPressureDashboardProps) => {
   const [searchType, setSearchType] = React.useState<string>(type || 'single');
   const [dates, setDate] = React.useState<RegionalPressureDates>({
     start: moment(start).subtract(1, 'day'),
@@ -51,6 +51,16 @@ const RegionalPressureDashboard = ({user, errors, type, start, end, requestRegio
   const errorFieldMapping: ErrorFieldMapping = {}
   errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
 
+  const isRccRegion = (regionName : string) => {
+    return user.roles.includes("rcc:" + regionName.toLowerCase())
+  }
+
+  const userPortsByRegion: PortRegion[] = config.portsByRegion.map(region => {
+    const userPorts: string[] = user.ports.filter(p => region.ports.includes(p));
+    return {...region, ports: userPorts} as PortRegion
+  }).filter(r => r.ports.length > 0 || isRccRegion(r.name))
+
+  console.log(userPortsByRegion);
 
   React.useEffect(() => {
     requestRegion(user.ports, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
@@ -145,10 +155,12 @@ const RegionalPressureDashboard = ({user, errors, type, start, end, requestRegio
           <Grid item xs={4} style={{textAlign: 'right'}}>
             <Button variant="outlined" sx={{backgroundColor: '#fff'}}>Export</Button>
           </Grid>
-          <Grid item xs={12} md={6} lg={3}><RegionalPressureChart regionName={'North'} portCodes={['INV', 'GLA', 'PIK', 'MAN', 'EDI']} /></Grid>
-          <Grid item xs={12} md={6} lg={3}><RegionalPressureChart regionName={'South'} portCodes={['BRS', 'CWL', 'LGW']} /></Grid>
-          <Grid item xs={12} md={6} lg={3}><RegionalPressureChart regionName={'Central'} portCodes={['STN', 'EMA', 'LCY', 'SEN', 'LTN']} /></Grid>
-          <Grid item xs={12} md={6} lg={3}><RegionalPressureChart regionName={'Heathrow'} portCodes={['T1', 'T2', 'T3', 'T4', 'T5']} /></Grid>
+          { userPortsByRegion.map(region => {
+            return <Grid key={region.name} item xs={12} md={6} lg={3}>
+              <RegionalPressureChart regionName={region.name} portCodes={region.ports} />
+            </Grid>
+
+          })}
         </Grid>
       </Box>
     </Box>

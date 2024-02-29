@@ -52,8 +52,6 @@ const doesExceed = (forecast: number, historic: number): boolean => {
 const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortTotals}: RegionalPressureChartProps) => {
   const theme = useTheme();
 
-  console.log(portCodes, portTotals, historicPortTotals);
-
   const forecasts = [...portCodes].map(portCode => portTotals[portCode]);
   const historics = [...portCodes].map(portCode => historicPortTotals[portCode]);
 
@@ -81,7 +79,6 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
       },
     ],
   };
-  console.log(chartData)
 
   const exceededForecasts = forecasts.map((forecast, index) => {return (doesExceed(forecast!, historics[index]!))});
   const exceededCount = exceededForecasts.filter(forecast => forecast).length;
