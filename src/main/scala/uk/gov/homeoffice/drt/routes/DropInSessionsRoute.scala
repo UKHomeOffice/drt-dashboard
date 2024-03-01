@@ -13,7 +13,7 @@ import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
 import java.sql.Timestamp
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId, ZoneOffset}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 case class DropInPublished(published: Boolean)
 
@@ -39,12 +39,18 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
     new Timestamp(utcTime.toInstant.toEpochMilli)
   }
 
+  val timestampToLocalDataTimestamp: Timestamp => Timestamp = timestamp => {
+    val localDateTime = timestamp.toInstant.atZone(ZoneId.of("UTC"))
+      .withZoneSameInstant(ZoneId.of("Europe/London")).toLocalDateTime
+    Timestamp.from(localDateTime.toInstant(ZoneOffset.UTC))
+  }
+
   def updateDropIn(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     put {
       entity(as[DropInData]) { dropIn =>
         val updatedDropInResult = dropInDao.updateDropIn(DropInRow(Some(id.toInt), dropIn.title, stringToTimestamp(dropIn.startTime), stringToTimestamp(dropIn.endTime), false, Option(dropIn.meetingLink), new Timestamp(new DateTime().getMillis)))
         routeResponse(updatedDropInResult
-          .map(_ => complete(StatusCodes.OK, s"Drop-In with Id $id is updated successfully")), "Editing Drop-In")
+                        .map(_ => complete(StatusCodes.OK, s"Drop-In with Id $id is updated successfully")), "Editing Drop-In")
       }
     }
 
@@ -73,9 +79,16 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
   def getSessions(dropInDao: DropInDao)(implicit ec: ExecutionContext): Route =
     parameters("list-all".as[Boolean].optional) { listAll =>
       get {
-        val getDropInsResult =
-          if (listAll.contains(true)) dropInDao.getDropIns.map(forms => complete(StatusCodes.OK, forms.toJson))
-          else dropInDao.getFutureDropIns.map(forms => complete(StatusCodes.OK, forms.toJson))
+        val dropIns: Future[Seq[DropInRow]] = if (listAll.contains(true)) dropInDao.getDropIns
+        else dropInDao.getFutureDropIns
+
+        val dropInsWithUTCtoLocalTime = dropIns.map(_.map(dropIn => {
+          val startTime = timestampToLocalDataTimestamp(dropIn.startTime)
+          val endTime = timestampToLocalDataTimestamp(dropIn.endTime)
+          dropIn.copy(startTime = startTime, endTime = endTime)
+        }))
+
+        val getDropInsResult = dropInsWithUTCtoLocalTime.map(forms => complete(StatusCodes.OK, forms.toJson))
         routeResponse(getDropInsResult, "Getting drop-ins")
       }
     }
@@ -96,16 +109,16 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
           concat(
             getSessions(dropInDao),
             saveSession(dropInDao)
-          )
-        ),
+            )
+          ),
         path(Segment) { id =>
           concat(
             getSession(dropInDao, id),
             updateDropIn(dropInDao, id),
             deleteSession(dropInDao, id),
-          )
+            )
         },
         path("update-published" / Segment)(id => publishDropIn(dropInDao, id))
-      )
+        )
     }
 }
