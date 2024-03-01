@@ -45,6 +45,12 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
     Timestamp.from(localDateTime.toInstant(ZoneOffset.UTC))
   }
 
+  private def dropsInsWithTimeStamp(dropIn: DropInRow): DropInRow = {
+    val startTime = timestampToLocalDataTimestamp(dropIn.startTime)
+    val endTime = timestampToLocalDataTimestamp(dropIn.endTime)
+    dropIn.copy(startTime = startTime, endTime = endTime)
+  }
+
   def updateDropIn(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     put {
       entity(as[DropInData]) { dropIn =>
@@ -72,7 +78,7 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
 
   def getSession(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     get {
-      val getDropInResult = dropInDao.getDropIn(id).map(dropIn => complete(StatusCodes.OK, dropIn.toJson))
+      val getDropInResult = dropInDao.getDropIn(id).map(dropsInsWithTimeStamp).map(dropIn => complete(StatusCodes.OK, dropIn.toJson))
       routeResponse(getDropInResult, "Getting drop-in")
     }
 
@@ -82,11 +88,7 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
         val dropIns: Future[Seq[DropInRow]] = if (listAll.contains(true)) dropInDao.getDropIns
         else dropInDao.getFutureDropIns
 
-        val dropInsWithUTCtoLocalTime = dropIns.map(_.map(dropIn => {
-          val startTime = timestampToLocalDataTimestamp(dropIn.startTime)
-          val endTime = timestampToLocalDataTimestamp(dropIn.endTime)
-          dropIn.copy(startTime = startTime, endTime = endTime)
-        }))
+        val dropInsWithUTCtoLocalTime = dropIns.map(_.map(dropsInsWithTimeStamp))
 
         val getDropInsResult = dropInsWithUTCtoLocalTime.map(forms => complete(StatusCodes.OK, forms.toJson))
         routeResponse(getDropInsResult, "Getting drop-ins")
@@ -96,7 +98,8 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
   def saveSession(dropInDao: DropInDao)(implicit ec: ExecutionContext): Route =
     post {
       entity(as[DropInData]) { dropIn =>
-        val saveDropInResult = dropInDao.insertDropIn(dropIn.title, stringToTimestamp(dropIn.startTime), stringToTimestamp(dropIn.endTime), Option(dropIn.meetingLink))
+        val saveDropInResult = dropInDao
+          .insertDropIn(dropIn.title, stringToTimestamp(dropIn.startTime), stringToTimestamp(dropIn.endTime), Option(dropIn.meetingLink))
         routeResponse(
           saveDropInResult.map(_ => complete(StatusCodes.OK, s"Drop_in ${dropIn.title} is saved successfully")), "Saving drop_in")
       }
