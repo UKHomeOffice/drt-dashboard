@@ -3,6 +3,7 @@ import { FormError } from '../../services/ValidationService'
 import { TerminalDataPoint } from './regionalPressureSagas'
 
 interface RegionalPressureState {
+  status: string,
   errors: FormError[],
   type: string,
   start: string,
@@ -23,6 +24,7 @@ interface RegionalPressureState {
 }
 
 type SetStatePayload = {
+  status: string,
   type: string,
   start: string,
   end: string,
@@ -44,6 +46,7 @@ type SetStatePayload = {
 const regionalPressureSlice = createSlice({
   name: 'regionalPressure',
   initialState: {
+    status: '',
     portData: {},
     portTotals: {},
     historicPortData: {},
@@ -57,6 +60,9 @@ const regionalPressureSlice = createSlice({
   reducers: {
     setSearchType: (state: RegionalPressureState, action: PayloadAction<string>) => {
       state.type = action.payload;
+    },
+    setStatus: (state: RegionalPressureState, action: PayloadAction<string>) => {
+      state.status = action.payload;
     },
     setStartDate: (state: RegionalPressureState, action: PayloadAction<string>) => {
       state.start = action.payload;
@@ -88,6 +94,7 @@ const regionalPressureSlice = createSlice({
       state.start = action.payload.start;
       state.end = action.payload.end;
       state.interval = action.payload.interval;
+      state.status = action.payload.status;
     },
   }
 });
@@ -101,6 +108,7 @@ export const {
   addHistoricPortData,
   setHistoricPortTotals,
   setInterval,
+  setStatus,
   setRegionalDashboardState
 } = regionalPressureSlice.actions;
 

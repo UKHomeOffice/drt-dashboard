@@ -1,4 +1,3 @@
-import Rand from 'rand-seed';
 import moment from "moment";
 import { TerminalDataPoint } from '../../components/regionalpressure/regionalPressureSagas';
 
@@ -11,30 +10,33 @@ class StubService implements IStubService {
     const startDate = moment(start);
     const endDate = moment(end);
     const duration = moment.duration(endDate.diff(startDate));
+    let momentUnit = 'hours';
     let durationInterval = 0;
     let randomRange = 0;
     switch (interval) {
       case 'daily':
         durationInterval = duration.asDays();
         randomRange = 2000
+        momentUnit = 'days';
         break;
       case 'weekly':
         durationInterval = duration.asWeeks();
         randomRange = 10000
+        momentUnit = 'weeks';
         break;
       default:
         durationInterval = 24;
         randomRange = 300
+        momentUnit = 'hours';
         break;
     }
     const results: TerminalDataPoint[] = []
     portCodes.forEach((portCode) => { 
       for (var index = 0; index < durationInterval; index++) {
-        const intervalDate = moment(startDate).add(index, interval as moment.unitOfTime.DurationConstructor)
-        const rand = new Rand(`${portCode}-${intervalDate.unix()}`);
-        const EEAPax = Math.floor(randomRange * rand.next())
-        const eGatePax = Math.floor(randomRange * rand.next())
-        const nonEEApax = Math.floor(randomRange * rand.next())
+        const intervalDate = moment(startDate).add(index, momentUnit as moment.unitOfTime.DurationConstructor)
+        const EEAPax = Math.floor(randomRange * Math.random())
+        const eGatePax = Math.floor(randomRange * Math.random())
+        const nonEEApax = Math.floor(randomRange * Math.random())
         results.push({
           date: intervalDate.startOf('day').format('YYYY-MM-DD'),
           hour: index,

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {connect} from 'react-redux';
-import { useParams } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -9,11 +8,15 @@ import {
   CardContent,
   CardHeader,
   Button,
-  Stack
+  IconButton,
+  Stack,
+  FormControl,
+  FormGroup,
+  FormLabel,
+  FormControlLabel,
+  Checkbox
 } from "@mui/material";
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import {UserProfile} from "../../model/User";
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
 import drtTheme from '../../drtTheme';
@@ -40,62 +43,87 @@ ChartJS.register(
   Legend,
   TimeScale
 );
+import { ArrowBack } from '@mui/icons-material';
 import { TerminalDataPoint } from './regionalPressureSagas';
+import RegionalPressureDates from './RegionalPressureDates';
 
 
 interface RegionalPressureDetailProps {
-  user: UserProfile;
   config: ConfigValues;
   title?: string;
-  start?: string;
-  end?: string;
+  region: string;
   interval?: string;
   portData: {
     [key: string]: TerminalDataPoint[]
   };
+  historicPortData: {
+    [key: string]: TerminalDataPoint[]
+  };
+  setRegion: (region: string) => void
 }
 
-const convertToTimeSeries = (portData:  TerminalDataPoint[], queueName: string) => {
-  console.log(portData);
-  return portData.map((datapoint: TerminalDataPoint) => {
-    return {
-      x: moment(datapoint.date).add(datapoint.hour, 'hours').format('MM/DD/YYYY HH:MM'),
-      y: (datapoint.queueCounts.find(queueData => queueData.queueName === queueName)?.count || 10 ) * Math.random() * 1.5,
-    }
-  })
-}
-
-
-const RegionalPressureDetail = ({config, start, end, portData, interval}: RegionalPressureDetailProps) => {
-  const { region } = useParams()
-  const regionPorts = config.portsByRegion.filter((r) => r.name.toLowerCase() === region)[0].ports;
+const RegionalPressureDetail = ({config, portData, historicPortData, interval, region, setRegion}: RegionalPressureDetailProps) => {
+  const regionPorts = config.portsByRegion.filter((r) => r.name.toLowerCase() === region.toLowerCase())[0].ports;
+  const [visiblePorts, setVisiblePorts] = React.useState<string[]>([...regionPorts]);
 
   const timeUnits = interval;
 
-  return (
-    <Box>
-      <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
+  const handleTogglePort = (port:string) => {
+    console.log(visiblePorts, port);
+    if (visiblePorts.includes(port)) {
+      const newPorts = [...visiblePorts];
+      newPorts.splice(visiblePorts.indexOf(port), 1);
+      setVisiblePorts(newPorts)
+    } else {
+      setVisiblePorts([
+        ...visiblePorts,
+        port
+      ])
+    }
+  }
 
-        <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
-            <Grid item xs={12}>
-              <h1 style={{textTransform: 'capitalize', marginTop: '0.2em'}}>{`${region} Region`}</h1>
-              <h2>Compare pax arrivals vs previous year</h2>
+  return (
+    <Box sx={{pt: 2}}>
+
+          <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
+            <Grid>            
+              <IconButton size='small' onClick={() => setRegion('overview')} sx={{margin: '16px 10px 0 16px'}}><ArrowBack/></IconButton>
             </Grid>
+            <Grid>
+              <h2 style={{textTransform: 'capitalize'}}>{`${region} Region`}</h2>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
             <Grid item xs={10}>
-              <p style={{lineHeight: 1.6, marginTop: 0}}>
-                <strong>Pax from selected date:</strong> { moment(start).format('ddd Do MMM YYYY') } to { moment(end).format('dd Do MMM YYYY') }
-                <br/><strong>Pax from previous year:</strong> { moment(start).subtract(1,'y').format('ddd Do MMM YYY') } to { moment(end).subtract(1,'y').format('dd Do MMM YYYY') }
-              </p>
-              <p>Airports: { regionPorts.join(', ')}</p>
+              <RegionalPressureDates />
             </Grid>
             <Grid item xs={2}>
-              <Stack spacing={2}>
-               <Button variant="outlined"><FilterAltIcon />Filter</Button>
+              <Stack direction="row-reverse" spacing={2}>
                 <Button variant="outlined"><ArrowDownwardIcon />Export</Button>
               </Stack>
             </Grid>
+            <Grid item xs={10}>
+              <FormControl component="fieldset" variant="standard">
+                <FormLabel component="legend">Airports:</FormLabel>
+                <FormGroup>
+                  {
+                    regionPorts && regionPorts.map((port:string) => {
+                      return <FormControlLabel
+                        key={port}
+                        value={port}
+                        control={<Checkbox checked={visiblePorts.includes(port)} value={port} />}
+                        onClick={() => handleTogglePort(port)}
+                        label={port.toUpperCase()}
+                        labelPlacement="end"
+                        />
+                                
+                    })
+                  }
+                </FormGroup>
+              </FormControl>
+            </Grid>
             { regionPorts && regionPorts.map((port: string) => {
-                return portData[port] && (
+                return visiblePorts.includes(port) && portData[port] && (
                   <Grid item xs={12}>
                     <Card>
                       <CardHeader 
@@ -171,7 +199,7 @@ const RegionalPressureDetail = ({config, start, end, portData, interval}: Region
                           data={ {
                             datasets: [
                               {
-                                label: `Pax: ${moment(start).format('ddd Do MMM YYYY') } to ${ moment(end).format('ddd Do MMM YYYY') }`,
+                                label: `Pax:`,
                                 backgroundColor: 'rgba(0, 94, 165, 0.2)',
                                 borderColor: drtTheme.palette.primary.main,
                                 borderDash: [5, 5],
@@ -182,17 +210,35 @@ const RegionalPressureDetail = ({config, start, end, portData, interval}: Region
                                   above: 'rgba(0, 94, 165, 0.2)',
                                   below: 'transparent',
                                 },
-                                data: convertToTimeSeries(portData[port], 'EEA')
+                                data: portData[port].map((datapoint: TerminalDataPoint) => {
+                                  const pointDate = moment(datapoint.date)
+                                  if (interval === 'hour') {
+                                    pointDate.add(datapoint.hour, 'hours')
+                                  }
+                                  return {
+                                    x: pointDate.format('MM/DD/YYYY HH:mm'),
+                                    y: datapoint.totalPcpPax,
+                                  }
+                                })
                               },
                               {
-                                label: `Pax previous year: ${ moment(start).subtract(1,'y').format('ddd Do MMM YYYY') } to ${ moment(end).subtract(1,'y').format('ddd Do MMM YYYY') }`,
+                                label: `Pax (previous year):`,
                                 backgroundColor: 'transparent',
                                 borderColor: '#547a00',
                                 borderDash: [0,0],
                                 borderWidth: 1,
                                 pointStyle: 'circle',
                                 pointBackgroundColor: '#547a00',
-                                data: convertToTimeSeries(portData[port], 'EEA')
+                                data: historicPortData[port].map((datapoint: TerminalDataPoint) => {
+                                  const pointDate = moment(datapoint.date)
+                                  if (interval === 'hour') {
+                                    pointDate.add(datapoint.hour, 'hours')
+                                  }
+                                  return {
+                                    x: pointDate.add(1, 'year').format('MM/DD/YYYY HH:mm'),
+                                    y: datapoint.totalPcpPax,
+                                  }
+                                })
                               }
                             ]
                           }}
@@ -205,8 +251,6 @@ const RegionalPressureDetail = ({config, start, end, portData, interval}: Region
               })
             }
         </Grid>
-
-      </Box>
     </Box>
   )
   
@@ -218,6 +262,7 @@ const mapState = (state: RootState) => {
     startDate: state.pressureDashboard?.start,
     endDate: state.pressureDashboard?.end,
     portData: state.pressureDashboard?.portData,
+    historicPortData: state.pressureDashboard?.historicPortData,
     interval: state.pressureDashboard?.interval,
    };
 }

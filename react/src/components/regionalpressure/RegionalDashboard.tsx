@@ -9,19 +9,16 @@ import {
   RadioGroup,
   Radio,
   TextField,
-  Alert,
-  Button,
 } from "@mui/material";
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
-import RegionalPressureChart from './ RegionalPressureChart';
 import moment, {Moment} from 'moment';
 import {RootState} from '../../store/redux';
 import { FormError } from '../../services/ValidationService';
 
 import { requestPaxTotals } from './regionalPressureSagas';
-import RegionalPressureDates from './RegionalPressureDates';
+import RegionalPressureViewSwitch from './RegionalPressureViewSwitch';
 
 interface RegionalPressureDashboardProps {
   user: UserProfile;
@@ -30,7 +27,7 @@ interface RegionalPressureDashboardProps {
   type?: string;
   start?: string;
   end?: string;
-  requestRegion: (ports: string[], searchType: string, startDate: string, endDate: string) => void;
+  requestRegion: (ports: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string) => void;
 }
 
 interface ErrorFieldMapping {
@@ -52,18 +49,16 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
   const errorFieldMapping: ErrorFieldMapping = {}
   errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
 
-  const isRccRegion = (regionName : string) => {
-    return user.roles.includes("rcc:" + regionName.toLowerCase())
-  }
-
-  const userPortsByRegion: PortRegion[] = config.portsByRegion.map(region => {
+  let userPortsByRegion: PortRegion[] = config.portsByRegion.map(region => {
     const userPorts: string[] = user.ports.filter(p => region.ports.includes(p));
     return {...region, ports: userPorts} as PortRegion
-  }).filter(r => r.ports.length > 0 || isRccRegion(r.name))
+  }).filter(r => r.ports.length > 0)
+
+  const availablePorts = config.ports.map(port => port.iata);
 
   React.useEffect(() => {
-    requestRegion(user.ports, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
-  }, [user, requestRegion, searchType, dates])
+    requestRegion(user.ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
+  }, [user, availablePorts, requestRegion, searchType, dates])
 
   const handleSearchTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchType(event.target.value);
@@ -75,14 +70,12 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
       ...dates,
       [type]: date
     });
-    requestRegion(user.ports, searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
+    requestRegion(user.ports, availablePorts, searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
   }
 
   return (
     <Box>
       <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
-
-        
         <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
             <Grid item xs={12}>
               <h1>National Dashboard</h1>
@@ -90,7 +83,7 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
             </Grid>
             <Grid item xs={12}>
               <FormControl>
-                <FormLabel id="date-label">Set PAX Arrival date</FormLabel> 
+                <FormLabel id="date-label">Select date</FormLabel> 
                 <RadioGroup
                   row
                   aria-labelledby="date-label"
@@ -134,30 +127,10 @@ const RegionalPressureDashboard = ({config, user, errors, type, start, end, requ
                   onChange={(newValue: Moment | null) => handleDateChange('end', newValue)}/>
                 </Grid>
             }
-              
-            <Grid item>
-              <Alert severity='info'>Historic average dates are 12 months before the arrivals date</Alert>
-            </Grid>
           </Grid>
         
-
-        <Grid container columnSpacing={2} justifyItems='stretch'>
-          <Grid item xs={12}>
-            <h3>Regional Overview</h3>
-          </Grid>
-          <Grid item xs={8}>
-            <RegionalPressureDates />
-          </Grid>
-          <Grid item xs={4} style={{textAlign: 'right'}}>
-            <Button variant="outlined" sx={{backgroundColor: '#fff'}}>Export</Button>
-          </Grid>
-          { userPortsByRegion.map(region => {
-            return <Grid key={region.name} item xs={12} md={6} lg={3}>
-              <RegionalPressureChart regionName={region.name} portCodes={region.ports} />
-            </Grid>
-
-          })}
-        </Grid>
+      
+        <RegionalPressureViewSwitch config={config} userPortsByRegion={userPortsByRegion} />
       </Box>
     </Box>
   )
@@ -175,8 +148,8 @@ const mapState = (state: RootState) => {
 
 const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureDashboardProps>) => {
   return {
-    requestRegion: (ports: string[], searchType: string, startDate: string, endDate: string) => {
-      dispatch(requestPaxTotals(ports, searchType, startDate, endDate));
+    requestRegion: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string) => {
+      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate));
     }
   };
 };

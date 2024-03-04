@@ -1,5 +1,5 @@
 import {  call, put, takeEvery } from 'redux-saga/effects';
-import {setRegionalDashboardState } from './regionalPressureState';
+import {setRegionalDashboardState, setStatus } from './regionalPressureState';
 import StubService from '../../services/stub-service';
 import moment from 'moment';
 import ApiClient from '../../services/ApiClient';
@@ -8,7 +8,8 @@ import axios from 'axios';
 export type RequestPaxTotalsType = {
   type: "REQUEST_PAX_TOTALS",
   searchType: string,
-  ports: string[],
+  userPorts: string[],
+  availablePorts: string[],
   startDate: string,
   endDate: string,
 };
@@ -17,11 +18,12 @@ export type PortTerminal = {
   ports: string[],
 };
 
-export const requestPaxTotals = (ports: string[], searchType: string, startDate: string, endDate: string) :RequestPaxTotalsType => {
+export const requestPaxTotals = (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string) :RequestPaxTotalsType => {
   return {
     "type": "REQUEST_PAX_TOTALS",
     searchType,
-    ports,
+    userPorts,
+    availablePorts,
     startDate,
     endDate
   };
@@ -55,20 +57,39 @@ type Response = {
 
 function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
   try {
+    yield(put(setStatus('loading')))
     const start = moment(action.startDate).startOf('day').format('YYYY-MM-DD');
     const end = action.searchType === 'single' ? start : moment(action.endDate).startOf('day').format('YYYY-MM-DD');
     const historicStart = moment(start).subtract(1, 'year').format('YYYY-MM-DD')
     const historicEnd = moment(end).subtract(1, 'year').format('YYYY-MM-DD')
     const interval = action.searchType === 'single' ? 'hourly' : 'daily';
+    const allPorts = ["NQY","INV","STN","BHD","MME","BFS","PIK","ABZ","LBA","MAN","GLA","LCY","BRS","LGW","HUY","EMA","EDI","CWL","NWI","EXT","SOU","SEN","LTN","LPL","LHR","BOH","NCL","BHX"];
 
     let current: TerminalDataPoint[];
     let historic: TerminalDataPoint[];
+    let currentResponse: Response;
+    let historicResponse: Response;
     if (window.location.hostname.includes('localhost')) {
-      current =  StubService.generatePortPaxSeries(start, end, interval, 'region', action.ports)
-      historic = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', action.ports)
-    } else {
-      const currentResponse: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${start}/${end}?granularity=${interval}&port-codes=${action.ports.join()}`);
-      const historicResponse: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.ports.join()}`);
+      //stub all data for local development
+      current =  StubService.generatePortPaxSeries(start, end, interval, 'region', allPorts)
+      historic = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', allPorts)
+    } else if (window.location.hostname.includes('preprod')) {
+
+      //on preprod stub data for ports that are not available.
+
+      currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${start}/${end}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
+      historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
+
+      const missingPorts = allPorts.filter(port => !action.userPorts.includes(port));
+      const missingCurrent: TerminalDataPoint[] =  StubService.generatePortPaxSeries(start, end, interval, 'region', missingPorts)
+      const missingHistoric: TerminalDataPoint[] = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', missingPorts)
+
+      current = [...currentResponse.data, ...missingCurrent];
+      historic = [...historicResponse.data, ...missingHistoric];
+    }
+    else {
+      currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${start}/${end}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
+      historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
       current = currentResponse.data;
       historic = historicResponse.data;
     }
@@ -103,7 +124,8 @@ function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
       type: action.searchType,
       start,
       end,
-      interval: action.searchType === 'single' ? 'hour' : 'day'
+      interval: action.searchType === 'single' ? 'hour' : 'day',
+      status: 'done'
     })))
 
   } catch (e) {

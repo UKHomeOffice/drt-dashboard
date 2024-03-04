@@ -9,7 +9,6 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
-import {Link} from "react-router-dom";
 import { CheckCircle } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import {RootState} from '../../store/redux';
@@ -43,13 +42,14 @@ interface RegionalPressureChartProps {
   historicPortTotals: {
     [key: string] : number
   };
+  onMoreInfo: (region :string) => void
 }
 
 const doesExceed = (forecast: number, historic: number): boolean => {
   return forecast > historic;
 }
 
-const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortTotals}: RegionalPressureChartProps) => {
+const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortTotals, onMoreInfo}: RegionalPressureChartProps) => {
   const theme = useTheme();
 
   const forecasts = [...portCodes].map(portCode => portTotals[portCode]);
@@ -119,7 +119,7 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
       <CardContent>
         <Stack sx={{ width: '100%' }} spacing={2}>
           <Radar data={chartData} options={chartOptions} />
-          <Button component={Link} to={`/national-pressure/${regionName.toLocaleLowerCase()}`} fullWidth variant='contained'>More Info</Button>
+          <Button onClick={() => onMoreInfo(regionName)} fullWidth variant='contained'>More Info</Button>
 
           { exceededCount > 0 ?
               <Alert icon={<ErrorIcon fontSize="inherit" />} severity="info">
