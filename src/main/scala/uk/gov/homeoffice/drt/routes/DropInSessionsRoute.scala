@@ -20,7 +20,6 @@ case class DropInData(title: String, startTime: Long, endTime: Long, meetingLink
 trait DropInJsonFormats extends DefaultTimeJsonProtocol {
 
   implicit val dropInDataFormatParser: RootJsonFormat[DropInData] = jsonFormat4(DropInData)
-  implicit val dropInRowFormatParser: RootJsonFormat[DropInRow] = jsonFormat7(DropInRow)
   implicit val dropInFormatParser: RootJsonFormat[DropIn] = jsonFormat7(DropIn)
   implicit val dropInPublishedFormatParser: RootJsonFormat[DropInPublished] = jsonFormat1(DropInPublished)
 
