@@ -7,54 +7,40 @@ import akka.http.scaladsl.server.Route
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json.{RootJsonFormat, enrichAny}
-import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow}
+import uk.gov.homeoffice.drt.db.{DropIn, DropInDao, DropInRow}
 import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
 
 import java.sql.Timestamp
-import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneId, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class DropInPublished(published: Boolean)
 
-case class DropInData(title: String, startTime: String, endTime: String, meetingLink: String)
+case class DropInData(title: String, startTime: Long, endTime: Long, meetingLink: String)
 
 trait DropInJsonFormats extends DefaultTimeJsonProtocol {
 
   implicit val dropInDataFormatParser: RootJsonFormat[DropInData] = jsonFormat4(DropInData)
   implicit val dropInRowFormatParser: RootJsonFormat[DropInRow] = jsonFormat7(DropInRow)
+  implicit val dropInFormatParser: RootJsonFormat[DropIn] = jsonFormat7(DropIn)
   implicit val dropInPublishedFormatParser: RootJsonFormat[DropInPublished] = jsonFormat1(DropInPublished)
 
 }
 
 object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
   override val log: Logger = LoggerFactory.getLogger(getClass)
-
-  val stringToTimestamp: String => Timestamp = timeString => {
-    val localTime = LocalDateTime.parse(timeString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"))
-      .atZone(ZoneId.of("Europe/London"))
-
-    val utcTime = localTime.withZoneSameInstant(ZoneOffset.UTC)
-
-    new Timestamp(utcTime.toInstant.toEpochMilli)
+  val longToTimestamp: Long => Timestamp = timeString => {
+    new Timestamp(timeString)
   }
 
-  val timestampToLocalDataTimestamp: Timestamp => Timestamp = timestamp => {
-    val localDateTime = timestamp.toInstant.atZone(ZoneId.of("UTC"))
-      .withZoneSameInstant(ZoneId.of("Europe/London")).toLocalDateTime
-    Timestamp.from(localDateTime.toInstant(ZoneOffset.UTC))
-  }
 
-  private def dropsInsWithTimeStamp(dropIn: DropInRow): DropInRow = {
-    val startTime = timestampToLocalDataTimestamp(dropIn.startTime)
-    val endTime = timestampToLocalDataTimestamp(dropIn.endTime)
-    dropIn.copy(startTime = startTime, endTime = endTime)
+  private def dropsInsWithTimeStamp(dropIn: DropInRow): DropIn = {
+    DropIn(dropIn.id, dropIn.title, dropIn.startTime.getTime, dropIn.endTime.getTime, dropIn.isPublished, dropIn.meetingLink, dropIn.lastUpdatedAt.getTime)
   }
 
   def updateDropIn(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     put {
       entity(as[DropInData]) { dropIn =>
-        val updatedDropInResult = dropInDao.updateDropIn(DropInRow(Some(id.toInt), dropIn.title, stringToTimestamp(dropIn.startTime), stringToTimestamp(dropIn.endTime), false, Option(dropIn.meetingLink), new Timestamp(new DateTime().getMillis)))
+        val updatedDropInResult = dropInDao.updateDropIn(DropInRow(Some(id.toInt), dropIn.title, longToTimestamp(dropIn.startTime), longToTimestamp(dropIn.endTime), false, Option(dropIn.meetingLink), new Timestamp(new DateTime().getMillis)))
         routeResponse(updatedDropInResult
                         .map(_ => complete(StatusCodes.OK, s"Drop-In with Id $id is updated successfully")), "Editing Drop-In")
       }
@@ -99,7 +85,7 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
     post {
       entity(as[DropInData]) { dropIn =>
         val saveDropInResult = dropInDao
-          .insertDropIn(dropIn.title, stringToTimestamp(dropIn.startTime), stringToTimestamp(dropIn.endTime), Option(dropIn.meetingLink))
+          .insertDropIn(dropIn.title, longToTimestamp(dropIn.startTime), longToTimestamp(dropIn.endTime), Option(dropIn.meetingLink))
         routeResponse(
           saveDropInResult.map(_ => complete(StatusCodes.OK, s"Drop_in ${dropIn.title} is saved successfully")), "Saving drop_in")
       }
