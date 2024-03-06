@@ -8918,11 +8918,6 @@ raf@^3.4.1:
   dependencies:
     performance-now "^2.1.0"
 
-rand-seed@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/rand-seed/-/rand-seed-1.0.2.tgz#ab34afa9d76d3cdedf757eb0318bec36a90276d2"
-  integrity sha512-Nu4jxelXx2hKyZJQvkRcUyc1n1ZDQk/VUYmY3hxYfXYGrMfCFqsJ9O6r5jtpt8KjqbllCB8qnIB86Oqy4s5gdw==
-
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/randombytes/-/randombytes-2.1.0.tgz#df6f84372f0270dc65cdf6291349ab7a473d4f2a"

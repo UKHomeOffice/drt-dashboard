@@ -13,15 +13,12 @@ import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureChart from './ RegionalPressureChart';
 import { ConfigValues, PortRegion } from '../../model/Config';
 
-
 interface RegionalPressureViewSwitchProps {
   config: ConfigValues;
   status: string;
   errors: FormError[];
   userPortsByRegion: PortRegion[];
 }
-
-
 
 const RegionalPressureViewSwitch = ({config, status, userPortsByRegion}: RegionalPressureViewSwitchProps) => {
   const [region, setRegion] = React.useState<string>('overview');
