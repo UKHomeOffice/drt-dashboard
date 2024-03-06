@@ -37,10 +37,10 @@ interface RegionalPressureChartProps {
   regionName: string;
   portCodes: string[];
   portTotals: {
-    [key: string] : number
+    [key: string]: number
   };
   historicPortTotals: {
-    [key: string] : number
+    [key: string]: number
   };
   onMoreInfo: (region :string) => void
 }

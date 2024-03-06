@@ -8,9 +8,7 @@ interface RegionalPressureDateProps {
   end: string;
 }
 
-
 const RegionalPressureDates = ({start, end}: RegionalPressureDateProps) => {
-
   return (
     <p style={{lineHeight: 1.6, margin: 0}}>
       <strong>Pax from selected date:</strong> { moment(start).format('ddd Do MMM YYYY') } to { moment(end).format('ddd Do MMM YYYY') }
@@ -19,13 +17,11 @@ const RegionalPressureDates = ({start, end}: RegionalPressureDateProps) => {
   )
 }
 
-
 const mapState = (state: RootState) => {
   return { 
     start: state.pressureDashboard?.start,
     end: state.pressureDashboard?.end,
    };
 }
-
 
 export default connect(mapState)(RegionalPressureDates);

@@ -58,32 +58,8 @@ const regionalPressureSlice = createSlice({
     interval: "daily",
   } as RegionalPressureState,
   reducers: {
-    setSearchType: (state: RegionalPressureState, action: PayloadAction<string>) => {
-      state.type = action.payload;
-    },
     setStatus: (state: RegionalPressureState, action: PayloadAction<string>) => {
       state.status = action.payload;
-    },
-    setStartDate: (state: RegionalPressureState, action: PayloadAction<string>) => {
-      state.start = action.payload;
-    },
-    setEndDate: (state: RegionalPressureState, action: PayloadAction<string>) => {
-      state.end = action.payload;
-    },
-    setInterval: (state: RegionalPressureState, action: PayloadAction<string>) => {
-      state.interval = action.payload;
-    },
-    addPortData: (state: RegionalPressureState, action: PayloadAction<object>) => {
-      state.portData = {...action.payload}
-    },
-    setPortTotals: (state: RegionalPressureState, action: PayloadAction<object>) => {
-      state.portTotals = {...action.payload}
-    },
-    addHistoricPortData: (state: RegionalPressureState, action: PayloadAction<object>) => {
-      state.historicPortData = {...action.payload}
-    },
-    setHistoricPortTotals: (state: RegionalPressureState, action: PayloadAction<object>) => {
-      state.historicPortTotals = {...action.payload}
     },
     setRegionalDashboardState: (state: RegionalPressureState, action: PayloadAction<SetStatePayload>) => {
       state.portData = {...action.payload.portData}
@@ -100,14 +76,6 @@ const regionalPressureSlice = createSlice({
 });
 
 export const {
-  setSearchType,
-  setStartDate,
-  setEndDate,
-  addPortData,
-  setPortTotals,
-  addHistoricPortData,
-  setHistoricPortTotals,
-  setInterval,
   setStatus,
   setRegionalDashboardState
 } = regionalPressureSlice.actions;

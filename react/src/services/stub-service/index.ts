@@ -32,7 +32,7 @@ class StubService implements IStubService {
     }
     const results: TerminalDataPoint[] = []
     portCodes.forEach((portCode) => { 
-      for (var index = 0; index < durationInterval; index++) {
+      for (let index = 0; index < durationInterval; index++) {
         const intervalDate = moment(startDate).add(index, momentUnit as moment.unitOfTime.DurationConstructor)
         const EEAPax = Math.floor(randomRange * Math.random())
         const eGatePax = Math.floor(randomRange * Math.random())
