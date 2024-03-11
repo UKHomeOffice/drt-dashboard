@@ -15,9 +15,8 @@ interface RegionalPressureFormProps {
   type: string,
   start: string;
   end: string;
-  interval: string;
   status: string;
-  requestRegion: (ports: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, interval: string) => void;
+  requestRegion: (ports: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string) => void;
 }
 
 interface RegionalPressureDatesState {
@@ -25,7 +24,7 @@ interface RegionalPressureDatesState {
   end: Moment;
 }
 
-const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, requestRegion, interval}: RegionalPressureFormProps) => {
+const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, requestRegion}: RegionalPressureFormProps) => {
   const [searchType, setSearchType] = React.useState<string>(type || 'single');
   const [dates, setDate] = React.useState<RegionalPressureDatesState>({
     start: moment(start),
@@ -35,13 +34,13 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, 
   errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
 
   React.useEffect(() => {
-    requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), interval);
+    requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
   }, [])
 
   const handleSearchTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchType(event.target.value);
     event.preventDefault();
-    requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), interval);
+    requestRegion(ports, availablePorts, event.target.value, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
   };
 
   const handleDateChange = (type: string, date: Moment | null) => {
@@ -51,9 +50,9 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, 
       [type]: date
     });
     if (type === 'start') {
-      requestRegion(ports, availablePorts, searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), interval);
+      requestRegion(ports, availablePorts, searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'));
     } else {
-      requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), date!.format('YYYY-MM-DD'), interval);
+      requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), date!.format('YYYY-MM-DD'));
     }
   }
 
@@ -111,8 +110,8 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, 
 
 const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureFormProps>) => {
   return {
-    requestRegion: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, interval:string) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, interval));
+    requestRegion: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string) => {
+      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate));
     }
   };
 };

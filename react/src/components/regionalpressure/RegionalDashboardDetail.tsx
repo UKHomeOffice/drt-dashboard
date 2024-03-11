@@ -18,6 +18,7 @@ import {
   FormControlLabel,
   Checkbox
 } from "@mui/material";
+import { Link } from 'react-router-dom';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { ConfigValues } from "../../model/Config";
 import { RootState } from '../../store/redux';
@@ -92,14 +93,14 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
     <Box sx={{ backgroundColor: '#E6E9F1', p: 2 }}>
       <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
         <Grid>
-          <IconButton size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
+          <IconButton component={Link} to="/national-pressure" size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
         </Grid>
         <Grid>
           <h2 style={{ textTransform: 'capitalize' }}>{`${region} Region`}</h2>
         </Grid>
       </Grid>
       <Grid>
-        <RegionalPressureForm ports={regionPorts} type={type} availablePorts={availablePorts} interval='hourly' />
+        <RegionalPressureForm ports={regionPorts} type={type} availablePorts={availablePorts} />
       </Grid>
       <Grid container spacing={2} justifyItems={'stretch'} sx={{ mb: 2 }}>
         <Grid item xs={10}>

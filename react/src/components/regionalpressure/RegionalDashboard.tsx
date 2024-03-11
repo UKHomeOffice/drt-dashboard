@@ -40,7 +40,7 @@ const RegionalPressureDashboard = ({config, user, status}: RegionalPressureDashb
       <h1>National Dashboard</h1>
       <h2>Compare pax arrivals vs previous year</h2>
       
-      <RegionalPressureForm ports={user.ports} availablePorts={availablePorts} interval='daily' type="single" />
+      <RegionalPressureForm ports={user.ports} availablePorts={availablePorts} type="single" />
 
       { status === 'loading' && <Grid container justifyContent={"center"}>
         <Grid item sx={{p: 4}}>
