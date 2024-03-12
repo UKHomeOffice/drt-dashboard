@@ -59,12 +59,12 @@ type Response = {
 function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
   try {
     yield(put(setStatus('loading')))
-    let start = moment(action.startDate);
-    let end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
+    const start = moment(action.startDate);
+    const end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
     const historicStart = moment(start).subtract(1, 'year').format('YYYY-MM-DD')
     const historicEnd = moment(end).subtract(1, 'year').format('YYYY-MM-DD')
     const duration = moment.duration(end.diff(start)).asHours();
-    let interval = duration >= 48 ? 'daily' : 'hourly';
+    const interval = duration >= 48 ? 'daily' : 'hourly';
     const allPorts = ["NQY","INV","STN","BHD","MME","BFS","PIK","ABZ","LBA","MAN","GLA","LCY","BRS","LGW","HUY","EMA","EDI","CWL","NWI","EXT","SOU","SEN","LTN","LPL","LHR","BOH","NCL","BHX"];
 
     const fStart = start.format('YYYY-MM-DD');
