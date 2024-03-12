@@ -65,7 +65,6 @@ function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     const historicEnd = moment(end).subtract(1, 'year').format('YYYY-MM-DD')
     const duration = moment.duration(end.diff(start)).asHours();
     let interval = duration >= 48 ? 'daily' : 'hourly';
-    console.log(interval)
     const allPorts = ["NQY","INV","STN","BHD","MME","BFS","PIK","ABZ","LBA","MAN","GLA","LCY","BRS","LGW","HUY","EMA","EDI","CWL","NWI","EXT","SOU","SEN","LTN","LPL","LHR","BOH","NCL","BHX"];
 
     const fStart = start.format('YYYY-MM-DD');
@@ -115,7 +114,6 @@ function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
         current = [...current, ...LHRT2.data, ...LHRT3.data, ...LHRT4.data, ...LHRT5.data ]
         historic = [...historic, ...LHRT2Historic.data, ...LHRT3Historic.data, ...LHRT4Historic.data, ...LHRT5Historic.data ]
       }
-
     }
 
     const portData: PortsObject = {};

@@ -72,10 +72,6 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
         borderWidth: 1,
         tooltip: {
           callbacks: {
-              title: function(context: TooltipItem<ChartType> ) {
-                console.log(context)
-                return ''
-              },
               label: function(context: TooltipItem<ChartType>) {
                 const port = context.label;
                 const arrivals = portTotals[port];
@@ -98,9 +94,6 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
         borderWidth: 1,
         tooltip: {
           callbacks: {
-              title: function() {
-                return ''
-              },
               label: function(context: TooltipItem<ChartType>) {
                 const port = context.label;
                 const arrivals = historicPortTotals[port];

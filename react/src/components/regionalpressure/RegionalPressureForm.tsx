@@ -44,7 +44,6 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, end, 
   };
 
   const handleDateChange = (type: string, date: Moment | null) => {
-    console.log(type, date);
     setDate({
       ...dates,
       [type]: date
