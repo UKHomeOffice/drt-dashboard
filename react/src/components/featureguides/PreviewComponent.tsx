@@ -9,6 +9,7 @@ import {useNavigate} from "react-router-dom";
 import {DialogComponent} from "../DialogComponent";
 import {deleteFeatureGuide} from "../../store/featureGuides";
 import {FeatureGuide} from "./FeatureGuidesList";
+import ReactMarkdown from "react-markdown";
 
 interface Props {
   guide: FeatureGuide
@@ -97,7 +98,7 @@ export function PreviewComponent(props: Props) {
               <Grid item xs={12} sx={{"font": "Arial", "padding-left": "16px"}}>
                 {props.guide.markdownContent && props.guide.markdownContent
                   .split('\n')
-                  .map(line => <div>{line}</div>)}
+                  .map(line => <div><ReactMarkdown>{line}</ReactMarkdown></div>)}
               </Grid>
             </Grid>
           </Grid>
