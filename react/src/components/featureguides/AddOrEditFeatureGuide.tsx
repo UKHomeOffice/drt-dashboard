@@ -53,7 +53,7 @@ export const AddOrEditFeatureGuide = () => {
     }
   }
 
-  const fileUrl = file ? URL.createObjectURL(file) : `${ApiClient.featureGuidesFilesEndpoint}/${fileName}`
+  const fileUrl = file ? URL.createObjectURL(file) : `${ApiClient.featureGuidesFileEndpoint}/${fileName}`
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 

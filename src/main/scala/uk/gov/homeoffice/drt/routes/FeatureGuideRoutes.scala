@@ -36,7 +36,7 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
 
   def getFeatureFile(downloader: S3Downloader)
                     (implicit ec: ExecutionContextExecutor): Route =
-    path("get-feature-files" / Segment) { filename =>
+    path("get-feature-file" / Segment) { filename =>
       get {
         val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = downloader.download(filename)
 
