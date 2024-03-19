@@ -83,21 +83,7 @@ function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
       
       current =  StubService.generatePortPaxSeries(fStart, fEnd, interval, 'region', action.availablePorts)
       historic = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', action.availablePorts)
-    } else if (window.location.hostname.includes('preprod')) {
-
-      //on preprod stub data for ports that are not available.
-
-      currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
-      historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
-
-      const missingPorts = allPorts.filter(port => !action.userPorts.includes(port));
-      const missingCurrent: TerminalDataPoint[] =  StubService.generatePortPaxSeries(fStart, fEnd, interval, 'region', missingPorts)
-      const missingHistoric: TerminalDataPoint[] = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', missingPorts)
-
-      current = [...currentResponse.data, ...missingCurrent];
-      historic = [...historicResponse.data, ...missingHistoric];
-    }
-    else {
+    } else {
       currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
       historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
 

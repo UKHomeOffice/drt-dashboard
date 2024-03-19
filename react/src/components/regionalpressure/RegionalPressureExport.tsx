@@ -40,13 +40,13 @@ const results_to_array = (data: PortsObject, is_hourly: boolean) => {
 
       let exportDataPoint: ExportDataPoint = {
         date,
-        portCode: portDataPoint.portCode,
-        regionName: portDataPoint.regionName,
-        totalPcpPax: portDataPoint.totalPcpPax,
-        terminalName: portDataPoint.terminalName,
-        EEA: portDataPoint.queueCounts[0].count,
-        eGates: portDataPoint.queueCounts[1].count,
-        nonEEA: portDataPoint.queueCounts[2].count,
+        portCode: portDataPoint.portCode || '',
+        regionName: portDataPoint.regionName || '',
+        totalPcpPax: portDataPoint.totalPcpPax || 0,
+        terminalName: portDataPoint.terminalName || '',
+        EEA: portDataPoint.queueCounts[0]?.count || 0,
+        eGates: portDataPoint.queueCounts[1]?.count || 0,
+        nonEEA: portDataPoint.queueCounts[2]?.count || 0,
       }
       data_rows.push(exportDataPoint)
     })
