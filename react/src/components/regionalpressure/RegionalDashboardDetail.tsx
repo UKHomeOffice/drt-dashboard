@@ -106,12 +106,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
         <Grid item xs={10}>
           <RegionalPressureDates />
         </Grid>
-        <Grid item xs={2}>
-          <Stack direction="row-reverse" spacing={2}>
-            <RegionalPressureExport />
-          </Stack>
-        </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={10}>
           <FormControl component="fieldset" variant="standard">
             <FormLabel component="legend">Airports:</FormLabel>
             <FormGroup>
@@ -131,6 +126,11 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
               </Stack>
             </FormGroup>
           </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <Stack direction="row-reverse" spacing={2}>
+            <RegionalPressureExport />
+          </Stack>
         </Grid>
         {regionPorts && regionPorts.map((port: string) => {
           return visiblePorts.includes(port) && portData[port] && (
