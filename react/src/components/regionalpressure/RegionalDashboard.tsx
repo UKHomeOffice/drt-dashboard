@@ -12,7 +12,7 @@ import {RootState} from '../../store/redux';
 import { requestPaxTotals } from './regionalPressureSagas';
 import { FormError } from '../../services/ValidationService';
 import RegionalPressureDates from './RegionalPressureDates';
-import RegionalPressureChart from './ RegionalPressureChart';
+import RegionalPressureChart from './RegionalPressureChart';
 import RegionalPressureExport from './RegionalPressureExport';
 import RegionalPressureForm from './RegionalPressureForm';
 
