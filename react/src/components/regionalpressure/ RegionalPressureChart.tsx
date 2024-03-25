@@ -150,7 +150,6 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
               return doesExceed(forecasts[context.index]!, historics[context.index]!) ? 'bold' : 'normal'
             }
           },
-          backgroundColor: '#000',
           color: (context: any) => {
             return doesExceed(forecasts[context.index]!, historics[context.index]!) ? theme.palette.info.main : 'black';
           },
