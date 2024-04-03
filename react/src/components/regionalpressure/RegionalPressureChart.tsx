@@ -175,11 +175,11 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
           <Box sx={{px: 2}}>
             { exceededCount > 0 ?
                 <Alert icon={<ErrorIcon fontSize="inherit" />} severity="info">
-                  {`Pax exceeds previous year across ${exceededCount} airports`}
+                  {`Pax number exceeds previous year at ${exceededCount} airports`}
                 </Alert>
               :
                 <Alert icon={<CheckCircle fontSize="inherit" />} severity="success">
-                  Pax does not exceed previous year at any airport
+                  Pax number does not exceed previous year at any airport
                 </Alert>
             }
             <Button component={Link} to={`${regionName.toLowerCase()}`} fullWidth variant='contained' sx={{mt:2}}>
