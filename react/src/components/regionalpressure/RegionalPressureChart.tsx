@@ -49,9 +49,6 @@ interface RegionalPressureChartProps {
 }
 
 const doesExceed = (forecast: number, historic: number): boolean => {
-  if (forecast > historic) {
-    console.log(forecast, historic)
-  }
   return forecast > historic;
 }
 
@@ -65,8 +62,6 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
     return historicPortTotals[portCode]
   })
   const historic_zero = [...portCodes].map(() => 0);
-
-  console.log(historics, historicPortTotals)
 
   const chartData = {
     labels: portCodes,
