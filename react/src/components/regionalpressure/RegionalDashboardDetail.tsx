@@ -176,7 +176,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                       },
                       scales: {
                         x: {
-                          stacked: true,
                           border: {
                             display: true
                           },
