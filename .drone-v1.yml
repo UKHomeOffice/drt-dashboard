@@ -16,8 +16,8 @@ steps:
     commands:
       - cd react
       - pwd && yarn install
-      - pwd && yarn test-ci
       - pwd && yarn build
+      - pwd && yarn test-ci
     when:
       event:
         - push
