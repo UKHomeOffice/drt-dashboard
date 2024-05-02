@@ -32,7 +32,7 @@ steps:
       event:
         - push
     depends_on:
-      - Build front end
+      - Build and test front end
 
   - name: Unit tests
     pull: if-not-exists
