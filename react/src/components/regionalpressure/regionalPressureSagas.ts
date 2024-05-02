@@ -59,11 +59,12 @@ export const requestPaxTotals = (userPorts: string[], availablePorts: string[], 
   };
 };
 
-export function getHistoricDateByDay(date: Moment) : Moment {
-  return moment(date)
+export function getHistoricDateByDay(date: Moment | string) : Moment {
+  let momentDate = moment(date)
+  return momentDate
     .subtract(1, 'year')
-    .isoWeek(date.isoWeek())
-    .isoWeekday(date.isoWeekday())
+    .isoWeek(momentDate.isoWeek())
+    .isoWeekday(momentDate.isoWeekday())
 }
 
 export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
@@ -73,6 +74,9 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     const end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
     const historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
     const historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
+
+    console.log(getHistoricDateByDay(start).format('dddd MMMM Do YYYY'))
+    console.log(historicEnd)
 
     const duration = moment.duration(end.diff(start)).asHours();
     const interval = duration >= 48 ? 'daily' : 'hourly';
@@ -86,7 +90,6 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     let historicResponse: Response;
     if (window.location.hostname.includes('localhost')) {
       //stub all data for local development
-      
       current =  StubService.generatePortPaxSeries(fStart, fEnd, interval, 'region', action.availablePorts)
       historic = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', action.availablePorts)
     } else {
