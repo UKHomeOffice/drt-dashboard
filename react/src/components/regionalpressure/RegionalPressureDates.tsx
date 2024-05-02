@@ -11,8 +11,8 @@ interface RegionalPressureDateProps {
 
 const RegionalPressureDates = ({start, end}: RegionalPressureDateProps) => {
 
-  const historicStart = getHistoricDateByDay(start);
-  const historicEnd = getHistoricDateByDay(end);
+  const historicStart = getHistoricDateByDay(moment(start));
+  const historicEnd = getHistoricDateByDay(moment(end));
   return (
     <>
       <p style={{lineHeight: 1.2, margin: '0 0 1em 0'}}>

@@ -59,12 +59,11 @@ export const requestPaxTotals = (userPorts: string[], availablePorts: string[], 
   };
 };
 
-export function getHistoricDateByDay(date: Moment | string) : Moment {
-  let momentDate = moment(date)
-  return momentDate
+export function getHistoricDateByDay(date: Moment) : Moment {
+  return moment(date)
     .subtract(1, 'year')
-    .isoWeek(momentDate.isoWeek())
-    .isoWeekday(momentDate.isoWeekday())
+    .isoWeek(date.isoWeek())
+    .isoWeekday(date.isoWeekday())
 }
 
 export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
