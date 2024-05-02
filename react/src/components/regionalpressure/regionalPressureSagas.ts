@@ -74,10 +74,7 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     const end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
     const historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
     const historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
-
-    console.log(getHistoricDateByDay(start).format('dddd MMMM Do YYYY'))
-    console.log(historicEnd)
-
+    
     const duration = moment.duration(end.diff(start)).asHours();
     const interval = duration >= 48 ? 'daily' : 'hourly';
 
