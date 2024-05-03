@@ -253,7 +253,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
                             let paxDate = moment(portData[port][index].date)
                             const pointDate = moment(datapoint.date)
-                            console.log(paxDate, pointDate);
 
                             if (interval === 'hour') {
                               pointDate.set('date', paxDate.date())
