@@ -164,16 +164,47 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                       plugins: {
                         legend: {
                           align: 'start',
-                          title: {
-                            padding: 20
-                          },
                           labels: {
                             usePointStyle: true,
                           }
                         },
                         tooltip: {
+                          titleFont: {
+                            size: 16
+                          },
+                          titleColor: (context) => {
+                            if (context.tooltipItems.length > 1) {
+                              let pax = context.tooltipItems[0].parsed.y
+                              let historicPax = context.tooltipItems[1].parsed.y
+                              let percentage = 100 * (pax - historicPax) / historicPax
+                              if (percentage > 0) {
+                                return '#f47738'
+                              } else {
+                                return '#c1d586'
+                              }
+                            }
+                            return '#fff'
+                          },
+                          footerFont: {
+                            size: 16
+                          },
                           callbacks: {
-                            title: function(): string { return 'Pax arrivals:'},
+                            // title: function(): string { return 'Pax arrivals:'},
+                            title: function(context): string[] {
+                              let formattedPaxPercent = ''
+                              if (context.length > 1) {
+                                let pax = context[0].parsed.y
+                                let historicPax = context[1].parsed.y
+                                let percentage = 100 * (pax - historicPax) / historicPax
+                                // let formattedPaxDiff = new Intl.NumberFormat("en-US", {signDisplay: "exceptZero"}).format(diff);
+                                formattedPaxPercent = new Intl.NumberFormat("en-US", {
+                                  signDisplay: "exceptZero",
+                                  maximumSignificantDigits: 2
+                                
+                                }).format(percentage);
+                              }
+                              return [`${formattedPaxPercent}% Pax expected`]
+                            },
                             label: function(context) : string {
                               let date = moment(context.parsed.x)
                               let dateFormat = type == 'single' ? 'HH:mm ddd Do MMM YYYY ' : 'ddd Do MMM YYYY'
@@ -253,11 +284,12 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           borderWidth: 1,
                           pointStyle: 'rectRot',
                           pointRadius: 5,
+                          pointHoverRadius: 10,
                           pointBackgroundColor: '#005ea5',
                           xAxisID: 'x',
                           fill: {
                             target: '1',
-                            above: '#fff3e1',
+                            above: 'rgba(244,157,107,0.3)',
                             below: 'transparent',
                           },
                           data: portData[port].map((datapoint: TerminalDataPoint) => {
@@ -279,6 +311,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           borderWidth: 1,
                           pointStyle: 'circle',
                           pointRadius: 3,
+                          pointHoverRadius: 10,
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
                             const paxDate = moment(portData[port][index].date)
                             const pointDate = moment(datapoint.date)
