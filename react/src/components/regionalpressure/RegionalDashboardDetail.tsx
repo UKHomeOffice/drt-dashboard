@@ -28,7 +28,6 @@ import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
-  BarElement,
   LinearScale,
   PointElement,
   LineElement,
