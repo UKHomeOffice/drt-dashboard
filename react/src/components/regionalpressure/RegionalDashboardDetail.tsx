@@ -24,9 +24,11 @@ import { Link } from 'react-router-dom';
 import { ConfigValues } from "../../model/Config";
 import { RootState } from '../../store/redux';
 import drtTheme from '../../drtTheme';
-import { Line } from 'react-chartjs-2'; import {
+import { Chart } from 'react-chartjs-2'; 
+import {
   Chart as ChartJS,
   CategoryScale,
+  BarElement,
   LinearScale,
   PointElement,
   LineElement,
@@ -39,6 +41,7 @@ import 'chartjs-adapter-moment';
 import moment from 'moment';
 ChartJS.register(
   CategoryScale,
+  BarElement,
   LinearScale,
   PointElement,
   LineElement,
@@ -52,6 +55,7 @@ import { TerminalDataPoint } from './regionalPressureSagas';
 import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureForm from './RegionalPressureForm';
 import RegionalPressureExport from './RegionalPressureExport';
+import { getHistoricDateByDay } from './regionalPressureSagas';
 
 
 interface RegionalPressureDetailProps {
@@ -150,7 +154,8 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                 />
                 <CardContent>
                   <Alert severity="info">Pax exceed previous year at highlighted times</Alert>
-                  <Line
+                  <Chart
+                    type='line'
                     id={port}
                     options={{
                       layout: {
@@ -167,17 +172,36 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           labels: {
                             usePointStyle: true,
                           }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            title: function(): string { return 'Pax arrivals:'},
+                            label: function(context) : string {
+                              console.log(context)
+                              let date = moment(context.parsed.x)
+                              let dateFormat = type == 'single' ? 'HH:mm ddd Do MMM YYYY ' : 'ddd Do MMM YYYY'
+                              switch (context.dataset.label) {
+                                case 'Pax arrivals':
+                                  return `${date.format(dateFormat)}: ${context.parsed.y}`
+                                case 'Previous year':
+                                  return `${getHistoricDateByDay(date).format(dateFormat)}: ${context.parsed.y}`
+                                default: 
+                                  return ''
+                              }
+                            }
+                          }
                         }
                       },
                       interaction: {
                         mode: 'nearest',
                         axis: 'x',
-                        intersect: false
+                        intersect: false,
                       },
                       scales: {
                         x: {
+                          position: 'bottom',
                           border: {
-                            display: true
+                            display: false
                           },
                           type: 'time',
                           time: {
@@ -187,17 +211,23 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                             display: true,
                             drawOnChartArea: true,
                             drawTicks: true
+                          },
+                          offset: true,
+                          ticks: {
+                            callback: (label) => {
+                              let date = moment(label)
+                              return type == 'single' ? date.format('HH:mm') : date.format('ddd Do MMM')
+                            }
                           }
                         },
                         y: {
                           type: 'linear',
                           min: 0,
-                          offset: true,
                           grace: '10%',
                           grid: {
                             display: true,
                           },
-                        }
+                        },
                       }
                     }}
                     plugins={[
@@ -218,16 +248,19 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                     data={{
                       datasets: [
                         {
-                          label: `Pax`,
+                          label: `Pax arrivals`,
+                          type: 'line',
                           backgroundColor: 'rgba(0, 94, 165, 0.2)',
-                          borderColor: drtTheme.palette.primary.main,
-                          borderDash: [5, 5],
+                          borderColor: '#005ea5',
+                          borderDash: [0, 0],
                           borderWidth: 1,
                           pointStyle: 'rectRot',
-                          pointRadius: 10,
+                          pointRadius: 5,
+                          pointBackgroundColor: '#005ea5',
+                          xAxisID: 'x',
                           fill: {
-                            target: '+1',
-                            above: 'rgba(0, 94, 165, 0.2)',
+                            target: '1',
+                            above: '#fff3e1',
                             below: 'transparent',
                           },
                           data: portData[port].map((datapoint: TerminalDataPoint) => {
@@ -243,24 +276,24 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                         },
                         {
                           label: `Previous year`,
-                          backgroundColor: 'transparent',
-                          borderColor: '#547a00',
-                          borderDash: [0, 0],
+                          type: 'line',
+                          borderColor: drtTheme.palette.grey[800],
+                          borderDash: [5, 5],
                           borderWidth: 1,
                           pointStyle: 'circle',
-                          pointRadius: 10,
-                          pointBackgroundColor: '#547a00',
+                          pointRadius: 3,
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
-                            let paxDate = moment(portData[port][index].date)
+                            const paxDate = moment(portData[port][index].date)
                             const pointDate = moment(datapoint.date)
-
+                            let historicDayOffset = 0;
                             if (interval === 'hour') {
                               pointDate.set('date', paxDate.date())
                               pointDate.add(datapoint.hour, 'hours')
-
+                            } else {
+                              historicDayOffset =  moment.duration(pointDate.diff(moment(paxDate).subtract(1,'y'))).asDays();
                             }
                             return {
-                              x: pointDate.add(1, 'year').format('MM/DD/YYYY HH:mm'),
+                              x: pointDate.add(1, 'year').subtract(historicDayOffset, 'days').format('MM/DD/YYYY HH:mm'),
                               y: datapoint.totalPcpPax,
                             }
                           })
