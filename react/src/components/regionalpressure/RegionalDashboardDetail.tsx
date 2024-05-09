@@ -40,7 +40,6 @@ import 'chartjs-adapter-moment';
 import moment from 'moment';
 ChartJS.register(
   CategoryScale,
-  BarElement,
   LinearScale,
   PointElement,
   LineElement,
@@ -176,7 +175,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           callbacks: {
                             title: function(): string { return 'Pax arrivals:'},
                             label: function(context) : string {
-                              console.log(context)
                               let date = moment(context.parsed.x)
                               let dateFormat = type == 'single' ? 'HH:mm ddd Do MMM YYYY ' : 'ddd Do MMM YYYY'
                               switch (context.dataset.label) {
