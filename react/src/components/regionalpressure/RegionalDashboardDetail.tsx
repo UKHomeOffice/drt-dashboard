@@ -151,7 +151,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                   }
                 />
                 <CardContent>
-                  <Alert severity="info">Pax exceed previous year at highlighted times</Alert>
+                  <Alert severity="warning">Pax exceed previous year at highlighted times</Alert>
                   <Chart
                     type='line'
                     id={port}
@@ -189,14 +189,12 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                             size: 16
                           },
                           callbacks: {
-                            // title: function(): string { return 'Pax arrivals:'},
                             title: function(context): string[] {
                               let formattedPaxPercent = ''
                               if (context.length > 1) {
                                 let pax = context[0].parsed.y
                                 let historicPax = context[1].parsed.y
                                 let percentage = 100 * (pax - historicPax) / historicPax
-                                // let formattedPaxDiff = new Intl.NumberFormat("en-US", {signDisplay: "exceptZero"}).format(diff);
                                 formattedPaxPercent = new Intl.NumberFormat("en-US", {
                                   signDisplay: "exceptZero",
                                   maximumSignificantDigits: 2
@@ -289,7 +287,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           xAxisID: 'x',
                           fill: {
                             target: '1',
-                            above: 'rgba(244,157,107,0.3)',
+                            above: 'rgba(255, 244, 229, 0.7)',
                             below: 'transparent',
                           },
                           data: portData[port].map((datapoint: TerminalDataPoint) => {
