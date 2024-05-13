@@ -29,7 +29,6 @@ import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   registerables,
-  ChartTypeRegistry
 } from 'chart.js';
 import 'chartjs-adapter-moment';
 import moment from 'moment';
@@ -40,9 +39,6 @@ import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureForm from './RegionalPressureForm';
 import RegionalPressureExport from './RegionalPressureExport';
 import { getHistoricDateByDay } from './regionalPressureSagas';
-import { useEffect, useRef } from 'react';
-import warningTexture from '../../assets/warning-texture-pattern.png';
-import { ChartJSOrUndefined } from 'react-chartjs-2/dist/types';
 
 
 interface RegionalPressureDetailProps {
@@ -71,24 +67,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
   }
   regionPorts.sort();
 
-  console.log(warningTexture)
-
-  const chartRef = useRef<ChartJSOrUndefined<keyof ChartTypeRegistry, { x: string; y: number; }[], unknown> | null>(null);
-
-  useEffect(() => {
-    const chart = chartRef.current;
-    console.log(chart)
-
-    if (chart) {
-      console.log(chart)
-      const ctx = chart.ctx
-      const image = new Image();
-      image.src = warningTexture
-      console.log(image.width, image.height, ctx)
-      // const fillPattern = (ctx as CanvasRenderingContext2D).createPattern(image, 'repeat')
-
-    }
-  }, [])
 
   const [visiblePorts, setVisiblePorts] = React.useState<string[]>([...regionPorts]);
   const availablePorts = config.ports.map(port => port.iata);
@@ -166,7 +144,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                 <CardContent>
                   <Alert severity="warning">Pax exceed previous year at highlighted times</Alert>
                   <Chart
-                    ref={chartRef}
                     type='line'
                     id={port}
                     options={{
