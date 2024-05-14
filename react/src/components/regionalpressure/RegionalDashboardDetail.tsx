@@ -131,7 +131,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
           </Stack>
         </Grid>
         {regionPorts && regionPorts.map((port: string) => {
-          let portName = port.replace("-", ' ')
+          const portName = port.replace("-", ' ')
           return visiblePorts.includes(port) && portData[port] && (
             <Grid key={port} item xs={12}>
               <Card>
