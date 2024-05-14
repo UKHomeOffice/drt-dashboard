@@ -116,7 +116,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                       value={port}
                       control={<Checkbox checked={visiblePorts.includes(port)} value={port} />}
                       onClick={() => handleTogglePort(port)}
-                      label={port.toUpperCase()}
+                      label={port.toUpperCase().replace("-", ' ')}
                       labelPlacement="end"
                     />
                   })
