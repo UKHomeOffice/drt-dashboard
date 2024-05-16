@@ -66,6 +66,7 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
       {
         label: 'Forecast pax arrivals',
         data: forecasts,
+        backgroundColor: 'transparent',
         borderColor: '#005ea5',
         borderDash: [0, 0],
         borderWidth: 4,
@@ -123,7 +124,7 @@ const RegionalPressureChart = ({regionName, portCodes, portTotals, historicPortT
 
   const chartOptions = {
     layout: {
-      padding: 0,
+      padding: 10,
     },
     plugins: {
       datalabels: {
