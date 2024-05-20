@@ -37,6 +37,8 @@ case class IndexRoute(urls: Urls, indexResource: Route) {
   def indexRouteDirectives: Route = {
     parameterMap { params =>
       optionalHeaderValueByName("X-Forwarded-Groups") { maybeRoles =>
+        println(s"maybeRoles.......: $maybeRoles")
+        println(s"fromPort.......: $params")
         (params.get("fromPort").flatMap(urls.portCodeFromUrl), maybeRoles) match {
           case (Some(portCode), Some(rolesStr)) =>
             val user = User.fromRoles("", rolesStr)
