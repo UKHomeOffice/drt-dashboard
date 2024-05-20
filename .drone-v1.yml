@@ -63,8 +63,8 @@ steps:
     when:
       event:
         - push
-    depends_on:
-      - Unit tests
+#    depends_on:
+#      - Unit tests
 
   - name: Publish app
     image: plugins/ecr
