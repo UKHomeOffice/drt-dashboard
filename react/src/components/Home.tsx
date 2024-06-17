@@ -5,7 +5,7 @@ import {PortList} from "./PortList";
 import {Box} from "@mui/material";
 import {UserProfile} from "../model/User";
 import {ConfigValues} from "../model/Config";
-import {FlightFlagger} from "drt-react";
+import {FlightFlagger} from "@drt/drt-react-components";
 // import { SearchFilterPayload } from "drt-react/FlightFlaggerFilters";
 
 interface IProps {

@@ -46,7 +46,7 @@
     "typed-react-markdown": "^0.1.0",
     "typescript": "^5.2.2",
     "validator": "^13.11.0",
-    "drt-react": "/Users/nilesh/HO_DRT/drt-react"
+    "@drt/drt-react-components": "https://github.com/UKHomeOffice/drt-react.git"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1616,6 +1616,21 @@
   dependencies:
     "@date-io/core" "^2.17.0"
 
+"@drt/drt-react-components@https://github.com/UKHomeOffice/drt-react.git":
+  version "1.0.0"
+  resolved "https://github.com/UKHomeOffice/drt-react.git#c1aba1d7a1e4dd74d203e98e0e16272ddbbbf8f0"
+  dependencies:
+    "-" "^0.0.1"
+    "@fontsource/material-icons" "^5.0.18"
+    "@fontsource/roboto" "^5.0.13"
+    "@storybook/icons" "^1.2.9"
+    css-loader "^7.1.2"
+    install-peers "^1.0.4"
+    postcss "^8.4.38"
+    sass-loader "^14.2.1"
+    storybook-addon-material-ui "^0.9.0-alpha.24"
+    style-loader "^4.0.0"
+
 "@emotion/babel-plugin@^11.11.0":
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.11.0.tgz#c2d872b6a7767a9d176d007f5b31f7d504bb5d6c"
@@ -5408,20 +5423,6 @@ dotenv@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
-
-"drt-react@file:../../drt-react":
-  version "1.0.0"
-  dependencies:
-    "-" "^0.0.1"
-    "@fontsource/material-icons" "^5.0.18"
-    "@fontsource/roboto" "^5.0.13"
-    "@storybook/icons" "^1.2.9"
-    css-loader "^7.1.2"
-    install-peers "^1.0.4"
-    postcss "^8.4.38"
-    sass-loader "^14.2.1"
-    storybook-addon-material-ui "^0.9.0-alpha.24"
-    style-loader "^4.0.0"
 
 duplexer@^0.1.2:
   version "0.1.2"
