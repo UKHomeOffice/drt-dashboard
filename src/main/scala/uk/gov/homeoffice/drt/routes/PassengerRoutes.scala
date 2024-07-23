@@ -54,17 +54,9 @@ object PassengerRoutes {
             case _ => throw new IllegalArgumentException(s"Invalid date range: $startDate - $endDate")
           }
           val granularity = maybeGranularity.map(Granularity.fromString).getOrElse(Total)
-          val streamForPort = summaryProvider(start, end, granularity, maybeTerminal.map(Terminal(_)))
-
           val contentType = contentTypeFromRequest(request)
 
-          val portResults = Source(portCodes.toList)
-            .flatMapConcat { portCodeStr =>
-              val portCode = PortCode(portCodeStr)
-              streamForPort(portCode).map(result => (portCode, result))
-            }
-
-          val eventualContent = sourceToContent(contentType, portResults, maybeTerminal)
+          val eventualContent = passengerContent(portCodes, maybeTerminal, summaryProvider, start, end, granularity, contentType)
 
           onComplete(eventualContent) {
             case Success(content) => complete(HttpEntity(contentType, content))
@@ -75,6 +67,28 @@ object PassengerRoutes {
         }
       }
     }
+  }
+
+  def passengerContent(portCodes: Iterable[String],
+                       maybeTerminal: Option[String],
+                       summaryProvider: (LocalDate, LocalDate, Granularity, Option[Terminal]) =>
+                         PortCode => Source[(Map[Queue, Int], Int, Option[Any]), NotUsed],
+                       start: LocalDate,
+                       end: LocalDate,
+                       granularity: Granularity,
+                       contentType: ContentType.NonBinary,
+                      )
+                      (implicit ec: ExecutionContext, mat: Materializer): Future[String] = {
+    val streamForPort = summaryProvider(start, end, granularity, maybeTerminal.map(Terminal(_)))
+
+    val portResults = Source(portCodes.toList)
+      .flatMapConcat { portCodeStr =>
+        val portCode = PortCode(portCodeStr)
+        streamForPort(portCode).map(result => (portCode, result))
+      }
+
+    val eventualContent = sourceToContent(contentType, portResults, maybeTerminal)
+    eventualContent
   }
 
   private def contentTypeFromRequest(request: HttpRequest) = {

@@ -118,12 +118,13 @@ object Server {
 
       val routes: Route = concat(
         pathPrefix("api") {
+          val paxStream = PassengerSummaryStreams(db).streamForGranularity
           concat(
-            PassengerRoutes(PassengerSummaryStreams(db).streamForGranularity),
+            PassengerRoutes(paxStream),
             CiriumRoutes(serverConfig.ciriumDataUri),
             DrtRoutes(serverConfig.portIataCodes),
             LegacyExportRoutes(ProdHttpClient, exportUploader.upload, exportDownloader.download, () => SDate.now()),
-            ExportRoutes(ProdHttpClient, exportUploader.upload, exportDownloader.download, ExportPersistenceImpl(db), () => SDate.now(), emailClient, urls.rootUrl, serverConfig.teamEmail),
+            ExportRoutes(ProdHttpClient, exportUploader.upload, exportDownloader.download, ExportPersistenceImpl(db), () => SDate.now(), emailClient, urls.rootUrl, serverConfig.teamEmail, paxStream),
             UserRoutes(serverConfig.clientConfig, userService, userRequestService, notifications, serverConfig.keycloakUrl),
             FeatureGuideRoutes(featureGuideService, featureUploader, featureDownloader),
             ApiRoutes(serverConfig.clientConfig, userService, ScheduledHealthCheckPausePersistenceImpl(db, now)),
