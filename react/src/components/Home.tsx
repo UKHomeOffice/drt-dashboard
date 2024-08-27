@@ -5,6 +5,7 @@ import {PortList} from "./PortList";
 import {Box} from "@mui/material";
 import {UserProfile} from "../model/User";
 import {ConfigValues} from "../model/Config";
+import { useNavigate } from "react-router-dom";
 
 
 interface IProps {
@@ -14,8 +15,13 @@ interface IProps {
 
 
 export const Home = (props: IProps) => {
+    const navigate = useNavigate();
     const isRccUser = () => {
         return props.user.roles.includes("rcc:central") || props.user.roles.includes("rcc:heathrow") || props.user.roles.includes("rcc:north") || props.user.roles.includes("rcc:south")
+    }
+
+    if (isRccUser() || props.user.roles.includes('national:view') || props.user.roles.includes('forceast:view')){
+        navigate('/national-pressure');
     }
 
     return <Box className="App-header">

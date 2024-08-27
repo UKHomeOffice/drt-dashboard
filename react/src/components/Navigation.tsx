@@ -8,6 +8,21 @@ interface IProps {
   user: UserProfile
 }
 
+export const adminMenuItems = [
+  {label: 'Home', link: '/', roles: []},
+  {label: 'Access requests', link: '/access-requests', roles: ['manage-users']},
+  {label: 'Alert notices', link: '/alerts', roles: ['manage-users']},
+  {label: 'Drop-in sessions', link: '/drop-in-sessions', roles: ['manage-users']},
+  {label: 'Download Manager', link: '/download', roles: ['download-manager']},
+  {label: 'National Dashboard', link: '/national-pressure', roles: ['national:view']},
+  {label: 'Export Config', link: '/export-config', roles: ['manage-users']},
+  {label: 'Feature guides', link: '/feature-guides', roles: ['manage-users']},
+  {label: 'Health checks', link: '/health-checks', roles: ['health-checks:edit']},
+  {label: 'Health check pauses', link: '/health-check-pauses', roles: ['health-checks:edit']},
+  {label: 'Feedback', link: '/user-feedback', roles: ['manage-users']},
+  {label: 'Users', link: '/users', roles: ['manage-users']},
+]
+
 export default function Navigation(props: IProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
