@@ -7,6 +7,7 @@ import {UserProfile} from "../model/User";
 import {ConfigValues} from "../model/Config";
 import { useNavigate } from "react-router-dom";
 import {Helmet} from "react-helmet";
+import PageContentWrapper from '../PageContentWrapper';
 
 
 interface IProps {
@@ -30,7 +31,7 @@ export const Home = (props: IProps) => {
     }, [isRccUser, props])
   ;
 
-  return <>
+  return <PageContentWrapper>
     <Helmet>
       <title>DRT</title>
     </Helmet>
@@ -41,5 +42,5 @@ export const Home = (props: IProps) => {
                   drtDomain={props.config.domain} isRccUser={isRccUser()}/>
       }
     </Box>
-  </>
+  </PageContentWrapper>
 }

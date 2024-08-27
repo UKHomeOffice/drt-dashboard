@@ -51,6 +51,8 @@ export const App = () => {
   const currentLocation = window.document.location;
   const navigate = useNavigate();
   const logoutLink = "/oauth2/sign_out?redirect=" + currentLocation.toString()
+  const theme = useTheme();
+  const is_mobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSignedIn = user.kind === "SignedInUser";
   const hasConfig = config.kind !== 'PendingConfig';
 
@@ -65,7 +67,7 @@ export const App = () => {
     ...availablePorts.map(portCode => { 
       let domain = hasConfig && config.values.domain ? config.values.domain : 'drt-preprod'
       return {
-        label: `${portCode} (${AirportNameIndex[portCode]})`,
+        label: `${AirportNameIndex[portCode]} (${portCode})`,
         link: `https://${portCode.toLowerCase()}.${domain}`,
       }
     })
@@ -102,10 +104,10 @@ export const App = () => {
         adminMenuItems={adminMenuItems} 
         rightMenuItems={[]} 
         leftMenuItems={[]} 
+        maxWidth='none'
         initialSelectedPortMenuItem={''}
-        maxWidth={'none'}
         portMenuItems={portMenuItems} />
-      <StyledContainer id="hello">
+      <StyledContainer disableGutters={is_mobile}>
         <SnackbarProvider
           anchorOrigin={{
             vertical: 'top',
