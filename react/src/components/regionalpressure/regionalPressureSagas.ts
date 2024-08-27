@@ -35,6 +35,19 @@ export type TerminalDataPoint = {
   terminalName?: string,
 };
 
+
+export type ExportableDataPoint = {
+  date: string,
+  hour: number,
+  portCode: string,
+  regionName: string,
+  totalPcpPax: number, 
+  terminalName?: string,
+  EEA?: number,
+  nonEEA?:number,
+  eGates?:number,
+};
+
 export type PortsObject = {
   [key:string] :  TerminalDataPoint[]
 }
@@ -64,6 +77,24 @@ export function getHistoricDateByDay(date: Moment) : Moment {
     .subtract(1, 'year')
     .isoWeek(date.isoWeek())
     .isoWeekday(date.isoWeekday())
+}
+
+const createExportableDatapoints = (datapoints: TerminalDataPoint[]) :ExportableDataPoint[] => {
+  let flattenedCurrent: ExportableDataPoint[] = [];
+  datapoints!.forEach((datapoint) => {
+    flattenedCurrent.push({
+      date: datapoint.date,
+      hour: datapoint.hour,
+      portCode: datapoint.portCode,
+      regionName: datapoint.regionName,
+      totalPcpPax: datapoint.totalPcpPax, 
+      terminalName: datapoint.terminalName,
+      EEA: datapoint.queueCounts[0]?.count || 0,
+      eGates: datapoint.queueCounts[1]?.count || 0,
+      nonEEA: datapoint.queueCounts[2]?.count || 0,
+    })
+  }); 
+  return flattenedCurrent
 }
 
 export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
@@ -112,9 +143,10 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     }
 
     if (action.isExport) {
-      
-      const currentCSV = generateCsv({})(current);
-      const historicCSV = generateCsv({})(historic);
+
+
+      const currentCSV = generateCsv({})(createExportableDatapoints(current));
+      const historicCSV = generateCsv({})(createExportableDatapoints(historic));
       download({})(currentCSV);
       download({})(historicCSV);
       yield(put(setStatus('done')))
@@ -127,22 +159,22 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
   
       current!.forEach((datapoint) => {
         const portIndex = datapoint.terminalName ? `${datapoint.portCode}-${datapoint.terminalName}` : datapoint.portCode;
-        datapoint.queueCounts.forEach(passengerCount => {
+        datapoint.queueCounts!.forEach(passengerCount => {
           portTotals[portIndex] = (portTotals[portIndex] ? portTotals[portIndex] : 0) + passengerCount.count
         })
         portData[portIndex] ?
-        portData[portIndex].push(datapoint)
-          : portData[portIndex] = [datapoint]
+          portData[portIndex].push(datapoint)
+            : portData[portIndex] = [datapoint]
       })
   
       historic!.forEach((datapoint) => {
         const portIndex = datapoint.terminalName ? `${datapoint.portCode}-${datapoint.terminalName}` : datapoint.portCode;
-        datapoint.queueCounts.forEach(passengerCount => {
+        datapoint.queueCounts!.forEach(passengerCount => {
           historicPortTotals[portIndex] = (historicPortTotals[portIndex] ? historicPortTotals[portIndex] : 0) + passengerCount.count
         })
         historicPortData[portIndex] ?
-        historicPortData[portIndex].push(datapoint)
-          : historicPortData[portIndex] = [datapoint]
+          historicPortData[portIndex].push(datapoint)
+            : historicPortData[portIndex] = [datapoint]
       })
       
       yield(put(setRegionalDashboardState({
