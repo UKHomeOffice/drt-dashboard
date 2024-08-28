@@ -15,11 +15,9 @@ steps:
       CI: false
     commands:
       - cd react
-      - pwd && corepack enable
-      - pwd && yarn set version stable
-      - pwd && yarn install
-      - pwd && yarn build
-      - pwd && yarn test-ci
+      - pwd && npm install
+      - pwd && npm run build
+      - pwd && nom run test-ci
     when:
       event:
         - push
