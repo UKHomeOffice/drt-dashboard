@@ -15,6 +15,7 @@ steps:
       CI: false
     commands:
       - cd react
+      - pwd && yarn set version latest
       - pwd && mkdir .yarncache
       - pwd && yarn install --cache-folder ./.yarncache --network-timeout 1000000
       - pwd && rm -rf .yarncache
