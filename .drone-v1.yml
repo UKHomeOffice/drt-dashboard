@@ -15,8 +15,9 @@ steps:
       CI: false
     commands:
       - cd react
-      -
-      - pwd && yarn install --network-timeout 1000000
+      - pwd && mkdir .yarncache
+      - pwd && yarn install --cache-folder ./.yarncache --network-timeout 1000000
+      - pwd && rm -rf .yarncache
       - pwd && yarn build
       - pwd && yarn test-ci
     when:
