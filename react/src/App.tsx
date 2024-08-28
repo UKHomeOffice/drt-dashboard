@@ -102,6 +102,7 @@ export const App = () => {
         adminMenuItems={adminMenuItems} 
         rightMenuItems={[]} 
         leftMenuItems={[]} 
+        initialSelectedPortMenuItem={''}
         portMenuItems={portMenuItems} />
       <StyledContainer disableGutters={is_mobile}>
         <SnackbarProvider
