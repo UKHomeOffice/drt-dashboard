@@ -14,6 +14,7 @@ export type RequestPaxTotalsType = {
   startDate: string,
   endDate: string,
   isExport: boolean,
+  comparison: string,
 };
 export type PortTerminal = {
   port: string,
@@ -60,7 +61,7 @@ type Response = {
   data: TerminalDataPoint[]
 }
 
-export const requestPaxTotals = (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean)  :RequestPaxTotalsType => {
+export const requestPaxTotals = (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string)  :RequestPaxTotalsType => {
   return {
     "type": "REQUEST_PAX_TOTALS",
     searchType,
@@ -68,7 +69,8 @@ export const requestPaxTotals = (userPorts: string[], availablePorts: string[], 
     availablePorts,
     startDate,
     endDate,
-    isExport
+    isExport,
+    comparison
   };
 };
 
@@ -102,10 +104,25 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     yield(put(setStatus('loading')))
     const start = moment(action.startDate);
     const end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
-    const historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
-    const historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
-    
+    let historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
+    let historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
     const duration = moment.duration(end.diff(start)).asHours();
+
+    switch (action.comparison) {
+      case 'previousYear':
+        historicStart = moment(start).subtract(1, 'year').format('YYYY-MM-DD')
+        historicEnd = moment(end).subtract(1, 'year').format('YYYY-MM-DD')
+        break;
+      case 'historicAverage':
+        historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
+        historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
+        break;
+      default:
+        historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
+        historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
+        break;
+    }
+    
     const interval = duration >= 48 ? 'daily' : 'hourly';
 
     const fStart = start.format('YYYY-MM-DD');

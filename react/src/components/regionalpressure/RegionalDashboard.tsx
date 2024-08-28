@@ -42,7 +42,7 @@ const RegionalPressureDashboard = ({config, user, status}: RegionalPressureDashb
         <Typography variant='h3' component='h2'>Compare pax arrivals with previous year</Typography>
       </Box>
       
-      <RegionalPressureForm ports={user.ports} availablePorts={availablePorts} type="single" />
+      <RegionalPressureForm ports={user.ports} availablePorts={availablePorts} />
 
       { status === 'loading' && <Grid container justifyContent={"center"}>
         <Grid item sx={{p: 4}}>
@@ -74,8 +74,8 @@ const RegionalPressureDashboard = ({config, user, status}: RegionalPressureDashb
 }
 const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureDashboardProps>) => {
   return {
-    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string,  isExport: boolean) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport));
+    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string) => {
+      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, comparison));
     }
   };
 };
