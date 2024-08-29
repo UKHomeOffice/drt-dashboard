@@ -30,7 +30,7 @@ export const AirportNameIndex: IAirportIndex = {
   BHD: 'Belfast City',
   EDI: 'Edinburgh',
   GLA: 'Glasgow',
-  PIK: 'Glasgod Prestwick',
+  PIK: 'Glasgo2 Prestwick',
   HUY: 'Humberside',
   INV: 'Inverness',
   LBA: 'Leeds Bradford',
@@ -53,12 +53,10 @@ export const getAirportByCode = (portCode: string): string => {
   let airportName: string = '';
   Object.keys(airports).map((regionKey: string) => {
     let region = airports[regionKey];
-    // console.log(`Checking ${region.code} against ${portCode}`)
     if (region.code == portCode) {
       airportName = region.name;
     } else {
       region.ports.map((port) => {
-        // console.log(`-- Checking port ${port.code} against ${portCode}`)
         if (port.code == portCode) {
           airportName = `${port.name} (${port.code})`
         }

@@ -17,7 +17,7 @@ steps:
       - cd react
       - pwd && npm install
       - pwd && npm run build
-      - pwd && nom run test-ci
+      - pwd && npm run test-ci
     when:
       event:
         - push

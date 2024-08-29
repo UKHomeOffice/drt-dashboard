@@ -20,7 +20,6 @@ RUN mkdir -p /var/data
 RUN chown 1001:1001 -R /var/data
 
 RUN apt-get update
-RUN apt-get install -y git
 RUN apt-get install -y curl
 
 RUN mkdir /home/drt/.postgresql
