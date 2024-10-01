@@ -15,6 +15,8 @@ export type RequestPaxTotalsType = {
   endDate: string,
   isExport: boolean,
   comparison: string,
+  comparisonStart: string,
+  comparisonEnd: string,
 };
 export type PortTerminal = {
   port: string,
@@ -61,7 +63,17 @@ type Response = {
   data: TerminalDataPoint[]
 }
 
-export const requestPaxTotals = (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string)  :RequestPaxTotalsType => {
+export const requestPaxTotals = (
+  userPorts: string[], 
+  availablePorts: string[], 
+  searchType: string,
+   startDate: string, 
+   endDate: string, 
+   isExport: boolean,
+  comparison: string,
+  comparisonStart: string,
+  comparisonEnd: string,
+)  :RequestPaxTotalsType => {
   return {
     "type": "REQUEST_PAX_TOTALS",
     searchType,
@@ -70,7 +82,9 @@ export const requestPaxTotals = (userPorts: string[], availablePorts: string[], 
     startDate,
     endDate,
     isExport,
-    comparison
+    comparison,
+    comparisonStart,
+    comparisonEnd,
   };
 };
 
@@ -110,12 +124,16 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
 
     switch (action.comparison) {
       case 'previousYear':
-        historicStart = moment(start).subtract(1, 'year').format('YYYY-MM-DD')
-        historicEnd = moment(end).subtract(1, 'year').format('YYYY-MM-DD')
-        break;
-      case 'historicAverage':
         historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
         historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
+        break;
+      case 'historicAverage':
+        historicStart = moment(start).subtract(4, 'year').format('YYYY-MM-DD')
+        historicEnd = moment(end).subtract(4, 'year').format('YYYY-MM-DD')
+        break;
+      case 'custom':
+        historicStart = moment(action.comparisonStart).format('YYYY-MM-DD')
+        historicEnd = moment(action.comparisonEnd).format('YYYY-MM-DD')
         break;
       default:
         historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
