@@ -79,6 +79,17 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
   const handleComparisonTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setComparisonType(event.target.value);
     event.preventDefault();
+    requestRegion(
+      ports, 
+      availablePorts, 
+      searchType, 
+      dates.start.format('YYYY-MM-DD'), 
+      dates.end.format('YYYY-MM-DD'), 
+      false, 
+      comparisonType, 
+      comparisonDate.start.format('YYYY-MM-DD'), 
+      comparisonDate.end.format('YYYY-MM-DD')
+    )
   };
 
   const handleComparisonDateChange = (type: string, date: Moment) => {
@@ -88,6 +99,17 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
       start: date,
       end: comparisonEnd
     });
+    requestRegion(
+      ports, 
+      availablePorts, 
+      searchType, 
+      dates.start.format('YYYY-MM-DD'), 
+      dates.end.format('YYYY-MM-DD'), 
+      false, 
+      comparisonType, 
+      date.format('YYYY-MM-DD'), 
+      comparisonEnd.format('YYYY-MM-DD')
+    )
   }
 
   return (
