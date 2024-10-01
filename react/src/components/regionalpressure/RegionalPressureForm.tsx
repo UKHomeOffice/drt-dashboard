@@ -86,7 +86,7 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
       dates.start.format('YYYY-MM-DD'), 
       dates.end.format('YYYY-MM-DD'), 
       false, 
-      comparisonType, 
+      event.target.value, 
       comparisonDate.start.format('YYYY-MM-DD'), 
       comparisonDate.end.format('YYYY-MM-DD')
     )
