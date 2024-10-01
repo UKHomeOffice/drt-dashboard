@@ -74,8 +74,8 @@ const RegionalPressureDashboard = ({config, user, status}: RegionalPressureDashb
 }
 const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureDashboardProps>) => {
   return {
-    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, comparison));
+    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string, comparisonStart: string, comparisonEnd: string) => {
+      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, comparison, comparisonStart,comparisonEnd ));
     }
   };
 };
