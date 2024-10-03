@@ -7,6 +7,7 @@ import { requestPaxTotals } from './regionalPressureSagas';
 import moment, {Moment} from 'moment';
 import { FormError } from '../../services/ValidationService';
 import { ErrorFieldMapping } from '../../services/ValidationService';
+import { getHistoricDateByDay } from './regionalPressureSagas';
 
 interface RegionalPressureFormProps {
   errors: FormError[];
@@ -17,7 +18,7 @@ interface RegionalPressureFormProps {
   start: string;
   end: string;
   status: string;
-  requestRegion: (ports: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string, comparisonStart: string, copmarisonEnd: string) => void;
+  requestRegion: (ports: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, historicStart: string, historicEnd: string) => void;
 }
 
 interface RegionalPressureDatesState {
@@ -32,22 +33,38 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
     start: moment(start),
     end: moment(end),
   });
-  const [comparisonDate, setComparisonDate] = React.useState<RegionalPressureDatesState>({
-    start: moment(start).subtract(6, 'months'),
-    end: moment(end).subtract(6, 'months'),
+  const [historicDate, setHistoricDate] = React.useState<RegionalPressureDatesState>({
+    start: getHistoricDateByDay(dates.start),
+    end: getHistoricDateByDay(dates.end),
   });
   const errorFieldMapping: ErrorFieldMapping = {}
   errors.forEach((error: FormError) => errorFieldMapping[error.field] = true);
 
   React.useEffect(() => {
-    requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), false, comparisonType, comparisonDate.start.format('YYYY-MM-DD'), comparisonDate.end.format('YYYY-MM-DD'));
+    requestRegion(
+      ports, 
+      availablePorts, 
+      searchType, 
+      dates.start.format('YYYY-MM-DD'), 
+      dates.end.format('YYYY-MM-DD'), 
+      false,
+      historicDate.start.format('YYYY-MM-DD'),
+      historicDate.end.format('YYYY-MM-DD'),
+    );
   }, [])
 
   const handleSearchTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchType(event.target.value);
     event.preventDefault();
-    requestRegion(ports, 
-      availablePorts, event.target.value, dates.start.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), false, comparisonType, comparisonDate.start.format('YYYY-MM-DD'), comparisonDate.end.format('YYYY-MM-DD')
+    requestRegion(
+      ports, 
+      availablePorts, 
+      event.target.value, 
+      dates.start.format('YYYY-MM-DD'), 
+      dates.end.format('YYYY-MM-DD'), 
+      false,
+      historicDate.start.format('YYYY-MM-DD'),
+      historicDate.end.format('YYYY-MM-DD'),
     )
   };
 
@@ -58,45 +75,85 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
     });
 
     let duration;
+
     if (type == 'start') {
       duration = moment.duration(dates.end.diff(date)).asHours();
     } else {
       duration = moment.duration(date.diff(dates.start)).asHours();
     }
-    const comparisonEnd = moment(date).add(duration, 'hours');
-    setComparisonDate({
-      ...comparisonDate,
+
+    let hStart;
+    if (comparisonType == 'previousYear') {
+      hStart = getHistoricDateByDay(date);
+    } else {
+      hStart = historicDate.start;
+    }
+    const comparisonEnd = moment(historicDate.start).add(duration, 'hours');
+    console.log(searchType, hStart, comparisonEnd);
+    setHistoricDate({
+      start: hStart,
       end: comparisonEnd
     });
 
     if (type === 'start') {
-      requestRegion(ports, availablePorts, searchType, date!.format('YYYY-MM-DD'), dates.end.format('YYYY-MM-DD'), false, comparisonType, comparisonDate.start.format('YYYY-MM-DD'), comparisonDate.end.format('YYYY-MM-DD'));
+      requestRegion(
+        ports, 
+        availablePorts,
+        searchType, 
+        date!.format('YYYY-MM-DD'), 
+        dates.end.format('YYYY-MM-DD'), 
+        false,
+        hStart.format('YYYY-MM-DD'),
+        historicDate.end.format('YYYY-MM-DD'),
+      );
     } else {
-      requestRegion(ports, availablePorts, searchType, dates.start.format('YYYY-MM-DD'), date!.format('YYYY-MM-DD'), false, comparisonType, comparisonDate.start.format('YYYY-MM-DD'), comparisonDate.end.format('YYYY-MM-DD'));
+      requestRegion(
+        ports,
+        availablePorts, 
+        searchType, 
+        dates.start.format('YYYY-MM-DD'), 
+        date!.format('YYYY-MM-DD'), 
+        false,
+        hStart.format('YYYY-MM-DD'),
+        comparisonEnd.format('YYYY-MM-DD'),
+      );
     }
   }
 
   const handleComparisonTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setComparisonType(event.target.value);
     event.preventDefault();
+
+    let hStart = historicDate.start;
+    let hEnd = historicDate.end;
+
+    if (event.target.value == 'previousYear') {
+      hStart = getHistoricDateByDay(dates.start);
+      hEnd = getHistoricDateByDay(dates.end);
+      setHistoricDate({
+        start: hStart,
+        end: hEnd
+      });
+    }
+
     requestRegion(
       ports, 
       availablePorts, 
       searchType, 
       dates.start.format('YYYY-MM-DD'), 
       dates.end.format('YYYY-MM-DD'), 
-      false, 
-      event.target.value, 
-      comparisonDate.start.format('YYYY-MM-DD'), 
-      comparisonDate.end.format('YYYY-MM-DD')
+      false,
+      hStart.format('YYYY-MM-DD'),
+      hEnd.format('YYYY-MM-DD'),
     )
   };
 
-  const handleComparisonDateChange = (type: string, date: Moment) => {
+  const handleComparisonDateChange = (type: string, comparisonDate: Moment) => {
     const duration = moment.duration(dates.end.diff(dates.start)).asHours();
-    const comparisonEnd = moment(date).add(duration, 'hours');
-    setComparisonDate({
-      start: date,
+    const comparisonEnd = moment(comparisonDate).add(duration, 'hours');
+    
+    setHistoricDate({
+      start: comparisonDate,
       end: comparisonEnd
     });
     requestRegion(
@@ -105,10 +162,9 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
       searchType, 
       dates.start.format('YYYY-MM-DD'), 
       dates.end.format('YYYY-MM-DD'), 
-      false, 
-      comparisonType, 
-      date.format('YYYY-MM-DD'), 
-      comparisonEnd.format('YYYY-MM-DD')
+      false,
+      comparisonDate.format('YYYY-MM-DD'), 
+      comparisonEnd.format('YYYY-MM-DD'), 
     )
   }
 
@@ -169,7 +225,6 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
               onChange={handleComparisonTypeChange}
             >
               <FormControlLabel value="previousYear" control={<Radio checked={comparisonType === 'previousYear'} />} label="Previous Year" />
-              <FormControlLabel value="historicAverage" control={<Radio checked={comparisonType === 'historicAverage'} />} label="Historic average (previous 4 years)" />
               <FormControlLabel value="custom" control={<Radio checked={comparisonType === 'custom'} />} label="Custom date" />
             </RadioGroup>
           </FormControl>
@@ -188,7 +243,7 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
                 }}
                 label={searchType == 'single' ? "Date" : "From" }
                 sx={{backgroundColor: '#fff', marginRight: '10px'}}
-                value={comparisonDate.start}
+                value={historicDate.start}
                 onChange={(newValue: Moment | null) => handleComparisonDateChange('start', newValue || moment())}/>
             </Grid>
             { searchType === 'range' && <Grid item>
@@ -202,8 +257,7 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
                 }}
                 label="To"  
                 sx={{backgroundColor: '#fff'}}
-                value={comparisonDate.end}
-                onChange={(newValue: Moment | null) => handleComparisonDateChange('end', newValue || moment())}/>
+                value={historicDate.end}/>
             </Grid> }
           </Grid>
         }
@@ -220,11 +274,10 @@ const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureFormProps
       startDate: string, 
       endDate: string,  
       isExport: boolean, 
-      comparison: string,
-      comparisonStart: string,
-      comparisonEnd: string,
+      historicStart: string,
+      historicEnd: string,
     ) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, comparison, comparisonStart, comparisonEnd));
+      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, historicStart, historicEnd));
     }
   };
 };

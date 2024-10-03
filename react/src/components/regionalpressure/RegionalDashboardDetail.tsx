@@ -300,7 +300,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           })
                         },
                         {
-                          label: `Previous year`,
+                          label: `Historic arrivals`,
                           type: 'line',
                           borderColor: drtTheme.palette.grey[800],
                           borderDash: [5, 5],
@@ -312,20 +312,27 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           pointBackgroundColor: '#ffffff',
                           pointHoverBackgroundColor: '#ffffff',
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
-                            const paxDate = moment(portData[port][index].date)
-                            const pointDate = moment(datapoint.date)
-                            let historicDayOffset = 0;
-                            if (interval === 'hour') {
-                              pointDate.set('date', paxDate.date())
-                              pointDate.add(datapoint.hour, 'hours')
-                            } else {
-                              historicDayOffset =  moment.duration(pointDate.diff(moment(paxDate).subtract(1,'y'))).asDays();
-                            }
-                            return {
-                              x: pointDate.add(1, 'year').subtract(historicDayOffset, 'days').format('MM/DD/YYYY HH:mm'),
-                              y: datapoint.totalPcpPax,
-                            }
-                          })
+
+
+
+                              const paxDate = moment(portData[port][index]?.date) || moment();
+                              const pointDate = moment(datapoint.date)
+                              let historicDayOffset = 0;
+                              if (interval === 'hour') {
+                                pointDate.set('date', paxDate.date())
+                                pointDate.add(datapoint.hour, 'hours')
+                              } else {
+                                historicDayOffset =  moment.duration(pointDate.diff(moment(paxDate).subtract(1,'y'))).asDays();
+                              }
+                              return {
+                                x: pointDate.add(1, 'year').subtract(historicDayOffset, 'days').format('MM/DD/YYYY HH:mm'),
+                                y: datapoint.totalPcpPax,
+                              }
+                            // return {
+                            //   x: datapoint.date,
+                            //   y: datapoint.totalPcpPax,
+                            // };
+                          }),
                         }
                       ]
                     }}

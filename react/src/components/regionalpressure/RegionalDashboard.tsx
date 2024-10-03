@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {connect, MapDispatchToProps} from 'react-redux';
+import {connect} from 'react-redux';
 import {
   Box,
   Grid,
@@ -9,7 +9,6 @@ import {
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import { requestPaxTotals } from './regionalPressureSagas';
 import { FormError } from '../../services/ValidationService';
 import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureChart from './RegionalPressureChart';
@@ -72,13 +71,6 @@ const RegionalPressureDashboard = ({config, user, status}: RegionalPressureDashb
   )
   
 }
-const mapDispatch = (dispatch :MapDispatchToProps<any, RegionalPressureDashboardProps>) => {
-  return {
-    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean, comparison: string, comparisonStart: string, comparisonEnd: string) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport, comparison, comparisonStart,comparisonEnd ));
-    }
-  };
-};
 
 const mapState = (state: RootState) => {
   return { 
@@ -91,4 +83,4 @@ const mapState = (state: RootState) => {
 }
 
 
-export default connect(mapState, mapDispatch)(RegionalPressureDashboard);
+export default connect(mapState)(RegionalPressureDashboard);

@@ -14,9 +14,8 @@ export type RequestPaxTotalsType = {
   startDate: string,
   endDate: string,
   isExport: boolean,
-  comparison: string,
-  comparisonStart: string,
-  comparisonEnd: string,
+  historicStart: string,
+  historicEnd: string,
 };
 export type PortTerminal = {
   port: string,
@@ -70,9 +69,8 @@ export const requestPaxTotals = (
    startDate: string, 
    endDate: string, 
    isExport: boolean,
-  comparison: string,
-  comparisonStart: string,
-  comparisonEnd: string,
+   historicStart: string,
+   historicEnd: string,
 )  :RequestPaxTotalsType => {
   return {
     "type": "REQUEST_PAX_TOTALS",
@@ -82,9 +80,8 @@ export const requestPaxTotals = (
     startDate,
     endDate,
     isExport,
-    comparison,
-    comparisonStart,
-    comparisonEnd,
+    historicStart,
+    historicEnd,
   };
 };
 
@@ -118,33 +115,22 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     yield(put(setStatus('loading')))
     const start = moment(action.startDate);
     const end = action.searchType === 'single' ? start : moment(action.endDate).endOf('day');
-    let historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
-    let historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
-    const duration = moment.duration(end.diff(start)).asHours();
+    const historicStart = moment(action.historicStart);
+    const historicEnd = action.searchType === 'single' ? historicStart : moment(action.historicEnd).endOf('day');
 
-    switch (action.comparison) {
-      case 'previousYear':
-        historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
-        historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
-        break;
-      case 'historicAverage':
-        historicStart = moment(start).subtract(4, 'year').format('YYYY-MM-DD')
-        historicEnd = moment(end).subtract(4, 'year').format('YYYY-MM-DD')
-        break;
-      case 'custom':
-        historicStart = moment(action.comparisonStart).format('YYYY-MM-DD')
-        historicEnd = moment(action.comparisonEnd).format('YYYY-MM-DD')
-        break;
-      default:
-        historicStart = getHistoricDateByDay(start).format('YYYY-MM-DD')
-        historicEnd = getHistoricDateByDay(end).format('YYYY-MM-DD')
-        break;
-    }
-    
+    console.log(`Start: ${start}`);
+    console.log(`End: ${end}`);
+    console.log(`Historic Start: ${historicStart}`);
+    console.log(`Historic End: ${historicEnd}`);
+    console.log(`======================================`);
+
+    const duration = moment.duration(end.diff(start)).asHours();
     const interval = duration >= 48 ? 'daily' : 'hourly';
 
     const fStart = start.format('YYYY-MM-DD');
     const fEnd = end.format('YYYY-MM-DD');
+    const fHistoricStart = historicStart.format('YYYY-MM-DD');
+    const fHistoricEnd = historicEnd.format('YYYY-MM-DD');
 
     let current: TerminalDataPoint[];
     let historic: TerminalDataPoint[];
@@ -153,7 +139,7 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
     if (window.location.hostname.includes('localhost')) {
       //stub all data for local development
       current =  StubService.generatePortPaxSeries(fStart, fEnd, interval, 'region', action.availablePorts)
-      historic = StubService.generatePortPaxSeries(historicStart, historicEnd, interval, 'region', action.availablePorts)
+      historic = StubService.generatePortPaxSeries(fHistoricStart, fHistoricEnd, interval, 'region', action.availablePorts)
     } else {
       currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
       historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
@@ -221,7 +207,9 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
         start: fStart,
         end: fEnd,
         interval: duration >= 48 ? 'day' : 'hour',
-        status: 'done'
+        status: 'done',
+        historicStart: fHistoricStart,
+        historicEnd: fHistoricEnd,
       })))
 
     }
