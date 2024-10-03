@@ -142,7 +142,7 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
       historic = StubService.generatePortPaxSeries(fHistoricStart, fHistoricEnd, interval, 'region', action.availablePorts)
     } else {
       currentResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
-      historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
+      historicResponse = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fHistoricStart}/${fHistoricEnd}?granularity=${interval}&port-codes=${action.availablePorts.join()}`);
 
       current = currentResponse.data;
       historic = historicResponse.data;
@@ -153,10 +153,10 @@ export function* handleRequestPaxTotals(action: RequestPaxTotalsType) {
         const LHRT4: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}/T4?granularity=${interval}&port-codes=LHR`);
         const LHRT5: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fStart}/${fEnd}/T5?granularity=${interval}&port-codes=LHR`);
 
-        const LHRT2Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}/T2?granularity=${interval}&port-codes=LHR`);
-        const LHRT3Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}/T3?granularity=${interval}&port-codes=LHR`);
-        const LHRT4Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}/T4?granularity=${interval}&port-codes=LHR`);
-        const LHRT5Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${historicStart}/${historicEnd}/T5?granularity=${interval}&port-codes=LHR`);
+        const LHRT2Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fHistoricStart}/${fHistoricEnd}/T2?granularity=${interval}&port-codes=LHR`);
+        const LHRT3Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fHistoricStart}/${fHistoricEnd}/T3?granularity=${interval}&port-codes=LHR`);
+        const LHRT4Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fHistoricStart}/${fHistoricEnd}/T4?granularity=${interval}&port-codes=LHR`);
+        const LHRT5Historic: Response = yield call (axios.get, `${ApiClient.passengerTotalsEndpoint}${fHistoricStart}/${fHistoricEnd}/T5?granularity=${interval}&port-codes=LHR`);
 
         current = [...current, ...LHRT2.data, ...LHRT3.data, ...LHRT4.data, ...LHRT5.data ]
         historic = [...historic, ...LHRT2Historic.data, ...LHRT3Historic.data, ...LHRT4Historic.data, ...LHRT5Historic.data ]
