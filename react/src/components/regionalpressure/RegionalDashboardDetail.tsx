@@ -202,7 +202,7 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                                 case 'Pax arrivals':
                                   return [`${date.format(dateFormat)}:`,` ${context.parsed.y} pax`]
                                 case 'Previous year':
-                                  return [`${getHistoricDateByDay(date).format(dateFormat)}:`,` ${context.parsed.y} pax`]
+                                  return [`${date.format(dateFormat)}:`,` ${context.parsed.y} pax`]
                                 default: 
                                   return ['']
                               }
@@ -312,9 +312,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           pointBackgroundColor: '#ffffff',
                           pointHoverBackgroundColor: '#ffffff',
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
-
-
-
                               const paxDate = moment(portData[port][index]?.date) || moment();
                               const pointDate = moment(datapoint.date)
                               let historicDayOffset = 0;
@@ -325,13 +322,9 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                                 historicDayOffset =  moment.duration(pointDate.diff(moment(paxDate).subtract(1,'y'))).asDays();
                               }
                               return {
-                                x: pointDate.add(1, 'year').subtract(historicDayOffset, 'days').format('MM/DD/YYYY HH:mm'),
+                                x: paxDate.format('MM/DD/YYYY HH:mm'),
                                 y: datapoint.totalPcpPax,
                               }
-                            // return {
-                            //   x: datapoint.date,
-                            //   y: datapoint.totalPcpPax,
-                            // };
                           }),
                         }
                       ]
