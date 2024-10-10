@@ -9,7 +9,6 @@ import {
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import {requestPaxTotals} from './regionalPressureSagas';
 import {FormError} from '../../services/ValidationService';
 import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureChart from './RegionalPressureChart';
@@ -17,6 +16,7 @@ import RegionalPressureExport from './RegionalPressureExport';
 import RegionalPressureForm from './RegionalPressureForm';
 import {Helmet} from "react-helmet";
 import {customerPageTitleSuffix} from "../../utils/common";
+import PageContentWrapper from '../PageContentWrapper';
 
 interface NationalDashboardProps {
   user: UserProfile;
@@ -37,7 +37,7 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
 
   const availablePorts = config.ports.map(port => port.iata);
 
-  return <>
+  return <PageContentWrapper>
     <Helmet>
       <title>National Dashboard {customerPageTitleSuffix}</title>
     </Helmet>
@@ -74,15 +74,8 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
         })}
       </Grid>}
     </Box>
-  </>
+  </PageContentWrapper>
 }
-const mapDispatch = (dispatch: MapDispatchToProps<any, NationalDashboardProps>) => {
-  return {
-    requestRegionExport: (userPorts: string[], availablePorts: string[], searchType: string, startDate: string, endDate: string, isExport: boolean) => {
-      dispatch(requestPaxTotals(userPorts, availablePorts, searchType, startDate, endDate, isExport));
-    }
-  };
-};
 
 const mapState = (state: RootState) => {
   return {
@@ -95,4 +88,4 @@ const mapState = (state: RootState) => {
 }
 
 
-export default connect(mapState, mapDispatch)(NationalDashboard);
+export default connect(mapState)(NationalDashboard);

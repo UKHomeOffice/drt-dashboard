@@ -26,6 +26,7 @@ import DownloadManager from './components/downloadmanager/DownloadManager'
 import {ExportConfig} from "./components/ExportConfig"
 import {HealthChecks} from "./components/healthchecks/HealthChecks"
 import RegionalDashboard from './components/regionalpressure/RegionalDashboard'
+import RegionalDashboardDetail from './components/regionalpressure/RegionalDashboardDetail'
 import NationalDashboard from "./components/regionalpressure/NationalDashboard"
 import { Header } from 'drt-react';
 import { adminMenuItems } from './components/Navigation';
@@ -51,8 +52,6 @@ export const App = () => {
   const currentLocation = window.document.location;
   const navigate = useNavigate();
   const logoutLink = "/oauth2/sign_out?redirect=" + currentLocation.toString()
-  const theme = useTheme();
-  const is_mobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSignedIn = user.kind === "SignedInUser";
   const hasConfig = config.kind !== 'PendingConfig';
 
@@ -107,7 +106,7 @@ export const App = () => {
         maxWidth='none'
         initialSelectedPortMenuItem={''}
         portMenuItems={portMenuItems} />
-      <StyledContainer disableGutters={is_mobile}>
+      <StyledContainer>
         <SnackbarProvider
           anchorOrigin={{
             vertical: 'top',
@@ -120,7 +119,7 @@ export const App = () => {
           <Route path={"/users"} element={<UsersList/>}/>
           <Route path={"/download"} element={<DownloadManager config={config.values} user={user.profile} />} />
           <Route path={"/national-pressure"} element={<NationalDashboard config={config.values} user={user.profile} />} />
-          <Route path={"/national-pressure/:region"} element={<RegionalDashboard config={config.values} user={user.profile} />} />
+          <Route path={"/national-pressure/:region"} element={<RegionalDashboardDetail config={config.values} user={user.profile} />} />
           <Route path={"/alerts"} element={<Alerts regions={config.values.portsByRegion} user={user.profile}/>}/>
           <Route path={"/region/:regionName"} element={<RegionPage user={user.profile} config={config.values}/>}/>
           <Route path={"/feature-guides"}>

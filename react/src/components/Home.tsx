@@ -11,7 +11,7 @@ import PageContentWrapper from './PageContentWrapper';
 
 
 interface IProps {
-  user: UserProfiles
+  user: UserProfile
   config: ConfigValues
 }
 
