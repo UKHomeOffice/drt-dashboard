@@ -38,7 +38,6 @@ import { TerminalDataPoint } from './regionalPressureSagas';
 import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureForm from './RegionalPressureForm';
 import RegionalPressureExport from './RegionalPressureExport';
-import { getHistoricDateByDay } from './regionalPressureSagas';
 
 
 interface RegionalPressureDetailProps {
@@ -313,14 +312,6 @@ const RegionalPressureDetail = ({ config, portData, historicPortData, interval, 
                           pointHoverBackgroundColor: '#ffffff',
                           data: historicPortData[port].map((datapoint: TerminalDataPoint, index: number) => {
                               const paxDate = moment(portData[port][index]?.date) || moment();
-                              const pointDate = moment(datapoint.date)
-                              let historicDayOffset = 0;
-                              if (interval === 'hour') {
-                                pointDate.set('date', paxDate.date())
-                                pointDate.add(datapoint.hour, 'hours')
-                              } else {
-                                historicDayOffset =  moment.duration(pointDate.diff(moment(paxDate).subtract(1,'y'))).asDays();
-                              }
                               return {
                                 x: paxDate.format('MM/DD/YYYY HH:mm'),
                                 y: datapoint.totalPcpPax,
