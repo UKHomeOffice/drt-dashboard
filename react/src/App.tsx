@@ -25,7 +25,6 @@ import {FeedbackList} from "./components/feedback/FeedbackList"
 import DownloadManager from './components/downloadmanager/DownloadManager'
 import {ExportConfig} from "./components/ExportConfig"
 import {HealthChecks} from "./components/healthchecks/HealthChecks"
-import RegionalDashboard from './components/regionalpressure/RegionalDashboard'
 import RegionalDashboardDetail from './components/regionalpressure/RegionalDashboardDetail'
 import NationalDashboard from "./components/regionalpressure/NationalDashboard"
 import { Header } from 'drt-react';
