@@ -1,14 +1,11 @@
 import React, {useEffect} from 'react'
 import './App.css'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import { useTheme } from '@mui/material/styles'
 import {Home} from './components/Home'
 import Alerts from './components/alerts/Alerts'
 import AccessRequests from './components/accessrequests/AccessRequests'
 import UsersList from './components/users/UsersList'
-import {Route, Routes} from "react-router-dom"
+import {Route, Routes, useNavigate} from "react-router-dom"
 import Loading from "./components/Loading"
-import Navigation from "./components/Navigation"
 import {useConfig} from "./store/config"
 import {Container} from "@mui/material"
 import {styled} from "@mui/material/styles"
@@ -21,7 +18,6 @@ import {DropInSessionsList} from "./components/dropins/DropInSessionsList"
 import {AddOrEditDropInSession} from "./components/dropins/AddOrEditDropInSession"
 import {DropInSessionRegistrations} from "./components/dropins/DropInSessionRegistrations"
 import {SnackbarProvider} from 'notistack'
-import Link from "@mui/material/Link"
 import {FeatureGuideList} from "./components/featureguides/FeatureGuideList"
 import {FeatureGuideAddOrEdit} from "./components/featureguides/FeatureGuideAddOrEdit"
 import {FeedbackForms} from "./components/feedback/FeedbackForms"
@@ -31,6 +27,9 @@ import {ExportConfig} from "./components/ExportConfig"
 import {HealthChecks} from "./components/healthchecks/HealthChecks"
 import RegionalDashboard from './components/regionalpressure/RegionalDashboard'
 import NationalDashboard from "./components/regionalpressure/NationalDashboard"
+import { Header } from 'drt-react';
+import { adminMenuItems } from './components/Navigation';
+import { AirportNameIndex, getAirportByCode } from './airports';
 
 const StyledDiv = styled('div')(() => ({
   textAlign: 'center',
@@ -40,16 +39,37 @@ const StyledContainer = styled(Container)(() => ({
   textAlign: 'left',
   minHeight: 500,
   display: 'inline-block',
-}))
+  maxWidth: 'none !important',
+  paddingTop: '16px',
+  paddingBottom: '16px',
+  flexGrow: 1,
+}));
 
 export const App = () => {
   const {user} = useUser()
   const {config} = useConfig()
-
-  const currentLocation = window.document.location
+  const currentLocation = window.document.location;
+  const navigate = useNavigate();
   const logoutLink = "/oauth2/sign_out?redirect=" + currentLocation.toString()
-  const theme = useTheme()
-  const is_mobile = useMediaQuery(theme.breakpoints.down('md'))
+  const isSignedIn = user.kind === "SignedInUser";
+  const hasConfig = config.kind !== 'PendingConfig';
+
+  const availablePorts = hasConfig ? config.values.ports.map(port => port.iata) : [];
+  availablePorts.map((portCode) => getAirportByCode(portCode));
+
+  const portMenuItems = [
+    {
+      label:'National Dashboard',
+      link: '/national-pressure'
+    },
+    ...availablePorts.map(portCode => { 
+      let domain = hasConfig && config.values.domain ? config.values.domain : 'drt-preprod'
+      return {
+        label: `${portCode} (${AirportNameIndex[portCode]})`,
+        link: `https://${portCode.toLowerCase()}.${domain}`,
+      }
+    })
+  ]
 
   useEffect(() => {
     const trackUser = async () =>
@@ -62,34 +82,30 @@ export const App = () => {
     trackUser()
   }, [])
 
+  const routingFunction = (path: string) => {
+    if (path.substring(0,4) == 'http') {
+      window.location.href = path
+    } else {
+      navigate(path);
+    }
+  }
+
+
+  const roles = isSignedIn && user.profile?.roles;
+
   return (user.kind === "SignedInUser" && config.kind === "LoadedConfig") ?
     <StyledDiv>
-      <header role="banner" id="global-header" className=" with-proposition">
-        <div className="header-wrapper">
-          <div className="header-global">
-            <div className="header-logo">
-              <Link href="https://www.gov.uk" title="Go to the GOV.UK homepage"
-                    id="global-header-logo"
-                    className="content"
-                    sx={{display: 'flex', gap: 1, alignItems: 'center', justifyItems: 'center'}}>
-                <img src="/images/gov.uk-white.svg" width="150" height="35" alt="GOV.UK"/>
-              </Link>
-            </div>
-          </div>
-          <div className="header-proposition">
-            <div className="logout">
-              {user.kind === "SignedInUser" &&
-                  <Navigation logoutLink={logoutLink} user={user.profile}/>}
-            </div>
-            <div className="content">
-              <a href="/" id="proposition-name">Dynamic Response Tool</a>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div id="global-header-bar"/>
-      <StyledContainer disableGutters={is_mobile}>
+      <Header 
+        routingFunction={routingFunction}
+        logoutLink={() => { return logoutLink}}
+        userRoles={roles as string[]} 
+        adminMenuItems={adminMenuItems} 
+        rightMenuItems={[]} 
+        leftMenuItems={[]} 
+        initialSelectedPortMenuItem={''}
+        maxWidth={'none'}
+        portMenuItems={portMenuItems} />
+      <StyledContainer id="hello">
         <SnackbarProvider
           anchorOrigin={{
             vertical: 'top',
