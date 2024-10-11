@@ -25,7 +25,7 @@ import {FeedbackList} from "./components/feedback/FeedbackList"
 import DownloadManager from './components/downloadmanager/DownloadManager'
 import {ExportConfig} from "./components/ExportConfig"
 import {HealthChecks} from "./components/healthchecks/HealthChecks"
-import RegionalDashboardDetail from './components/regionalpressure/RegionalDashboardDetail'
+import RegionalDashboard from './components/regionalpressure/RegionalDashboard'
 import NationalDashboard from "./components/regionalpressure/NationalDashboard"
 import { Header } from 'drt-react';
 import { adminMenuItems } from './components/Navigation';
@@ -118,7 +118,7 @@ export const App = () => {
           <Route path={"/users"} element={<UsersList/>}/>
           <Route path={"/download"} element={<DownloadManager config={config.values} user={user.profile} />} />
           <Route path={"/national-pressure"} element={<NationalDashboard config={config.values} user={user.profile} />} />
-          <Route path={"/national-pressure/:region"} element={<RegionalDashboardDetail config={config.values} user={user.profile} />} />
+          <Route path={"/national-pressure/:region"} element={<RegionalDashboard config={config.values} user={user.profile} />} />
           <Route path={"/alerts"} element={<Alerts regions={config.values.portsByRegion} user={user.profile}/>}/>
           <Route path={"/region/:regionName"} element={<RegionPage user={user.profile} config={config.values}/>}/>
           <Route path={"/feature-guides"}>
