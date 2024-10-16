@@ -103,7 +103,7 @@ const RegionalDashboard = ({ config, portData, historicPortData, interval, type 
         <Grid item xs={10}>
           <RegionalPressureDates />
         </Grid>
-        <Grid item xs={12} sm={10}>
+        <Grid item xs={12} sm={8}>
           <FormControl component="fieldset" variant="standard">
             <FormLabel component="legend">{ portLabel }</FormLabel>
             <FormGroup>
@@ -124,7 +124,7 @@ const RegionalDashboard = ({ config, portData, historicPortData, interval, type 
             </FormGroup>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={4}>
           <Stack direction="row-reverse" spacing={2}>
             <RegionalPressureExport />
           </Stack>
@@ -192,18 +192,22 @@ const RegionalDashboard = ({ config, portData, historicPortData, interval, type 
                                 }).format(percentage);
                                 percentage = isNaN(percentage) ? 0 : percentage;
                               }
-                              return [`${formattedPaxPercent}% pax expected`]
+                              return [`${formattedPaxPercent}% pax expected at ${port}`]
                             },
                             label: function(context) : string[] {
                               let date = moment(context.parsed.x)
-                              let dateFormat = timeUnits == 'hour' ? 'HH:mm ddd D MMM YYYY ' : 'ddd D MMM YYYY';
+                              let dateFormat = timeUnits == 'hour' ? 'h:mm a ddd D MMM YYYY ' : 'ddd D MMM YYYY';
+                              const historicDate = moment(historicPortData[port][context.dataIndex]?.date) || moment();
+                              if (interval == 'hour') {
+                                historicDate.add(context.dataIndex, 'hours')
+                              }
                               switch (context.dataset.label) {
                                 case 'Pax arrivals':
-                                  return [`${date.format(dateFormat)}:`,` ${context.parsed.y} pax`]
-                                case 'Historic arrivals':
-                                  return [`${date.format(dateFormat)}:`,` ${context.parsed.y} pax`]
+                                  return [` ${date.format(dateFormat)}: ${context.parsed.y.toLocaleString()} pax`]
+                                case 'Historical pax':
+                                  return [` ${historicDate.format(dateFormat)}: ${context.parsed.y.toLocaleString()} pax`]
                                 default: 
-                                  return [`${date.format(dateFormat)}:`,` ${context.parsed.y} pax`]
+                                  return [` ${date.format(dateFormat)}: ${context.parsed.y.toLocaleString()} pax`]
                               }
                             }
                           }
@@ -299,7 +303,7 @@ const RegionalDashboard = ({ config, portData, historicPortData, interval, type 
                           })
                         },
                         {
-                          label: `Historic arrivals`,
+                          label: `Historical pax`,
                           type: 'line',
                           borderColor: drtTheme.palette.grey[800],
                           borderDash: [5, 5],

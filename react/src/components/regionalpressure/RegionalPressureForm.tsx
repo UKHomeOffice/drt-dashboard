@@ -218,14 +218,14 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
     <Grid container spacing={2} justifyItems={'stretch'} sx={{mb:2}}>
         <Grid item xs={12}>
           <FormControl>
-            <FormLabel id="date-label">Select date</FormLabel> 
+            <FormLabel id="date-label">Select comparison date</FormLabel> 
             <RadioGroup
               row
               aria-labelledby="date-label"
               onChange={handleComparisonTypeChange}
             >
               <FormControlLabel value="previousYear" control={<Radio checked={comparisonType === 'previousYear'} />} label="Previous Year" />
-              <FormControlLabel value="custom" control={<Radio checked={comparisonType === 'custom'} />} label="Custom date" />
+              <FormControlLabel value="custom" control={<Radio checked={comparisonType === 'custom'} />} label={searchType == 'single' ? "Custom date" : "Custom date range"} />
             </RadioGroup>
           </FormControl>
         </Grid>

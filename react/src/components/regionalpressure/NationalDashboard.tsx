@@ -44,7 +44,7 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
     <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
       <Box sx={{mb: 4}}>
         <Typography variant='h1' sx={{mb: 3}}>National Dashboard</Typography>
-        <Typography variant='h3' component='h2'>Compare pax arrivals with previous year</Typography>
+        <Typography variant='h3' component='h2'>Compare pax arrivals</Typography>
       </Box>
 
       <RegionalPressureForm ports={user.ports} availablePorts={availablePorts} type="single"/>
@@ -58,12 +58,12 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
 
       {status !== 'loading' && <Grid container columnSpacing={2} justifyItems='stretch'>
         <Grid item xs={12}>
-          <h2>Regional Overview</h2>
+          <h2>Regional overview</h2>
         </Grid>
-        <Grid item xs={12} sm={9}>
+        <Grid item xs={12} md={8}>
           <RegionalPressureDates/>
         </Grid>
-        <Grid item xs={12} sm={3} style={{textAlign: 'right'}}>
+        <Grid item xs={12} md={4} style={{textAlign: 'right'}}>
           <RegionalPressureExport/>
         </Grid>
         {userPortsByRegion.map(region => {

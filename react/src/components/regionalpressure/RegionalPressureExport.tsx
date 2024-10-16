@@ -73,7 +73,7 @@ const RegionalPressureExport = ({portData, historicPortData, granularity}: Regio
     download(csvConfig)(csv)
   }
 
-  return <ButtonGroup>
+  return <ButtonGroup sx={{width: '100%'}}>
     <Button 
       fullWidth 
       startIcon={<ArrowDownward />} 
