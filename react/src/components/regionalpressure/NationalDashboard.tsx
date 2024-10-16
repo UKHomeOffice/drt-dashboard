@@ -34,7 +34,6 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
     const userPorts: string[] = user.ports.filter(p => region.ports.includes(p));
     return {...region, ports: userPorts} as PortRegion
   }).filter(r => r.ports.length > 0)
-
   const availablePorts = config.ports.map(port => port.iata);
 
   return <PageContentWrapper>
