@@ -31,10 +31,6 @@ import { Header } from 'drt-react';
 import { adminMenuItems } from './components/Navigation';
 import { AirportNameIndex, getAirportByCode } from './airports';
 
-const StyledDiv = styled('div')(() => ({
-  textAlign: 'center',
-}))
-
 const StyledContainer = styled(Container)(() => ({
   textAlign: 'left',
   minHeight: 500,
@@ -94,7 +90,7 @@ export const App = () => {
   const roles = isSignedIn && user.profile?.roles;
 
   return (user.kind === "SignedInUser" && config.kind === "LoadedConfig") ?
-    <StyledDiv>
+    <div>
       <Header 
         routingFunction={routingFunction}
         logoutLink={() => { return logoutLink}}
@@ -148,5 +144,5 @@ export const App = () => {
           </div>
         </div>
       </footer>
-    </StyledDiv> : <Loading/>
+    </div> : <Loading/>
 }
