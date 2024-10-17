@@ -65,7 +65,7 @@ export const App = () => {
     ...availablePorts.map(portCode => { 
       let domain = hasConfig && config.values.domain ? config.values.domain : 'drt-preprod'
       return {
-        label: `${AirportNameIndex[portCode]} (${portCode})`,
+        label: `${portCode} (${AirportNameIndex[portCode]})`,
         link: `https://${portCode.toLowerCase()}.${domain}`,
       }
     })
