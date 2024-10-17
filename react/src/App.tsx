@@ -44,9 +44,8 @@ const StyledContainer = styled(Container)(() => ({
 export const App = () => {
   const {user} = useUser()
   const {config} = useConfig()
-  const currentLocation = window.document.location;
   const navigate = useNavigate();
-  const logoutLink = "/oauth2/sign_out?redirect=" + currentLocation.toString()
+  const logoutLink = () => window.location.href = `/oauth2/sign_out?redirect=${window.location.origin}`;
   const isSignedIn = user.kind === "SignedInUser";
   const hasConfig = config.kind !== 'PendingConfig';
 
@@ -93,7 +92,7 @@ export const App = () => {
     <div>
       <Header 
         routingFunction={routingFunction}
-        logoutLink={() => { return logoutLink}}
+        logoutLink={logoutLink}
         userRoles={roles as string[]} 
         adminMenuItems={adminMenuItems} 
         rightMenuItems={[]} 
