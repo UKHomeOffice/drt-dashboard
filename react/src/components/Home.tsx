@@ -1,12 +1,12 @@
-import React from 'react';
+import * as React from 'react';
 import AccessRequestForm from "./AccessRequestForm";
 import {PortList} from "./PortList";
+import { useNavigate } from 'react-router';
 import {Box} from "@mui/material";
 import {UserProfile} from "../model/User";
 import {ConfigValues} from "../model/Config";
 import {Helmet} from "react-helmet";
 import PageContentWrapper from './PageContentWrapper';
-import NationalDashboard from './regionalpressure/NationalDashboard';
 
 
 interface IProps {
@@ -16,13 +16,21 @@ interface IProps {
 
 
 export const Home = (props: IProps) => {
+  const navigate = useNavigate();
   const isRccUser = () => {
     return props.user.roles.includes("rcc:central") || props.user.roles.includes("rcc:heathrow") || props.user.roles.includes("rcc:north") || props.user.roles.includes("rcc:south")
   }
 
-  const isDashboardUser = isRccUser() || props.user.roles.includes('national:view') || props.user.roles.includes('forceast:view');
+  React.useEffect(() => {
+      if (isRccUser() || props.user.roles.includes('national:view') || props.user.roles.includes('forceast:view')){
+          navigate('/national-pressure');
+      } else {
+          console.log('not pressure user');
+      }
+    })
+  ;
 
-  return isDashboardUser ? <NationalDashboard user={props.user} config={props.config} /> : <PageContentWrapper>
+  return <PageContentWrapper>
     <Helmet>
       <title>DRT</title>
     </Helmet>
