@@ -22,13 +22,10 @@ export const Home = (props: IProps) => {
   }
 
   React.useEffect(() => {
-      if (isRccUser() || props.user.roles.includes('national:view') || props.user.roles.includes('forceast:view')){
-          navigate('/national-pressure');
-      } else {
-          console.log('not pressure user');
-      }
-    })
-  ;
+    if (isRccUser() || props.user.roles.includes('national:view') || props.user.roles.includes('forceast:view')){
+        navigate('/national-pressure');
+    }
+  });
 
   return <PageContentWrapper>
     <Helmet>

@@ -89,7 +89,6 @@ const RegionalPressureForm = ({ports, errors, availablePorts, start, type, compa
       hStart = historicDate.start;
     }
     const comparisonEnd = moment(historicDate.start).add(duration, 'hours');
-    console.log(searchType, hStart, comparisonEnd);
     setHistoricDate({
       start: hStart,
       end: comparisonEnd
