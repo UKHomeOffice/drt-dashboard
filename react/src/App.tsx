@@ -98,7 +98,7 @@ export const App = () => {
     const scrollSection = params['scrollSection'] ? params['scrollSection'] : ''
     return (
       <AccessibilityStatement
-        url=""
+        accessibilityStatementUrl="/accessibility"
         teamEmail="your-team-email@example.com"
         sendReportProblemGaEvent={() => console.log('Report Problem')}
         scrollSection={scrollSection || ''}
@@ -164,7 +164,7 @@ export const App = () => {
         <BottomBar
           email="your-email@example.com"
           onClickAccessibilityStatement={() => onClickAccessibilityStatement()}
-          url={''}
+          accessibilityStatementUrl={'/accessibility/statement'}
           feedbackUrl={`${window.location.origin}/feedback/banner/${getRandomABTest()}`}
         />
       </footer>
