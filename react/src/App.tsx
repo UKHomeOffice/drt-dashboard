@@ -89,7 +89,7 @@ export const App = () => {
     navigate('/accessibility/statement');
   }
 
-  const getRandomABTest = (): string => {
+  const getRandomAB = (): string => {
     return Math.random() < 0.5 ? 'A' : 'B';
   };
 
@@ -165,7 +165,7 @@ export const App = () => {
           email="your-email@example.com"
           onClickAccessibilityStatement={() => onClickAccessibilityStatement()}
           accessibilityStatementUrl={'/accessibility/statement'}
-          feedbackUrl={`${window.location.origin}/feedback/banner/${getRandomABTest()}`}
+          feedbackUrl={`${window.location.origin}/feedback/banner/${getRandomAB()}`}
         />
       </footer>
     </div> : <Loading/>
