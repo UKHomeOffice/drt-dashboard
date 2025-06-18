@@ -52,7 +52,7 @@ export function FeedbackForms() {
   };
 
   const confirmationStep = (
-    <Stack spacing={2} sx={{ width: '400px' }}>
+    <Stack spacing={2} sx={{ width: '67%' }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#111224'}}>
         Please Note:
       </Typography>
@@ -439,7 +439,7 @@ export function FeedbackForms() {
       <title>Feedback {customerPageTitleSuffix}</title>
     </Helmet>
     <Stack>
-      <Typography variant="h2" sx={{color: drtTheme.palette.primary.main, padding: "10px 0px", width: '400px'}}>
+      <Typography variant="h2" sx={{color: drtTheme.palette.primary.main, padding: "10px 0px", width: "67%"}}>
         {currentQuestion === 0 ? "Providing feedback on Dynamic response tool (DRT)" : "DRT Feedback"}
       </Typography>
       {currentQuestion === 0 ? confirmationStep : displayQuestion()}
