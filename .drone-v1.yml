@@ -143,10 +143,10 @@ steps:
     when:
       event:
         - push
-      branch:
-        - leader
-    depends_on:
-      - Scapegoat
+#      branch:
+#        - leader
+#    depends_on:
+#      - Scapegoat
 
   - name: Sonar scanner
     pull: if-not-exists
