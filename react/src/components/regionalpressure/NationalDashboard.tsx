@@ -39,7 +39,7 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
     <Helmet>
       <title>National Dashboard {customerPageTitleSuffix}</title>
     </Helmet>
-    <Box sx={{backgroundColor: '#E6E9F1', p: 2}}>
+    <Box sx={{p: 2}}>
       <Box sx={{mb: 4}}>
         <Typography variant='h1' sx={{mb: 3}}>National Dashboard</Typography>
         <Typography variant='h3' component='h2'>Compare pax arrivals</Typography>

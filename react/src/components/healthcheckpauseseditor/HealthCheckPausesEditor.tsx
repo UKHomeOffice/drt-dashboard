@@ -154,7 +154,7 @@ export const HealthCheckEditor = () => {
       <title>Health Check Pauses {adminPageTitleSuffix}</title>
     </Helmet>
     <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale={'en-gb'}>
-      <Stack gap={4} alignItems={'left'} sx={{my: 2}}>
+      <Stack gap={4} alignItems={'left'}>
         <Breadcrumbs>
           <Link to={"/"}>
             Home

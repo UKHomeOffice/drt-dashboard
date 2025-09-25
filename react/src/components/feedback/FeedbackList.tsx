@@ -73,7 +73,7 @@ export function FeedbackList() {
     <Helmet>
       <title>Feedback {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} alignItems={'stretch'} sx={{mt: 2}}>
+    <Stack gap={4} alignItems={'stretch'}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home

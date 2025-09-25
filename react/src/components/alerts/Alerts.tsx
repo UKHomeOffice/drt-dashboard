@@ -29,7 +29,7 @@ export default function Alerts(props: IProps) {
     <Helmet>
       <title>Alerts {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} alignItems={'stretch'} sx={{mt: 2}}>
+    <Stack gap={4} alignItems={'stretch'}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home

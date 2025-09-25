@@ -74,7 +74,7 @@ export default function UsersList() {
     <Helmet>
       <title>Users {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} sx={{mt: 2}}>
+    <Stack gap={4} alignContent={'stretch'}>
       <Breadcrumbs>
         <Link to="/">
           Home

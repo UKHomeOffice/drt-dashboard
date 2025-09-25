@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {Collapse, IconButton, TableHead, Tooltip, Typography, Box, Breadcrumbs} from "@mui/material"
+import {Collapse, IconButton, TableHead, Tooltip, Typography, Breadcrumbs, Stack} from "@mui/material"
 import {HealthCheck, PortHealthCheckAlarms, useHealthCheckAlarms, useHealthChecks} from "../../store/heathChecks";
 import {Moment} from "moment"
 import moment from "moment-timezone"
@@ -41,7 +41,7 @@ export const HealthChecks = (props: Props) => {
     <Helmet>
       <title>Health Checks {adminPageTitleSuffix}</title>
     </Helmet>
-    <Box>
+    <Stack gap={4} alignItems={'stretch'}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home
@@ -86,7 +86,7 @@ export const HealthChecks = (props: Props) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </Stack>
   </PageContentWrapper>
 }
 
