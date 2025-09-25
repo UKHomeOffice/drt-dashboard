@@ -81,6 +81,7 @@ export default function UsersList() {
         </Link>
         <Typography color="text.primary">Users</Typography>
       </Breadcrumbs>
+      <Typography variant="h1">Users</Typography>
       <Box sx={{height: 400, width: '100%'}}>
         <DataGrid
           rows={rowsData}

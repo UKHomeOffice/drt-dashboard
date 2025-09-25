@@ -114,6 +114,7 @@ export const FeatureGuideList = () => {
         </Link>
         <Typography color="text.primary">Feature guides</Typography>
       </Breadcrumbs>
+      <Typography variant="h1">Feature guides</Typography>
       <Link to={'/feature-guides/edit'}><Button sx={{fontWeight: 'bold'}} variant={'outlined'}>New guide</Button></Link>
       {loading ?
         <Loading/> :

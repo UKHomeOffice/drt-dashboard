@@ -193,8 +193,9 @@ export function DropInSessionsList() {
         <Link to={"/"}>
           Home
         </Link>
-        <Typography color="text.primary">Drop-in sessions</Typography>
+        <Typography color="text.primary" sx={{mb:0}}>Drop-in sessions</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>Drop-in sessions</Typography>
       <Stack direction={'row'} justifyContent={'space-between'}>
         <Link to={'/drop-in-sessions/edit'}><Button sx={{fontWeight: 'bold', maxWidth: '250px'}} variant={'outlined'}>New
           drop in session</Button></Link>

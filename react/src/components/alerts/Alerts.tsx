@@ -36,6 +36,7 @@ export default function Alerts(props: IProps) {
         </Link>
         <Typography color="text.primary">Alerts</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>Alerts</Typography>
       <Tabs value={selectedTab} onChange={changeTabs} aria-label="simple tabs example">
         <Tab label="Add Alert" {...a11yProps(0)} />
         <Tab label="View Alerts" {...a11yProps(1)} />

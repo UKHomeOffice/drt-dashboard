@@ -80,6 +80,7 @@ export function FeedbackList() {
         </Link>
         <Typography color="text.primary">User feedback responses</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>User feedback responses</Typography>
       <Stack direction={'row'} justifyContent={'space-between'}>
         <Button
           sx={{maxWidth: '350px'}}

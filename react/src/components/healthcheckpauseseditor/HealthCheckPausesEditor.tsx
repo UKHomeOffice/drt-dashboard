@@ -161,6 +161,7 @@ export const HealthCheckEditor = () => {
           </Link>
           <Typography color="text.primary">Health check pauses</Typography>
         </Breadcrumbs>
+        <Typography variant='h1'>Health check pauses</Typography>
         <>
           <Link to={''} onClick={e => {
             e.preventDefault()

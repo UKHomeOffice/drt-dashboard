@@ -1,5 +1,5 @@
 import React from 'react'
-import {Box, FormControl} from "@mui/material"
+import {Box, Breadcrumbs, FormControl, Typography} from "@mui/material"
 import Button from "@mui/material/Button"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import {styled} from "@mui/material/styles";
@@ -8,6 +8,7 @@ import ApiClient from "../services/ApiClient";
 import {Helmet} from "react-helmet";
 import {adminPageTitleSuffix} from "../utils/common";
 import PageContentWrapper from "./PageContentWrapper";
+import { Link } from 'react-router-dom';
 
 const BorderCrossingImport = () => {
   const [uploading, setUploading] = React.useState(false)
@@ -43,9 +44,15 @@ const BorderCrossingImport = () => {
         <title>Border-crossing import {adminPageTitleSuffix}</title>
       </Helmet>
       <Box>
-        <h1>Border Crossing Import</h1>
-        <p>Upload an excel file here. The spreadsheet must contain a sheet named 'Data Response', and be in an expected
-          format</p>
+        <Breadcrumbs sx={{mb: 2}}>
+          <Link to={"/"}>
+            Home
+          </Link>
+          <Typography color="text.primary">Border crossing import</Typography>
+        </Breadcrumbs>
+        <Typography variant='h1'>Border Crossing Import</Typography>
+        <Typography variant='body1'>Upload an excel file here. The spreadsheet must contain a sheet named 'Data Response', and be in an expected
+          format</Typography>
         <FormControl>
           <Button
             component="label"

@@ -206,6 +206,7 @@ export default function AccessRequests() {
         </Link>
         <Typography color="text.primary">Access requests</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>Access requests</Typography>
       <Box sx={{width: '100%'}}>
         <Tabs
           value={statusFilterValue}

@@ -10,7 +10,7 @@ import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import store from './store/redux';
 import { Provider } from 'react-redux';
 import {drtTheme} from 'drt-react';
-import { ThemeProvider } from '@emotion/react';
+import {ThemeProvider} from "@mui/material/styles";
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
@@ -25,11 +25,9 @@ root.render(
       <StyledEngineProvider injectFirst>
         <BrowserRouter>
           <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale={'en-gb'}>
-              <StyledEngineProvider injectFirst>
-                  <ThemeProvider  theme={drtTheme}>
-                    <App/>
-                  </ThemeProvider>
-              </StyledEngineProvider>
+            <ThemeProvider  theme={drtTheme}>
+              <App/>
+            </ThemeProvider>
           </LocalizationProvider>
         </BrowserRouter>
       </StyledEngineProvider>

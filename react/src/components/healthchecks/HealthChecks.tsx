@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {Collapse, IconButton, TableHead, Tooltip, Typography, Box} from "@mui/material"
+import {Collapse, IconButton, TableHead, Tooltip, Typography, Box, Breadcrumbs} from "@mui/material"
 import {HealthCheck, PortHealthCheckAlarms, useHealthCheckAlarms, useHealthChecks} from "../../store/heathChecks";
 import {Moment} from "moment"
 import moment from "moment-timezone"
@@ -17,6 +17,7 @@ import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import {Helmet} from "react-helmet";
 import {adminPageTitleSuffix} from "../../utils/common";
 import PageContentWrapper from '../PageContentWrapper';
+import { Link } from 'react-router-dom';
 
 interface Props {
   portsByRegion: PortRegion[]
@@ -41,20 +42,26 @@ export const HealthChecks = (props: Props) => {
       <title>Health Checks {adminPageTitleSuffix}</title>
     </Helmet>
     <Box>
-      <h1>Health Checks</h1>
-      {loading && <p>Loading...</p>}
-      {failed && <p>Failed to load health checks</p>}
+      <Breadcrumbs>
+        <Link to={"/"}>
+          Home
+        </Link>
+        <Typography color="text.primary">Health checks</Typography>
+      </Breadcrumbs>
+      <Typography variant='h1'>Health checks</Typography>
+      {loading && <Typography variant='body1'>Loading...</Typography>}
+      {failed && <Typography variant='body1'>Failed to load health checks</Typography>}
 
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>
             <TableRow>
               <TableCell/>
-              <TableCell>
+              <TableCell sx={{px: 2}}>
                 <Typography variant={'h5'}>Region</Typography>
               </TableCell>
               {healthChecks.healthChecks.map((healthCheck, index) => {
-                return <TableCell key={index} align="right">
+                return <TableCell key={index} align="right" sx={{px: 2}}>
                   <Tooltip title={healthCheck.description} placement={'top'} arrow>
                     <Typography variant={'h5'}>{healthCheck.name}</Typography>
                   </Tooltip>
@@ -100,7 +107,7 @@ function Row(props: { region: string, regionPortAlarms: PortHealthCheckAlarms[],
   return (
     <React.Fragment>
       <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
-        <TableCell width={88}>
+        <TableCell width={88} sx={{px: 2}}>
           <IconButton
             aria-label="expand row"
             size="small"
@@ -109,11 +116,11 @@ function Row(props: { region: string, regionPortAlarms: PortHealthCheckAlarms[],
             {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
           </IconButton>
         </TableCell>
-        <TableCell scope="row">
+        <TableCell scope="row" sx={{px: 2}}>
           <Typography variant={'subtitle2'}>{props.region}</Typography>
         </TableCell>
         {regionAlarms.map((alarmIsActive, index) => {
-          return <TableCell width={regionCellWidth} key={index} align={'right'}>
+          return <TableCell width={regionCellWidth} key={index} align={'right'}  sx={{px: 2}}>
             {alarmIsActive ? <ErrorOutlineRoundedIcon color={'error'} fontSize={'medium'}/> :
               <CheckCircleOutlineRoundedIcon color={'success'} fontSize={'medium'}/>}
           </TableCell>
@@ -128,7 +135,7 @@ function Row(props: { region: string, regionPortAlarms: PortHealthCheckAlarms[],
                   return portAlarms ? <TableRow key={index} sx={{backgroundColor: '#fafafa'}}>
                       <TableCell><Typography variant={'body1'}>{portAlarms.port}</Typography></TableCell>
                       {portAlarms.alarms.map((alarm, index) => {
-                        return <TableCell width={portCellWidth} key={index} align={'right'}>
+                        return <TableCell width={portCellWidth} key={index} align={'right'} sx={{px: 2}}>
                           {alarm.isActive ? <ErrorOutlineRoundedIcon color={'error'}/> :
                             <CheckCircleOutlineRoundedIcon color={'success'}/>}
                         </TableCell>
