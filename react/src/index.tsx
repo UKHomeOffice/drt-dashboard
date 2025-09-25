@@ -1,5 +1,4 @@
 import React from 'react';
-import './index.css';
 import {App} from './App';
 import {BrowserRouter} from "react-router-dom";
 import {AdapterMoment} from '@mui/x-date-pickers/AdapterMoment';
@@ -10,14 +9,15 @@ import 'moment/locale/en-gb';
 import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import store from './store/redux';
 import { Provider } from 'react-redux';
-import drtTheme from "./drtTheme";
-import {ThemeProvider} from "@mui/material";
+import {drtTheme} from 'drt-react';
+import { ThemeProvider } from '@emotion/react';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
 console.log(store);
-
+console.log(drtTheme);
+console.log('hello');
 root.render(
     <Provider store={store}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"/>

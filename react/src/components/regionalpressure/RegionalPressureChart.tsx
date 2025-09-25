@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import {RootState} from '../../store/redux';
-import drtTheme from '../../drtTheme';
+import { drtTheme } from 'drt-react';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -187,7 +187,7 @@ const RegionalPressureChart = ({regionName, portCodes, forecastTotalPaxByPort, h
                   Pax number does not exceed previous year at any airport
                 </Alert>
             }
-            <Button component={Link} to={`${regionName.toLowerCase()}`} fullWidth variant='contained' sx={{mt:2}}>
+            <Button component={Link} to={`${regionName.toLowerCase()}`} color='primary' fullWidth variant='contained' sx={{mt:2}}>
               {regionName !== 'Heathrow' ? `View ${regionName} region` : `View ${regionName}`}
             </Button>
           </Box>
