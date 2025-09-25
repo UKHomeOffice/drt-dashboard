@@ -18,6 +18,7 @@ import {
   IconButton,
   Stack,
   Theme,
+  Typography,
   useMediaQuery
 } from "@mui/material";
 import {Link} from 'react-router-dom';
@@ -80,13 +81,13 @@ const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHourlyPaxB
   }
 
   return (
-    <Box sx={{ backgroundColor: '#E6E9F1', p: 2 }}>
+    <Box sx={{ p: 2 }}>
       <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
         <Grid>
           <IconButton component={Link} to="/national-pressure" size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
         </Grid>
         <Grid>
-          <h2 style={{ textTransform: 'capitalize' }}>{ title }</h2>
+          <Typography variant='h2' style={{ textTransform: 'capitalize' }}>{ title }</Typography>
         </Grid>
       </Grid>
       <Grid>

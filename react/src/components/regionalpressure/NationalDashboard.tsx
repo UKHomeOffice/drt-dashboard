@@ -56,7 +56,7 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
 
       {status !== 'loading' && <Grid container columnSpacing={2} justifyItems='stretch'>
         <Grid item xs={12}>
-          <h2>Regional overview</h2>
+          <Typography variant='h2'>Regional overview</Typography>
         </Grid>
         <Grid item xs={12} md={8}>
           <RegionalPressureDates/>

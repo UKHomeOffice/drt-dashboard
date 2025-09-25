@@ -77,11 +77,11 @@ export const RegionPage = (props: IProps) => {
       </Breadcrumbs>
       {props.user.roles.includes("rcc:" + regionName.toLowerCase()) ?
         <Box>
-          <h1>{StringUtils.ucFirst(regionName)} region</h1>
+          <Typography variant='h1'>{StringUtils.ucFirst(regionName)} region</Typography>
           <p>You can download an arrivals export covering all port terminals in
             this region.</p>
           <ArrivalExport region={regionName}/>
-          <h2>Downloads</h2>
+          <Typography variant='h2'>Downloads</Typography>
           {sortedDownloads ?
             <Grid container spacing={2}>
               <Grid xs={3}><Typography fontWeight="bold">Created</Typography></Grid>

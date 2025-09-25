@@ -2,6 +2,7 @@ import * as React from 'react';
 import {connect} from 'react-redux'
 import {RootState} from '../../store/redux';
 import moment from 'moment';
+import { Typography } from '@mui/material';
 
 interface RegionalPressureDateProps {
   forecastStart: string;
@@ -14,18 +15,18 @@ const RegionalPressureDates = ({forecastStart, forecastEnd, historicStart, histo
 
   return (
     <>
-      <p style={{lineHeight: 1.2, margin: '0 0 1em 0'}}>
+      <Typography variant='body1'>
         <strong>Forecast arrivals: </strong>{ moment(forecastStart).format('dddd D MMM YYYY') }
         { forecastStart != forecastEnd &&
           <span> to { moment(forecastEnd).format('dddd D MMM YYYY') }</span>
         }
-      </p>
-      <p>
+      </Typography>
+      <Typography variant='body1'>
         <strong>Historical arrivals: </strong> { moment(historicStart).format('dddd D MMM YYYY') }
         { forecastStart != forecastEnd &&
           <span> to { moment(historicEnd).format('dddd D MMM YYYY') }</span>
         }
-      </p>
+      </Typography>
     </>
   )
 }
