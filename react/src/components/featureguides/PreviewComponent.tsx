@@ -33,7 +33,6 @@ export function PreviewComponent(props: Props) {
       <Grid container spacing={2}>
         <Grid item xs={10}>
           <DialogTitle sx={{
-            "color": "#233E82",
             "backgroundColor": "#E6E9F1",
             "font-size": "40px",
             "font-weight": "bold",

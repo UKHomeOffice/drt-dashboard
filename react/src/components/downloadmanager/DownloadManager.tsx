@@ -11,6 +11,7 @@ import {
   Radio,
   RadioGroup,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material"
 
 import {DatePicker} from '@mui/x-date-pickers/DatePicker'
@@ -175,7 +176,7 @@ const DownloadManager = ({
       <title>Download Manager {adminPageTitleSuffix}</title>
     </Helmet>
     <Box>
-      <h1>Download Manager</h1>
+      <Typography variant='h1'>Download Manager</Typography>
       {errors.length > 0 &&
         <Alert severity="error" sx={{mb: '1em'}}>
           <AlertTitle>There is an issue with the options you have selected:</AlertTitle>

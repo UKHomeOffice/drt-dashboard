@@ -29,7 +29,6 @@ export function ViewDropInSession(props: Props) {
       <Grid container spacing={2}>
         <Grid item xs={8}>
           <DialogTitle sx={{
-            "color": "#233E82",
             "backgroundColor": "#E6E9F1",
             "font-size": "30px",
             "font-weight": "bold",

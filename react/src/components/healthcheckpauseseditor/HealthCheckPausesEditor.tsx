@@ -154,13 +154,14 @@ export const HealthCheckEditor = () => {
       <title>Health Check Pauses {adminPageTitleSuffix}</title>
     </Helmet>
     <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale={'en-gb'}>
-      <Stack gap={4} alignItems={'left'} sx={{my: 2}}>
+      <Stack gap={4} alignItems={'left'}>
         <Breadcrumbs>
           <Link to={"/"}>
             Home
           </Link>
           <Typography color="text.primary">Health check pauses</Typography>
         </Breadcrumbs>
+        <Typography variant='h1'>Health check pauses</Typography>
         <>
           <Link to={''} onClick={e => {
             e.preventDefault()

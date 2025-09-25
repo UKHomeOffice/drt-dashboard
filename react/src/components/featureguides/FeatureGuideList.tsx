@@ -107,13 +107,14 @@ export const FeatureGuideList = () => {
     <Helmet>
       <title>Feature Guides {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} alignItems={"stretch"} sx={{mt: 2}}>
+    <Stack gap={4} alignItems={"stretch"}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home
         </Link>
         <Typography color="text.primary">Feature guides</Typography>
       </Breadcrumbs>
+      <Typography variant="h1">Feature guides</Typography>
       <Link to={'/feature-guides/edit'}><Button sx={{fontWeight: 'bold'}} variant={'outlined'}>New guide</Button></Link>
       {loading ?
         <Loading/> :

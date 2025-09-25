@@ -22,10 +22,6 @@ const Declaration = styled('div')(({theme}) => ({
   width: '100%',
 }))
 
-const StyledTypography = styled(Typography)(() => ({
-  fontWeight: "bold"
-}))
-
 const DeclarationUl = styled('ul')(({theme}) => ({
   ...theme.typography.body1,
   listStyleType: "circle"
@@ -139,10 +135,10 @@ export default function AccessRequestForm(props: IProps) {
 
   function form() {
     return <Box sx={{width: '100%'}}>
-      <h1>Welcome to DRT</h1>
+      <Typography variant="h1">Welcome to DRT</Typography>
       <InitialRequestForm handleRccOptionCallback={handleRccOption}/>
       <Divider/>
-      <p>{pageMessage()}</p>
+      <Typography variant="body1">{pageMessage()}</Typography>
       <List>
         <ListItem>
           <PortsByRegionCheckboxes portDisabled={isRccUser}
@@ -185,12 +181,12 @@ export default function AccessRequestForm(props: IProps) {
         <Divider/>
         <ListItem>
           <Declaration>
-            <StyledTypography>Declaration</StyledTypography>
-            <Typography>I understand that:</Typography>
+            <Typography variant="h5">Declaration</Typography>
+            <Typography variant="body1">I understand that:</Typography>
             <DeclarationUl>
               <li>data contained in DRT is marked as OFFICIAL-SENSITIVE</li>
             </DeclarationUl>
-            <Typography>I confirm that:</Typography>
+            <Typography variant="body1">I confirm that:</Typography>
             <DeclarationUl>
               <li>I will not share any DRT data with any third party</li>
               <li>I will contact the DRT team at <a href="mailto:props.teamEmail">{props.teamEmail}</a> if
@@ -240,9 +236,9 @@ export default function AccessRequestForm(props: IProps) {
   return requestSubmitted ?
     <ThankYouBox>
       <Declaration>
-        <h1>Thank you</h1>
-        <p>You'll be notified by email when your request has been processed. This usually happens within a
-          couple of hours, but may take longer outside core working hours (Monday to Friday, 9am to 5pm).</p>
+        <Typography variant="h1">Thank you</Typography>
+        <Typography variant="body1">You'll be notified by email when your request has been processed. This usually happens within a
+          couple of hours, but may take longer outside core working hours (Monday to Friday, 9am to 5pm).</Typography>
       </Declaration>
     </ThankYouBox> :
     form();

@@ -88,7 +88,7 @@ function ListAlerts() {
 
   return <Container>{allPortAlerts.kind === 'PortAlertsLoaded' && allPortAlerts.portAlerts.map(portAlerts => {
     return <Box key={portAlerts.portCode}>
-      <h1>{portAlerts.portCode}</h1>
+      <Typography variant='h1'>{portAlerts.portCode}</Typography>
       <StyledButton className={classes.button} onClick={clearAlertForPort(portAlerts.portCode)} color={"secondary"}
                     variant={"contained"}>Clear alerts for {portAlerts.portCode}</StyledButton>
       {portAlerts.alerts.map((a: AlertLike) =>

@@ -29,13 +29,14 @@ export default function Alerts(props: IProps) {
     <Helmet>
       <title>Alerts {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} alignItems={'stretch'} sx={{mt: 2}}>
+    <Stack gap={4} alignItems={'stretch'}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home
         </Link>
         <Typography color="text.primary">Alerts</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>Alerts</Typography>
       <Tabs value={selectedTab} onChange={changeTabs} aria-label="simple tabs example">
         <Tab label="Add Alert" {...a11yProps(0)} />
         <Tab label="View Alerts" {...a11yProps(1)} />

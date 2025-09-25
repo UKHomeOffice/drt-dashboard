@@ -18,12 +18,13 @@ import {
   IconButton,
   Stack,
   Theme,
+  Typography,
   useMediaQuery
 } from "@mui/material";
 import {Link} from 'react-router-dom';
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import drtTheme from '../../drtTheme';
+import { drtTheme } from 'drt-react';
 import {Chart} from 'react-chartjs-2';
 import {Chart as ChartJS, registerables,} from 'chart.js';
 import 'chartjs-adapter-moment';
@@ -80,15 +81,11 @@ const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHourlyPaxB
   }
 
   return (
-    <Box sx={{ backgroundColor: '#E6E9F1', p: 2 }}>
-      <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
-        <Grid>
-          <IconButton component={Link} to="/national-pressure" size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
-        </Grid>
-        <Grid>
-          <h2 style={{ textTransform: 'capitalize' }}>{ title }</h2>
-        </Grid>
-      </Grid>
+    <Box sx={{ p: 2 }}>
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: '50px' }}>
+          <IconButton component={Link} to="/national-pressure" size='small'><ArrowBack /></IconButton>
+          <Typography variant='h2' sx={{ textTransform: 'capitalize', marginBottom: 0 }}>{ title }</Typography>
+      </Stack>
       <Grid>
         <RegionalPressureForm ports={regionPorts} availablePorts={availablePorts} />
       </Grid>

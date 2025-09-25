@@ -73,13 +73,14 @@ export function FeedbackList() {
     <Helmet>
       <title>Feedback {adminPageTitleSuffix}</title>
     </Helmet>
-    <Stack gap={4} alignItems={'stretch'} sx={{mt: 2}}>
+    <Stack gap={4} alignItems={'stretch'}>
       <Breadcrumbs>
         <Link to={"/"}>
           Home
         </Link>
         <Typography color="text.primary">User feedback responses</Typography>
       </Breadcrumbs>
+      <Typography variant='h1'>User feedback responses</Typography>
       <Stack direction={'row'} justifyContent={'space-between'}>
         <Button
           sx={{maxWidth: '350px'}}

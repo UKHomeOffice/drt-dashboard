@@ -1,5 +1,5 @@
 import React from "react";
-import {Box} from "@mui/material";
+import {Box, Typography} from "@mui/material";
 import {PortRegion} from "../model/Config";
 import {PortListStraight} from "./PortListStraight";
 import {PortListByRegion} from "./PortListByRegion";
@@ -25,10 +25,10 @@ export const PortList = (props: IProps) => {
 
 
     return <Box sx={{width: '100%'}}>
-        <h1>Welcome to DRT</h1>
+        <Typography variant="h1">Welcome to DRT</Typography>
         {props.isRccUser ?
-            <p>Click on your region or ports</p> :
-            <p>Select your destination</p>
+            <Typography variant="body1">Click on your region or ports</Typography> :
+            <Typography variant="body1">Select your destination</Typography>
         }
         {userRegions.length > 1 || props.isRccUser ?
             <PortListByRegion user={props.user} regions={userRegions} drtDomain={props.drtDomain}/> :
