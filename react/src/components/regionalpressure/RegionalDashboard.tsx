@@ -86,14 +86,6 @@ const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHourlyPaxB
           <IconButton component={Link} to="/national-pressure" size='small'><ArrowBack /></IconButton>
           <Typography variant='h2' sx={{ textTransform: 'capitalize', marginBottom: 0 }}>{ title }</Typography>
       </Stack>
-      <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
-        <Grid>
-          <IconButton component={Link} to="/national-pressure" size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
-        </Grid>
-        <Grid>
-          <Typography variant='h2' sx={{ textTransform: 'capitalize', marginBottom: 0 }}>{ title }</Typography>
-        </Grid>
-      </Grid>
       <Grid>
         <RegionalPressureForm ports={regionPorts} availablePorts={availablePorts} />
       </Grid>
