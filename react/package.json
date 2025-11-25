@@ -137,14 +137,15 @@
       "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/ts-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(.*\\.mjs$|export-to-csv))",
+      "node_modules/(?!(.*\\.mjs$|export-to-csv)/)",
       "^.+\\.module\\.(css|sass|scss)$"
     ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
       "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
       "react-markdown": "<rootDir>/node_modules/react-markdown/react-markdown.min.js",
-      "^axios$": "axios/dist/node/axios.cjs"
+      "^axios$": "axios/dist/node/axios.cjs",
+      "^export-to-csv$": "<rootDir>/src/__mocks__/export-to-csv.ts"
     }
   },
   "packageManager": "yarn@4.4.1"
