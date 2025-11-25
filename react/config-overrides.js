@@ -29,4 +29,10 @@ module.exports = {
     visitRules(config.module.rules);
     return config;
   },
+  jest: (config) => {
+    config.transformIgnorePatterns = (config.transformIgnorePatterns || []).map((pattern) =>
+      pattern.includes('node_modules') ? 'node_modules/(?!(export-to-csv)/)' : pattern,
+    );
+    return config;
+  },
 };
