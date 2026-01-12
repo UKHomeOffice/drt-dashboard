@@ -5,7 +5,8 @@ import axios from "axios";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Checkbox from "@mui/material/Checkbox";
-import {Box, Button, Divider, FormControl, FormControlLabel, Typography} from "@mui/material";
+import {RadioGroup, Radio} from "@mui/material";
+import {Box, Button, Divider, FormControl, FormLabel, FormControlLabel, Typography} from "@mui/material";
 import {PortRegion, PortRegionHelper} from "../model/Config";
 import {PortsByRegionCheckboxes} from "./PortsByRegionCheckboxes";
 import InitialRequestForm from "./InitialRequestForm";
@@ -15,6 +16,7 @@ import _ from "lodash/fp";
 import isEmail from "validator/lib/isEmail";
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from "@mui/material/OutlinedInput";
+import {equals} from "validator";
 
 const Declaration = styled('div')(({theme}) => ({
   textAlign: "left",
@@ -62,7 +64,7 @@ export default function AccessRequestForm(props: IProps) {
 
   const selectedRegions = props.regions.filter(region => region.ports.every(port => selectedPorts.includes(port)))
 
-  const [staffingSelected, setStaffingSelected] = React.useState<boolean>(false)
+  const [staffingSelected, setStaffingSelected] = React.useState<string>('')
   const [lineManager, setLineManager] = React.useState<string>('')
   const [declarationAgreed, setDeclarationAgreed] = React.useState<boolean>(false)
   const [requestSubmitted, setRequestSubmitted] = React.useState<boolean>(false)
@@ -85,7 +87,7 @@ export default function AccessRequestForm(props: IProps) {
       portsRequested: selectedPorts,
       rccOption: isRccUser ? 'rccu' : 'port',
       regionsRequested: selectedRegions.map(r => r.name),
-      staffing: staffingSelected,
+      staffing: equals(staffingSelected, "true"),
       staffText: staffText,
     } as AccessRequest)
       .then(() => setRequestSubmitted(true))
@@ -102,9 +104,9 @@ export default function AccessRequestForm(props: IProps) {
 
   const moreInfoRequired = () => {
     return (((selectedPorts.length > 1 && !isRccUser) ||
-      (selectedPorts.length > 0 && !isRccUser && staffingSelected) ||
+      (selectedPorts.length > 0 && !isRccUser && equals(staffingSelected, "true")) ||
       (selectedRegions.length > 1 && isRccUser) ||
-      (selectedRegions.length > 0 && isRccUser && staffingSelected)))
+      (selectedRegions.length > 0 && isRccUser && equals(staffingSelected, "true"))))
   }
 
   const enableRequestForModal = () => {
@@ -129,13 +131,26 @@ export default function AccessRequestForm(props: IProps) {
   }
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (isEmail(event.target.value)) {
+    if(equals(staffingSelected, "true")) {
+      if (isEmail(event.target.value)) {
+        setIsValid(true);
+      } else {
+        setIsValid(false);
+      }
+      setLineManager(event.target.value);
+    }
+  };
+
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelected: string) => {
+    if(!equals(staffingSelected, "true")) {
       setIsValid(true);
+      setDirty(true);
     } else {
       setIsValid(false);
+      setDirty(false);
     }
-    setLineManager(event.target.value);
-  };
+    setStaffingSelected(staffingSelected)
+  }
 
   function form() {
     return <Box sx={{width: '100%'}}>
@@ -152,35 +167,42 @@ export default function AccessRequestForm(props: IProps) {
           />
         </ListItem>
         <Divider/>
-        <ListItem
-          button
-          key={'staffing'}
-        >
-          <FormControlLabel
-            control={<Checkbox
-              inputProps={{'aria-labelledby': "staffing"}}
-              name="staffing"
-              checked={staffingSelected}
-              onChange={event => setStaffingSelected(event.target.checked)}
-            />}
-            label="I require access to enter staffing figures as my role includes planning"
-            sx={{fontWeight: 'bold'}}
-          />
+        <ListItem>
+          <FormLabel sx={{width: '100%'}}
+              id="staffing-selected-group-label">
+            <b>I require access to enter staffing figures as my role includes planning</b>
+          </FormLabel>
         </ListItem>
-        <ListItem key={'line-manager'}>
-          <FormControl fullWidth>
-            <InputLabel error={moreInfoRequired() && !isValid} htmlFor="component-outlined">Line manager's
-              email address</InputLabel>
-            <OutlinedInput
-              id="component-outlined"
-              error={dirty && !isValid}
-              onBlur={() => setDirty(true)}
-              onChange={handleEmailChange}
-              label="Line manager's email address"
-              size={'medium'}
-              value={lineManager}
-            />
-          </FormControl>
+        <ListItem>
+        <FormControl sx={{width: '100%', paddingBottom: '1em'}}
+          error={dirty && !isValid}>
+          <RadioGroup
+              aria-labelledby="staffing-selected-group-label"
+              defaultValue=""
+              name="staffing-selected-group"
+              onChange={handleRadioChange}
+              value={staffingSelected}>
+            <FormControlLabel value="true" control={<Radio/>} label="Yes"/>
+            {
+                staffingSelected == "true" &&
+                <FormControl fullWidth>
+                <InputLabel error={moreInfoRequired() && !isValid} htmlFor="line-manager-email-input">Line manager's
+                  email address</InputLabel>
+                <OutlinedInput
+                    id="line-manager-email-input"
+                    inputProps={{ "data-testid":  "line-manager-email-input-test" }}
+                    onBlur={() => setDirty(equals(staffingSelected, "true"))}
+                    onChange={handleEmailChange}
+                    label="Line manager's email address"
+                    size={'medium'}
+                    value={lineManager}
+                />
+              </FormControl>
+            }
+
+            <FormControlLabel value="false" control={<Radio/>} label="No"/>
+          </RadioGroup>
+        </FormControl>
         </ListItem>
         <Divider/>
         <ListItem>
@@ -219,7 +241,7 @@ export default function AccessRequestForm(props: IProps) {
                                                                rccOption={isRccUser}
                                                                rccRegions={selectedRegions.map(r => r.name)}
                                                                ports={selectedPorts}
-                                                               manageStaff={staffingSelected}
+                                                               manageStaff={staffingSelected == 'true'}
                                                                portOrRegionText={portOrRegionText}
                                                                setPortOrRegionText={setPortOrRegionText}
                                                                staffText={staffText}
