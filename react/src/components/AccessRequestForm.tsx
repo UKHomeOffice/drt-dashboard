@@ -61,10 +61,11 @@ export default function AccessRequestForm(props: IProps) {
   const [isValid, setIsValid] = React.useState(false);
   const [dirty, setDirty] = React.useState(false);
   const [openModal, setOpenModal]: [boolean, ((value: (((prevState: boolean) => boolean) | boolean)) => void)] = React.useState<boolean>(false);
+  const [radioSelected, setRadioSelected] = React.useState<boolean>(false);
 
   const selectedRegions = props.regions.filter(region => region.ports.every(port => selectedPorts.includes(port)))
 
-  const [staffingSelected, setStaffingSelected] = React.useState<string>('')
+  const [staffingSelected, setStaffingSelected] = React.useState<boolean>(false)
   const [lineManager, setLineManager] = React.useState<string>('')
   const [declarationAgreed, setDeclarationAgreed] = React.useState<boolean>(false)
   const [requestSubmitted, setRequestSubmitted] = React.useState<boolean>(false)
@@ -82,12 +83,12 @@ export default function AccessRequestForm(props: IProps) {
     axios.post(ApiClient.requestAccessEndPoint, {
       agreeDeclaration: declarationAgreed,
       allPorts: allPortsRequested,
-      lineManager: lineManager,
+      lineManager: staffingSelected? lineManager : "",
       portOrRegionText: portOrRegionText,
       portsRequested: selectedPorts,
       rccOption: isRccUser ? 'rccu' : 'port',
       regionsRequested: selectedRegions.map(r => r.name),
-      staffing: equals(staffingSelected, "true"),
+      staffing: staffingSelected,
       staffText: staffText,
     } as AccessRequest)
       .then(() => setRequestSubmitted(true))
@@ -104,16 +105,16 @@ export default function AccessRequestForm(props: IProps) {
 
   const moreInfoRequired = () => {
     return (((selectedPorts.length > 1 && !isRccUser) ||
-      (selectedPorts.length > 0 && !isRccUser && equals(staffingSelected, "true")) ||
+      (selectedPorts.length > 0 && !isRccUser && !staffingSelected) ||
       (selectedRegions.length > 1 && isRccUser) ||
-      (selectedRegions.length > 0 && isRccUser && equals(staffingSelected, "true"))))
+      (selectedRegions.length > 0 && isRccUser && !staffingSelected)))
   }
 
   const enableRequestForModal = () => {
-    return (moreInfoRequired() && isValid && declarationAgreed) ||
+    return (moreInfoRequired() && isValid && declarationAgreed) && radioSelected  ||
       (((selectedPorts.length === 1 && !isRccUser) ||
           (selectedRegions.length === 1 && isRccUser)) &&
-        declarationAgreed && !staffingSelected)
+        declarationAgreed && radioSelected && staffingSelected)
   }
 
   const singlePortOrRegion = () => {
@@ -131,7 +132,7 @@ export default function AccessRequestForm(props: IProps) {
   }
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(equals(staffingSelected, "true")) {
+    if(staffingSelected) {
       if (isEmail(event.target.value)) {
         setIsValid(true);
       } else {
@@ -142,14 +143,16 @@ export default function AccessRequestForm(props: IProps) {
   };
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelected: string) => {
-    if(!equals(staffingSelected, "true")) {
+    const staffingSelectedBool = equals(staffingSelected, "true")
+    if(!staffingSelectedBool) {
       setIsValid(true);
       setDirty(true);
     } else {
       setIsValid(false);
       setDirty(false);
     }
-    setStaffingSelected(staffingSelected)
+    setStaffingSelected(staffingSelectedBool);
+    setRadioSelected(true);
   }
 
   function form() {
@@ -184,14 +187,14 @@ export default function AccessRequestForm(props: IProps) {
               value={staffingSelected}>
             <FormControlLabel value="true" control={<Radio/>} label="Yes"/>
             {
-                staffingSelected == "true" &&
+                staffingSelected &&
                 <FormControl fullWidth>
                 <InputLabel error={moreInfoRequired() && !isValid} htmlFor="line-manager-email-input">Line manager's
                   email address</InputLabel>
                 <OutlinedInput
                     id="line-manager-email-input"
                     inputProps={{ "data-testid":  "line-manager-email-input-test" }}
-                    onBlur={() => setDirty(equals(staffingSelected, "true"))}
+                    onBlur={() => setDirty(staffingSelected)}
                     onChange={handleEmailChange}
                     label="Line manager's email address"
                     size={'medium'}
@@ -241,7 +244,7 @@ export default function AccessRequestForm(props: IProps) {
                                                                rccOption={isRccUser}
                                                                rccRegions={selectedRegions.map(r => r.name)}
                                                                ports={selectedPorts}
-                                                               manageStaff={staffingSelected == 'true'}
+                                                               manageStaff={staffingSelected}
                                                                portOrRegionText={portOrRegionText}
                                                                setPortOrRegionText={setPortOrRegionText}
                                                                staffText={staffText}
