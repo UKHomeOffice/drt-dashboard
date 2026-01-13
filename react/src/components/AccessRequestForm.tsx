@@ -112,7 +112,7 @@ export default function AccessRequestForm(props: IProps) {
   }
 
   const enableRequestForModal = () => {
-    return (moreInfoRequired() && isValid && declarationAgreed) && radioSelected  ||
+    return (moreInfoRequired() && isValid && declarationAgreed && radioSelected) ||
       (((selectedPorts.length === 1 && !isRccUser) ||
           (selectedRegions.length === 1 && isRccUser)) &&
         declarationAgreed && radioSelected && !staffingSelected)
@@ -149,7 +149,8 @@ export default function AccessRequestForm(props: IProps) {
       setIsValid(true);
       setDirty(true);
     } else {
-      setIsValid(false);
+      if(equals(lineManager, ""))
+        setIsValid(false);
       setDirty(false);
     }
     setStaffingSelected(staffingSelectedBool);
