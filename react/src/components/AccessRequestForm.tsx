@@ -121,7 +121,7 @@ export default function AccessRequestForm(props: IProps) {
   const singlePortOrRegion = () => {
     return (((selectedPorts.length === 1 && !isRccUser) ||
         (selectedRegions.length === 1 && isRccUser)) &&
-      declarationAgreed && !staffingSelected)
+      declarationAgreed)
   }
 
   const saveOrModal = () => {
@@ -134,25 +134,26 @@ export default function AccessRequestForm(props: IProps) {
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if(staffingSelected) {
-      if (isEmail(event.target.value)) {
+      if(isEmail(event.target.value)) {
         setIsValid(true);
       } else {
         setIsValid(false);
       }
-      setLineManager(event.target.value);
     }
+    setLineManager(event.target.value);
   };
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelectedRadio: string) => {
     const staffingSelectedBool = equals(staffingSelectedRadio, "true")
-    if(!staffingSelectedBool) {
-      setIsValid(true);
-      setDirty(true);
-    } else {
-      if(equals(lineManager, ""))
-        setIsValid(false);
-      setDirty(false);
+    if(!staffingSelectedBool)
+      setIsValid(selectedPorts.length === 1);
+    else {
+      if(isEmail(lineManager)) {
+        setIsValid(true);
+      }
     }
+
+    setDirty(false);
     setStaffingSelected(staffingSelectedBool);
     setRadioSelected(true);
     setStaffingSelectedRadio(staffingSelectedRadio);
@@ -180,8 +181,7 @@ export default function AccessRequestForm(props: IProps) {
           </FormLabel>
         </ListItem>
         <ListItem>
-        <FormControl sx={{width: '100%', paddingBottom: '1em'}}
-          error={dirty && !isValid}>
+        <FormControl sx={{width: '100%', paddingBottom: '1em'}}>
           <RadioGroup
               aria-labelledby="staffing-selected-group-label"
               defaultValue=""
@@ -192,7 +192,7 @@ export default function AccessRequestForm(props: IProps) {
             {
                 staffingSelected &&
                 <FormControl fullWidth>
-                <InputLabel error={moreInfoRequired() && !isValid} htmlFor="line-manager-email-input">Line manager's
+                <InputLabel error={dirty && !isValid} htmlFor="line-manager-email-input">Line manager's
                   email address</InputLabel>
                 <OutlinedInput
                     id="line-manager-email-input"
@@ -247,11 +247,8 @@ export default function AccessRequestForm(props: IProps) {
                                                                rccOption={isRccUser}
                                                                rccRegions={selectedRegions.map(r => r.name)}
                                                                ports={selectedPorts}
-                                                               manageStaff={staffingSelected}
                                                                portOrRegionText={portOrRegionText}
                                                                setPortOrRegionText={setPortOrRegionText}
-                                                               staffText={staffText}
-                                                               setStaffText={setStaffText}
                                                                saveCallback={save}/> : <span/>
         }
         <Button
