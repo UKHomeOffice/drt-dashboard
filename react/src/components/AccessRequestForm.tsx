@@ -62,6 +62,7 @@ export default function AccessRequestForm(props: IProps) {
   const [dirty, setDirty] = React.useState(false);
   const [openModal, setOpenModal]: [boolean, ((value: (((prevState: boolean) => boolean) | boolean)) => void)] = React.useState<boolean>(false);
   const [radioSelected, setRadioSelected] = React.useState<boolean>(false);
+  const [staffingSelectedRadio, setStaffingSelectedRadio] = React.useState<string>("");
 
   const selectedRegions = props.regions.filter(region => region.ports.every(port => selectedPorts.includes(port)))
 
@@ -105,16 +106,16 @@ export default function AccessRequestForm(props: IProps) {
 
   const moreInfoRequired = () => {
     return (((selectedPorts.length > 1 && !isRccUser) ||
-      (selectedPorts.length > 0 && !isRccUser && !staffingSelected) ||
+      (selectedPorts.length > 0 && !isRccUser && staffingSelected) ||
       (selectedRegions.length > 1 && isRccUser) ||
-      (selectedRegions.length > 0 && isRccUser && !staffingSelected)))
+      (selectedRegions.length > 0 && isRccUser && staffingSelected)))
   }
 
   const enableRequestForModal = () => {
     return (moreInfoRequired() && isValid && declarationAgreed) && radioSelected  ||
       (((selectedPorts.length === 1 && !isRccUser) ||
           (selectedRegions.length === 1 && isRccUser)) &&
-        declarationAgreed && radioSelected && staffingSelected)
+        declarationAgreed && radioSelected && !staffingSelected)
   }
 
   const singlePortOrRegion = () => {
@@ -142,8 +143,8 @@ export default function AccessRequestForm(props: IProps) {
     }
   };
 
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelected: string) => {
-    const staffingSelectedBool = equals(staffingSelected, "true")
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelectedRadio: string) => {
+    const staffingSelectedBool = equals(staffingSelectedRadio, "true")
     if(!staffingSelectedBool) {
       setIsValid(true);
       setDirty(true);
@@ -153,6 +154,7 @@ export default function AccessRequestForm(props: IProps) {
     }
     setStaffingSelected(staffingSelectedBool);
     setRadioSelected(true);
+    setStaffingSelectedRadio(staffingSelectedRadio);
   }
 
   function form() {
@@ -184,7 +186,7 @@ export default function AccessRequestForm(props: IProps) {
               defaultValue=""
               name="staffing-selected-group"
               onChange={handleRadioChange}
-              value={staffingSelected}>
+              value={staffingSelectedRadio}>
             <FormControlLabel value="true" control={<Radio/>} label="Yes"/>
             {
                 staffingSelected &&
