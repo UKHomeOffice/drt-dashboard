@@ -177,7 +177,9 @@ export default function AccessRequestForm(props: IProps) {
         <ListItem>
           <FormLabel sx={{width: '100%'}}
               id="staffing-selected-group-label">
-            <b>I require access to enter staffing figures as my role includes planning</b>
+            <br/>
+            Do you work in your port or command level planning team? <br/>
+            <b>Select yes if you need to enter or edit staffing</b>
           </FormLabel>
         </ListItem>
         <ListItem>
