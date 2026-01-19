@@ -63,7 +63,7 @@ describe('<AccessRequestForm />', () => {
         submitIsDisabled();
     });
 
-    it('enables the submit button when "all ports" is selected and disables it when it is deselected', () => {
+    it('enables the submit button when "all regions" is selected and disables it when it is deselected', () => {
         act(() => {
             render(<AccessRequestForm regions={[{name: 'Heathrow', ports: ['LHR']}]} teamEmail={"test@test.com"}/>);
         });
