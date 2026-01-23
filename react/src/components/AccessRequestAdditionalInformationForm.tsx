@@ -45,26 +45,7 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
         props.setPortOrRegionText(event.target.value);
     };
 
-    const rccOptionQuestions = () => {
-        return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
-            <ListItem alignItems="flex-start">
-                {(props.rccRegions.length > 1) ?
-                    <Typography align="left" id="modal-modal-title" sx={{mt: 2}}>
-                        Why do you need data access to more than one port or region?
-                        <TextField style={{width: "100%"}}
-                                   id="outlined-basic"
-                                   variant="outlined"
-                                   required
-                                   value={props.portOrRegionText}
-                                   onChange={handlePortOrRegionTextChange}/>
-                    </Typography>
-                    : <span/>
-                }
-            </ListItem>
-        </List>
-    }
-
-    const portOptionQuestions = () => {
+    const additionalQuestions = () => {
         return <List sx={{width: '100%', bgcolor: 'background.paper'}}>
             <ListItem alignItems="flex-start">
                 {(props.ports.length > 1) ?
@@ -102,9 +83,9 @@ export default function AccessRequestAdditionalInformationForm(props: IProps) {
                     aria-describedby="form-modal-description">
                     <Box sx={style}>
                         <Typography align="left" id="form-modal-title" variant="h6" component="h2">
-                            More information required
+                            More information needed
                         </Typography>
-                        {props.rccOption ? rccOptionQuestions() : portOptionQuestions()}
+                        {additionalQuestions()}
                         <div style={{float: 'left'}}>
                             <Button variant="contained"
                                     disabled={!enableSubmitRequest()}
