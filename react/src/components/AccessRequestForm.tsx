@@ -106,16 +106,14 @@ export default function AccessRequestForm(props: IProps) {
 
   const moreInfoRequired = () => {
     return (((selectedPorts.length > 1 && !isRccUser) ||
-      (selectedPorts.length > 0 && !isRccUser && staffingSelected) ||
+      (selectedPorts.length > 0 && !isRccUser) ||
       (selectedRegions.length > 1 && isRccUser) ||
-      (selectedRegions.length > 0 && isRccUser && staffingSelected)))
+      (selectedRegions.length > 0 && isRccUser)))
   }
 
   const enableRequestForModal = () => {
-    return (moreInfoRequired() && isValid && declarationAgreed && radioSelected) ||
-      (((selectedPorts.length === 1 && !isRccUser) ||
-          (selectedRegions.length === 1 && isRccUser)) &&
-        declarationAgreed && radioSelected && !staffingSelected)
+    return (moreInfoRequired() && inputIsValid(staffingSelected, lineManager)
+            && declarationAgreed && radioSelected)
   }
 
   const singlePortOrRegion = () => {
@@ -132,27 +130,22 @@ export default function AccessRequestForm(props: IProps) {
     }
   }
 
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(staffingSelected) {
-      if(isEmail(event.target.value)) {
-        setIsValid(true);
-      } else {
-        setIsValid(false);
-      }
+  const inputIsValid = (staffingSelectedBool: boolean, lineManager: string) => {
+    if(staffingSelectedBool || selectedPorts.length > 1) {
+      return isEmail(lineManager);
+    } else {
+      return true;
     }
+  }
+
+  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsValid(inputIsValid(staffingSelected, event.target.value))
     setLineManager(event.target.value);
   };
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>, staffingSelectedRadio: string) => {
     const staffingSelectedBool = equals(staffingSelectedRadio, "true")
-    if(!staffingSelectedBool)
-      setIsValid(selectedPorts.length === 1);
-    else {
-      if(isEmail(lineManager)) {
-        setIsValid(true);
-      }
-    }
-
+    setIsValid(inputIsValid(staffingSelectedBool, lineManager))
     setDirty(false);
     setStaffingSelected(staffingSelectedBool);
     setRadioSelected(true);
@@ -179,7 +172,7 @@ export default function AccessRequestForm(props: IProps) {
               id="staffing-selected-group-label">
             <br/>
             Do you work in your port or command level planning team? <br/>
-            <b>Select yes if you need to enter or edit staffing</b>
+            <b>[hint] Select yes if you need to enter staffing</b>
           </FormLabel>
         </ListItem>
         <ListItem>
@@ -191,25 +184,24 @@ export default function AccessRequestForm(props: IProps) {
               onChange={handleRadioChange}
               value={staffingSelectedRadio}>
             <FormControlLabel value="true" control={<Radio/>} label="Yes"/>
-            {
-                staffingSelected &&
-                <FormControl fullWidth>
-                <InputLabel error={dirty && !isValid} htmlFor="line-manager-email-input">Line manager's
-                  email address</InputLabel>
-                <OutlinedInput
-                    id="line-manager-email-input"
-                    inputProps={{ "data-testid":  "line-manager-email-input-test" }}
-                    onBlur={() => setDirty(staffingSelected)}
-                    onChange={handleEmailChange}
-                    label="Line manager's email address"
-                    size={'medium'}
-                    value={lineManager}
-                />
-              </FormControl>
-            }
-
             <FormControlLabel value="false" control={<Radio/>} label="No"/>
           </RadioGroup>
+          {
+            (selectedPorts.length > 1 || staffingSelected) &&
+          <FormControl fullWidth>
+            <InputLabel error={dirty && !isValid} htmlFor="line-manager-email-input">Enter your line manager's
+              email address</InputLabel>
+            <OutlinedInput
+                id="line-manager-email-input"
+                inputProps={{ "data-testid":  "line-manager-email-input-test" }}
+                onBlur={() => setDirty(selectedPorts.length > 1 || staffingSelected)}
+                onChange={handleEmailChange}
+                label="Line manager's email address"
+                size={'medium'}
+                value={lineManager}
+            />
+          </FormControl>
+          }
         </FormControl>
         </ListItem>
         <Divider/>

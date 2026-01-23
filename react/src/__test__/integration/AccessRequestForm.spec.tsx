@@ -24,11 +24,11 @@ function submitIsNotDisabled() {
 }
 
 function lineManagerIsDisabled() {
-    expect(screen.queryByLabelText('Line manager\'s email address', {selector: 'input'})).toBeNull();
+    expect(screen.queryByLabelText('Enter your line manager\'s email address', {selector: 'input'})).toBeNull();
 }
 
 function lineManagerIsNotDisabled() {
-    expect(screen.queryByLabelText('Line manager\'s email address', {selector: 'input'})).not.toBeNull();
+    expect(screen.queryByLabelText('Enter your line manager\'s email address', {selector: 'input'})).not.toBeNull();
 }
 
 describe('<AccessRequestForm />', () => {
@@ -126,6 +126,30 @@ describe('<AccessRequestForm />', () => {
         });
 
         lineManagerIsDisabled();
+    })
+
+    it('displays the line manager textbox input when multiple regions selected', () => {
+        act(() => {
+            render(<AccessRequestForm regions={[{name: 'Heathrow', ports: ['LHR']}, {name: 'Luton', ports: ['LTN']}]} teamEmail={"test@test.com"} />);
+        });
+
+        lineManagerIsDisabled();
+
+        act(() => {
+            fireEvent.click(screen.getByText('No'));
+            fireEvent.click(screen.getByText('All regions'));
+        });
+
+        lineManagerIsNotDisabled();
+
+        act(() => {
+            // @ts-ignore
+            fireEvent.change(screen.queryByLabelText('Enter your line manager\'s email address', {selector: 'input'}),
+                {target: {value: 'test@test.com'}});
+            fireEvent.click(screen.getByText('I understand and agree with the above declarations'));
+        });
+
+        submitIsNotDisabled();
     })
 
 
