@@ -42,7 +42,7 @@ export default function ConfirmAccessRequest(props: IProps) {
       The following users have had their request {messageDisplay()}
       <List>
         {props.emails.map(e =>
-          <ListItem>
+          <ListItem key={e}>
             <ListItemText
               primary={e}
             />
