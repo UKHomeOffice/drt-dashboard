@@ -167,6 +167,8 @@ describe('<AccessRequests /> bulk actions', () => {
     pendingSecondApproval.resolve({data: 'OK'});
 
     await waitFor(() => expect(screen.getByText('User access request approved')).toBeInTheDocument());
+    expect(screen.getByText('The selected requests were completed successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText('user2@test.com')).toBeInTheDocument();
   });
@@ -201,8 +203,10 @@ describe('<AccessRequests /> bulk actions', () => {
     await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Approve');
 
     await waitFor(() => expect(screen.getByText('User access request partially approved')).toBeInTheDocument());
+    expect(screen.getByText('Some requests completed successfully, but some still need attention.')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
     expect(screen.getByText(/user1@test\.com/)).toBeInTheDocument();
-    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('Could not be approved')).toBeInTheDocument();
     expect(screen.getByText(/user2@test\.com/)).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -245,6 +249,8 @@ describe('<AccessRequests /> bulk actions', () => {
     pendingSixthApproval.resolve({data: 'OK'});
 
     await waitFor(() => expect(screen.getByText('User access request approved')).toBeInTheDocument());
+    expect(screen.getByText('The selected requests were completed successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
     emails.forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
   });
 
@@ -282,9 +288,11 @@ describe('<AccessRequests /> bulk actions', () => {
 
     await waitFor(() => expect(mockedAxios.post).toHaveBeenCalledTimes(6));
     await waitFor(() => expect(screen.getByText('User access request partially approved')).toBeInTheDocument());
+    expect(screen.getByText('Some requests completed successfully, but some still need attention.')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
 
     emails.slice(0, 5).forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
-    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('Could not be approved')).toBeInTheDocument();
     expect(screen.getByText(failedEmail)).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -311,10 +319,11 @@ describe('<AccessRequests /> bulk actions', () => {
     await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Approve');
 
     await waitFor(() => expect(screen.getByText('User access request could not be approved')).toBeInTheDocument());
-    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('No selected requests were completed.')).toBeInTheDocument();
+    expect(screen.getByText('Could not be approved')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText('user2@test.com')).toBeInTheDocument();
-    expect(screen.queryByText(/The following users have had their request approved/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Approved')).not.toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
@@ -350,6 +359,8 @@ describe('<AccessRequests /> bulk actions', () => {
     pendingSixthDismissal.resolve({data: 'OK'});
 
     await waitFor(() => expect(screen.getByText('User access request dismissed')).toBeInTheDocument());
+    expect(screen.getByText('The selected requests were completed successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Dismissed')).toBeInTheDocument();
     emails.forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
   });
 
@@ -381,9 +392,11 @@ describe('<AccessRequests /> bulk actions', () => {
 
     await waitFor(() => expect(mockedAxios.post).toHaveBeenCalledTimes(6));
     await waitFor(() => expect(screen.getByText('User access request partially dismissed')).toBeInTheDocument());
+    expect(screen.getByText('Some requests completed successfully, but some still need attention.')).toBeInTheDocument();
+    expect(screen.getByText('Dismissed')).toBeInTheDocument();
 
     emails.slice(0, 5).forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
-    expect(screen.getByText(/The following users could not be dismissed/)).toBeInTheDocument();
+    expect(screen.getByText('Could not be dismissed')).toBeInTheDocument();
     expect(screen.getByText(failedEmail)).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -405,10 +418,11 @@ describe('<AccessRequests /> bulk actions', () => {
     await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Dismiss');
 
     await waitFor(() => expect(screen.getByText('User access request could not be dismissed')).toBeInTheDocument());
-    expect(screen.getByText(/The following users could not be dismissed/)).toBeInTheDocument();
+    expect(screen.getByText('No selected requests were completed.')).toBeInTheDocument();
+    expect(screen.getByText('Could not be dismissed')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText('user2@test.com')).toBeInTheDocument();
-    expect(screen.queryByText(/The following users have had their request dismissed/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Dismissed')).not.toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
   });

@@ -90,7 +90,9 @@ describe('<AccessRequestDetails />', () => {
     pendingApproval.resolve({data: 'OK'});
 
     await waitFor(() => expect(screen.getByText('User access request approved')).toBeInTheDocument());
-    expect(screen.getByText(/user1@test\.com\s+has had their request\s+approved/i)).toBeInTheDocument();
+    expect(screen.getByText('The selected request was completed successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
   });
 
   it('shows an approval failure confirmation when loading user details fails', async () => {
@@ -104,7 +106,8 @@ describe('<AccessRequestDetails />', () => {
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
     expect(mockedAxios.post).not.toHaveBeenCalled();
     expect(screen.getByText('User access request could not be approved')).toBeInTheDocument();
-    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('No selected requests were completed.')).toBeInTheDocument();
+    expect(screen.getByText('Could not be approved')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
@@ -130,7 +133,8 @@ describe('<AccessRequestDetails />', () => {
 
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
     expect(screen.getByText('User access request could not be approved')).toBeInTheDocument();
-    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('No selected requests were completed.')).toBeInTheDocument();
+    expect(screen.getByText('Could not be approved')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
@@ -156,7 +160,9 @@ describe('<AccessRequestDetails />', () => {
     pendingRevert.resolve({data: 'OK'});
 
     await waitFor(() => expect(screen.getByText('User access request reverted')).toBeInTheDocument());
-    expect(screen.getByText(/user1@test\.com\s+has had their request\s+reverted/i)).toBeInTheDocument();
+    expect(screen.getByText('The selected request was completed successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Reverted')).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
   });
 
   it('shows a revert failure confirmation when the revert request fails', async () => {
@@ -169,7 +175,8 @@ describe('<AccessRequestDetails />', () => {
 
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
     expect(screen.getByText('User access request could not be reverted')).toBeInTheDocument();
-    expect(screen.getByText(/The following users could not be reverted/)).toBeInTheDocument();
+    expect(screen.getByText('No selected requests were completed.')).toBeInTheDocument();
+    expect(screen.getByText('Could not be reverted')).toBeInTheDocument();
     expect(screen.getByText('user1@test.com')).toBeInTheDocument();
     expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
