@@ -20,6 +20,7 @@ const style = {
 
 interface IProps {
   emails: string[]
+  failedEmails?: string[]
   message: string
   parentRequestPosted: boolean
   setParentRequestPosted: ((value: (((prevState: boolean) => boolean) | boolean)) => void);
@@ -30,6 +31,10 @@ interface IProps {
 }
 
 export default function ConfirmAccessRequest(props: IProps) {
+  const successfulEmails = props.emails
+  const failedEmails = props.failedEmails ?? []
+  const hasSuccesses = successfulEmails.length > 0
+  const hasFailures = failedEmails.length > 0
 
   const resetRequestPosted = () => {
     props.setReceivedUserDetails(false)
@@ -37,28 +42,74 @@ export default function ConfirmAccessRequest(props: IProps) {
     props.setOpenModel(false)
   }
 
+  const emailList = (emails: string[]) => (
+    <List>
+      {emails.map(e =>
+        <ListItem key={e}>
+          <ListItemText
+            primary={e}
+          />
+        </ListItem>,
+      )}
+    </List>
+  )
+
   const moreThanOneUserDisplay = () => {
     return <div>
-      The following users have had their request {messageDisplay()}
-      <List>
-        {props.emails.map(e =>
-          <ListItem key={e}>
-            <ListItemText
-              primary={e}
-            />
-          </ListItem>,
-        )}
-      </List>
+      The following users have had their request {actionLabel()}
+      {emailList(successfulEmails)}
     </div>
   }
 
-  const singleUserDisplay = () => {
+  const failedUsersDisplay = () => {
     return <div>
-      {props.emails} has had their request {messageDisplay()}
+      The following users could not be {actionLabel()}
+      {emailList(failedEmails)}
     </div>
   }
 
-  const messageDisplay = () => {
+  const successDisplay = () => {
+    if (successfulEmails.length > 1) {
+      return moreThanOneUserDisplay()
+    }
+
+    return <div>
+      {successfulEmails} has had their request {actionLabel()}
+    </div>
+  }
+
+  const partialSuccessDisplay = () => {
+    return <div>
+      {successDisplay()}
+      {failedUsersDisplay()}
+      <Typography sx={{mt: 2}}>
+        Please retry the failed users. If the issue persists, check the logs or complete the action manually.
+      </Typography>
+    </div>
+  }
+
+  const failureDisplay = () => {
+    return <div>
+      {failedUsersDisplay()}
+      <Typography sx={{mt: 2}}>
+        Please retry the failed users. If the issue persists, check the logs or complete the action manually.
+      </Typography>
+    </div>
+  }
+
+  const bodyDisplay = () => {
+    if (hasSuccesses && hasFailures) {
+      return partialSuccessDisplay()
+    }
+
+    if (hasFailures) {
+      return failureDisplay()
+    }
+
+    return successDisplay()
+  }
+
+  const actionLabel = () => {
     switch (props.message.toLowerCase()) {
       case "granted" :
         return "approved"
@@ -69,15 +120,27 @@ export default function ConfirmAccessRequest(props: IProps) {
     }
   }
 
+  const titleDisplay = () => {
+    if (hasSuccesses && hasFailures) {
+      return `User access request partially ${actionLabel()}`
+    }
+
+    if (hasFailures) {
+      return `User access request could not be ${actionLabel()}`
+    }
+
+    return `User access request ${actionLabel()}`
+  }
+
   return (
     <div className="flex-container">
       <div>
         <Box sx={style}>
           <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-            User access request {messageDisplay()}
+            {titleDisplay()}
           </Typography>
           <br/>
-          {props.emails.length > 1 ? moreThanOneUserDisplay() : singleUserDisplay()}
+          {bodyDisplay()}
           <Button style={{float: 'right'}} onClick={resetRequestPosted}>back</Button>
         </Box>
       </div>

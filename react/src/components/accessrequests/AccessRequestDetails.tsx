@@ -53,6 +53,7 @@ interface IProps {
 
 export default function AccessRequestDetails(props: IProps) {
   const [requestPosted, setRequestPosted] = React.useState(false)
+  const [failedEmails, setFailedEmails] = React.useState([] as string[])
   const [message, setMessage] = React.useState("");
   const handleClose = () => {
     props.setOpenModal(false)
@@ -60,6 +61,7 @@ export default function AccessRequestDetails(props: IProps) {
 
   const approveAccessRequest = async () => {
     setMessage("Granted")
+    setFailedEmails([])
     try {
       const response = await axios.get(ApiClient.userDetailsEndpoint + '/' + props.accessRequest.email)
       const keyCloakUser = response.data
@@ -70,17 +72,22 @@ export default function AccessRequestDetails(props: IProps) {
       props.setReceivedUserDetails(false)
     } catch (error) {
       console.error(`Failed to approve access request for ${props.accessRequest.email}`, error)
+      setFailedEmails([props.accessRequest.email])
+      setRequestPosted(true)
     }
   }
 
   const revertAccessRequest = async () => {
     setMessage("Revert")
+    setFailedEmails([])
     try {
       await axios.post(ApiClient.updateUserRequestEndpoint + "/" + "Requested", props.accessRequest)
       setRequestPosted(true)
       props.setReceivedUserDetails(false)
     } catch (error) {
       console.error(`Failed to revert access request for ${props.accessRequest.email}`, error)
+      setFailedEmails([props.accessRequest.email])
+      setRequestPosted(true)
     }
   }
 
@@ -198,7 +205,8 @@ export default function AccessRequestDetails(props: IProps) {
                             setReceivedUserDetails={props.setReceivedUserDetails}
                             openModel={props.openModal}
                             setOpenModel={props.setOpenModal}
-                            emails={[props.accessRequest.email]}/> : viewUserDetailTable()
+                            emails={failedEmails.length > 0 ? [] : [props.accessRequest.email]}
+                            failedEmails={failedEmails}/> : viewUserDetailTable()
   }
 
   return (

@@ -93,7 +93,7 @@ describe('<AccessRequestDetails />', () => {
     expect(screen.getByText(/user1@test\.com\s+has had their request\s+approved/i)).toBeInTheDocument();
   });
 
-  it('does not show success confirmation when loading user details fails', async () => {
+  it('shows an approval failure confirmation when loading user details fails', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockedAxios.get.mockRejectedValue(new Error('Failed to load user details'));
 
@@ -103,10 +103,13 @@ describe('<AccessRequestDetails />', () => {
 
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
     expect(mockedAxios.post).not.toHaveBeenCalled();
-    expect(screen.queryByText('User access request approved')).not.toBeInTheDocument();
+    expect(screen.getByText('User access request could not be approved')).toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
 
-  it('does not show success confirmation when approval fails after loading user details', async () => {
+  it('shows an approval failure confirmation when approval fails after loading user details', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockedAxios.get.mockResolvedValue({
       data: {
@@ -126,7 +129,10 @@ describe('<AccessRequestDetails />', () => {
     fireEvent.click(screen.getByRole('button', {name: 'Approve'}));
 
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
-    expect(screen.queryByText('User access request approved')).not.toBeInTheDocument();
+    expect(screen.getByText('User access request could not be approved')).toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
 
   it('waits for revert completion before showing revert confirmation', async () => {
@@ -151,6 +157,21 @@ describe('<AccessRequestDetails />', () => {
 
     await waitFor(() => expect(screen.getByText('User access request reverted')).toBeInTheDocument());
     expect(screen.getByText(/user1@test\.com\s+has had their request\s+reverted/i)).toBeInTheDocument();
+  });
+
+  it('shows a revert failure confirmation when the revert request fails', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockedAxios.post.mockRejectedValue(new Error('Failed to revert user'));
+
+    renderAccessRequestDetails({status: 'Dismissed'});
+
+    fireEvent.click(screen.getByRole('button', {name: 'Revert'}));
+
+    await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
+    expect(screen.getByText('User access request could not be reverted')).toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be reverted/)).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
   });
 });
 

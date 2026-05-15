@@ -171,7 +171,7 @@ describe('<AccessRequests /> bulk actions', () => {
     expect(screen.getByText('user2@test.com')).toBeInTheDocument();
   });
 
-  it('lists only users whose approvals completed successfully', async () => {
+  it('shows a partial approval result with successful and failed users listed separately', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     mockedAxios.get.mockImplementation((url) => {
@@ -200,9 +200,11 @@ describe('<AccessRequests /> bulk actions', () => {
 
     await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Approve');
 
-    await waitFor(() => expect(screen.getByText('User access request approved')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('User access request partially approved')).toBeInTheDocument());
     expect(screen.getByText(/user1@test\.com/)).toBeInTheDocument();
-    expect(screen.queryByText(/user2@test\.com/)).not.toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText(/user2@test\.com/)).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
@@ -246,7 +248,7 @@ describe('<AccessRequests /> bulk actions', () => {
     emails.forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
   });
 
-  it('shows only the five successful users after a 6-user bulk approval with one failure', async () => {
+  it('shows a partial approval result after a 6-user bulk approval with one failure', async () => {
     const {emails, accessRequests, keycloakUsers} = buildBulkUsers(6);
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     const failedEmail = emails[5];
@@ -279,10 +281,41 @@ describe('<AccessRequests /> bulk actions', () => {
     await renderAndSelectUsers(emails, 'Approve');
 
     await waitFor(() => expect(mockedAxios.post).toHaveBeenCalledTimes(6));
-    await waitFor(() => expect(screen.getByText('User access request approved')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('User access request partially approved')).toBeInTheDocument());
 
     emails.slice(0, 5).forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
-    expect(screen.queryByText(failedEmail)).not.toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText(failedEmail)).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('shows a full approval failure result when every selected approval fails', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    mockedAxios.get.mockImplementation((url) => {
+      switch (url) {
+        case '/api/users/access-request?status=Requested':
+          return Promise.resolve({data: accessRequests} as any);
+        case '/api/users/user-details/user1@test.com':
+          return Promise.resolve({data: keycloakUsers['user1@test.com']} as any);
+        case '/api/users/user-details/user2@test.com':
+          return Promise.resolve({data: keycloakUsers['user2@test.com']} as any);
+        default:
+          throw new Error(`Unexpected GET ${url}`);
+      }
+    });
+
+    mockedAxios.post.mockRejectedValue(new Error('Keycloak group update failed'));
+
+    await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Approve');
+
+    await waitFor(() => expect(screen.getByText('User access request could not be approved')).toBeInTheDocument());
+    expect(screen.getByText(/The following users could not be approved/)).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+    expect(screen.getByText('user2@test.com')).toBeInTheDocument();
+    expect(screen.queryByText(/The following users have had their request approved/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
@@ -320,7 +353,7 @@ describe('<AccessRequests /> bulk actions', () => {
     emails.forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
   });
 
-  it('shows only the five successful users after a 6-user bulk dismissal with one failure', async () => {
+  it('shows a partial dismissal result after a 6-user bulk dismissal with one failure', async () => {
     const {emails, accessRequests} = buildBulkUsers(6);
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     const failedEmail = emails[5];
@@ -347,10 +380,36 @@ describe('<AccessRequests /> bulk actions', () => {
     await renderAndSelectUsers(emails, 'Dismiss');
 
     await waitFor(() => expect(mockedAxios.post).toHaveBeenCalledTimes(6));
-    await waitFor(() => expect(screen.getByText('User access request dismissed')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('User access request partially dismissed')).toBeInTheDocument());
 
     emails.slice(0, 5).forEach(email => expect(screen.getByText(email)).toBeInTheDocument());
-    expect(screen.queryByText(failedEmail)).not.toBeInTheDocument();
+    expect(screen.getByText(/The following users could not be dismissed/)).toBeInTheDocument();
+    expect(screen.getByText(failedEmail)).toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('shows a full dismissal failure result when every selected dismissal fails', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    mockedAxios.get.mockImplementation((url) => {
+      if (url === '/api/users/access-request?status=Requested') {
+        return Promise.resolve({data: accessRequests} as any);
+      }
+
+      throw new Error(`Unexpected GET ${url}`);
+    });
+
+    mockedAxios.post.mockRejectedValue(new Error('Failed to dismiss users'));
+
+    await renderAndSelectUsers(['user1@test.com', 'user2@test.com'], 'Dismiss');
+
+    await waitFor(() => expect(screen.getByText('User access request could not be dismissed')).toBeInTheDocument());
+    expect(screen.getByText(/The following users could not be dismissed/)).toBeInTheDocument();
+    expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+    expect(screen.getByText('user2@test.com')).toBeInTheDocument();
+    expect(screen.queryByText(/The following users have had their request dismissed/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Please retry the failed users/)).toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 });
