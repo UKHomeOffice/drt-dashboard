@@ -1,78 +1,16 @@
 import net.nmoncho.sbt.dependencycheck.settings.{AnalyzerSettings, NvdApiSettings}
-import sbt.Keys.resolvers
 
-lazy val drtLibVersion = "v1397"
-lazy val drtCiriumVersion = "v339"
-
-lazy val pekkoVersion = "1.4.0"
-lazy val pekkoHttpVersion = "1.3.0"
-
-lazy val slickVersion = "3.5.2"
-
-lazy val jodaTimeVersion = "2.14.0"
-lazy val scalaLoggingVersion = "3.9.6"
-lazy val logBackClassicVersion = "1.5.24"
-lazy val scalaTagsVersion = "0.13.1"
-lazy val specs2Version = "4.23.0"
-lazy val logBackJsonVersion = "0.1.5"
-lazy val scalaTestVersion = "3.2.19"
-lazy val janinoVersion = "3.1.12"
-lazy val jacksonDatabindVersion = "2.18.2"
-lazy val notificationsJavaClientVersion = "6.0.0-RELEASE"
-lazy val scalaCsvVersion = "2.0.0"
-lazy val awsJava2SdkVersion = "2.41.10"
-lazy val postgresqlVersion = "42.7.9"
-lazy val mockitoVersion = "5.21.0"
-//lazy val poiScalaVersion ="0.25"
-lazy val poiScalaVersion ="2.1.1"
-lazy val h2Version = "2.4.240"
+ThisBuild / organization := "uk.gov.homeoffice.drt"
+ThisBuild / scalaVersion := "2.13.18"
 
 lazy val root = (project in file(".")).
+  enablePlugins(DockerPlugin, JavaAppPackaging).
   settings(
-    inThisBuild(List(
-      organization := "uk.gov.homeoffice.drt",
-      scalaVersion := "2.13.18"
-    )),
-
     version := sys.env.getOrElse("DRONE_BUILD_NUMBER", sys.env.getOrElse("BUILD_ID", "DEV")),
     name := "drt-dashboard",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     dockerBaseImage := "openjdk:11-jre-slim-buster",
-    libraryDependencies ++= Seq(
-      "org.apache.pekko" %% "pekko-actor-typed" % pekkoVersion,
-      "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-      "org.apache.pekko" %% "pekko-http-caching" % pekkoHttpVersion,
-      "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-      "org.apache.pekko" %% "pekko-pki" % pekkoVersion,
-      "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-      "joda-time" % "joda-time" % jodaTimeVersion,
-      "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-      "ch.qos.logback" % "logback-classic" % logBackClassicVersion % Runtime,
-      "com.lihaoyi" %% "scalatags" % scalaTagsVersion,
-      "uk.gov.homeoffice" %% "drt-cirium" % drtCiriumVersion,
-      "uk.gov.homeoffice" %% "drt-lib" % drtLibVersion excludeAll("org.scala-lang.modules", "scala-xml"),
-      "ch.qos.logback.contrib" % "logback-json-classic" % logBackJsonVersion,
-      "ch.qos.logback.contrib" % "logback-jackson" % logBackJsonVersion,
-      "org.codehaus.janino" % "janino" % janinoVersion,
-      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabindVersion,
-      "uk.gov.service.notify" % "notifications-java-client" % notificationsJavaClientVersion,
-      "com.github.tototoshi" %% "scala-csv" % scalaCsvVersion,
-      "org.scalactic" %% "scalactic" % scalaTestVersion,
-      "software.amazon.awssdk" % "s3" % awsJava2SdkVersion,
-      "info.folone" %% "poi-scala" % poiScalaVersion,
-      "com.typesafe.slick" %% "slick" % slickVersion,
-      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
-      "org.postgresql" % "postgresql" % postgresqlVersion,
-
-      "com.h2database" % "h2" % h2Version % Test,
-      "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
-      "org.apache.pekko" %% "pekko-stream-testkit" % pekkoVersion % Test,
-      "org.apache.pekko" %% "pekko-actor-testkit-typed" % pekkoVersion % Test,
-      "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-      "org.specs2" %% "specs2-core" % specs2Version % Test,
-      "org.mockito" % "mockito-core" % mockitoVersion % Test,
-    ),
-
+    libraryDependencies ++= AppDependencies.all,
     resolvers ++= Seq(
       "Artifactory Release Realm" at "https://artifactory.digital.homeoffice.gov.uk/",
       "Artifactory Realm release local" at "https://artifactory.digital.homeoffice.gov.uk/artifactory/libs-release-local/",
@@ -81,13 +19,17 @@ lazy val root = (project in file(".")).
     ),
 
     dockerExposedPorts ++= Seq(8081),
-
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "resources",
+    run / fork := true,
+    Global / cancelable := true,
   )
-  .settings(SbtUpdatesSettings.sbtUpdatesSettings *)
-  .enablePlugins(DockerPlugin)
-  .enablePlugins(JavaAppPackaging)
+  .settings(CodeCoverageSettings.codeCoverageSettings)
+  .settings(SbtUpdatesSettings.sbtUpdatesSettings)
+  .settings(WartRemoverSettings.wartRemoverSettings)
 
 val nvdAPIKey = sys.env.getOrElse("NVD_API_KEY", "")
+
+addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt")
 
 dependencyCheckNvdApi := NvdApiSettings(apiKey = nvdAPIKey)
 
@@ -104,13 +46,3 @@ ThisBuild / dependencyCheckAnalyzers := dependencyCheckAnalyzers.value.copy(
   )
 )
 
-Test / parallelExecution := false
-
-Test / javaOptions += "-Duser.timezone=UTC"
-
-Runtime / javaOptions += "-Duser.timezone=UTC"
-
-Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "resources"
-
-run / fork := true
-cancelable in Global := true
