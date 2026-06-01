@@ -30,6 +30,22 @@ SLACK_WEBHOOK_URL= \
 sbt run
 ``` 
 
+## Build verification script
+
+From the repository root you can run the standard backend verification script:
+
+```bash
+./run_tests.sh
+```
+
+The script changes to the repository root and runs the conservative SBT verification flow used for local build cleanup checks:
+
+```bash
+sbt clean scalafmtAll compile coverage test coverageOff coverageReport dependencyUpdates
+```
+
+Use this script when you want to verify formatting, compilation, test execution, coverage report generation, and dependency update reporting in one step.
+
 
 ## React Frontend
 
