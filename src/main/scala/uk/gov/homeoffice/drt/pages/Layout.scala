@@ -13,8 +13,11 @@ object Layout {
         link(
           href := "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css",
           `type` := "text/css",
-          rel := "stylesheet")),
-      body(cls := "drt-dashboard", pageContent)).render
+          rel := "stylesheet"
+        )
+      ),
+      body(cls := "drt-dashboard", pageContent)
+    ).render
   }
 
 }

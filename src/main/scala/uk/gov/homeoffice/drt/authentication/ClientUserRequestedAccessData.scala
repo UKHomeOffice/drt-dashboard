@@ -3,7 +3,7 @@ package uk.gov.homeoffice.drt.authentication
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError }
+import spray.json.{ deserializationError, DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat }
 import uk.gov.homeoffice.drt.db.UserAccessRequest
 
 import java.sql.Timestamp
@@ -14,36 +14,38 @@ trait ClientUserAccessDataJsonSupport extends SprayJsonSupport with DefaultJsonP
 
     override def read(json: JsValue): Timestamp = json match {
       case JsString(rawDate) => {
-        try {
-          DateTime.parse(rawDate)
-        } catch {
-          case iae: IllegalArgumentException => deserializationError("Invalid date format")
-          case _: Exception => None
+          try {
+            DateTime.parse(rawDate)
+          } catch {
+            case iae: IllegalArgumentException => deserializationError("Invalid date format")
+            case _: Exception                  => None
+          }
+        } match {
+          case dateTime: Timestamp => dateTime
+          case None                => deserializationError(s"Couldn't parse date time, got $rawDate")
         }
-      } match {
-        case dateTime: Timestamp => dateTime
-        case None => deserializationError(s"Couldn't parse date time, got $rawDate")
-      }
     }
   }
 
-  implicit val clientUserAccessDataJsonSupportDataFormatParser: RootJsonFormat[ClientUserRequestedAccessData] = jsonFormat12(ClientUserRequestedAccessData)
+  implicit val clientUserAccessDataJsonSupportDataFormatParser: RootJsonFormat[ClientUserRequestedAccessData] =
+    jsonFormat12(ClientUserRequestedAccessData)
 
 }
 
 case class ClientUserRequestedAccessData(
-  agreeDeclaration: Boolean,
-  allPorts: Boolean,
-  email: String,
-  lineManager: String,
-  portOrRegionText: String,
-  portsRequested: String,
-  accountType: String,
-  regionsRequested: String,
-  requestTime: String,
-  staffText: String,
-  staffEditing: Boolean,
-  status: String) {
+    agreeDeclaration: Boolean,
+    allPorts: Boolean,
+    email: String,
+    lineManager: String,
+    portOrRegionText: String,
+    portsRequested: String,
+    accountType: String,
+    regionsRequested: String,
+    requestTime: String,
+    staffText: String,
+    staffEditing: Boolean,
+    status: String
+) {
 
   def getListOfPortOrRegion = {
     if (accountType == "rccu" && regionsRequested.nonEmpty) {
@@ -68,6 +70,8 @@ case class ClientUserRequestedAccessData(
       portOrRegionText = portOrRegionText,
       staffText = staffText,
       status = status,
-      requestTime = new Timestamp(DateTime.parse(requestTime, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).getMillis))
+      requestTime =
+        new Timestamp(DateTime.parse(requestTime, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).getMillis)
+    )
   }
 }

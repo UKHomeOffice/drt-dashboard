@@ -5,16 +5,15 @@ import slick.dbio.Effect
 import slick.lifted.Tag
 import slick.sql.FixedSqlAction
 import uk.gov.homeoffice.drt.models.RegionExport
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate }
 
 import java.sql.Timestamp
 import scala.concurrent.ExecutionContext
 
-
 import Db.slickProfile.api._
 
 class RegionExportTable(tag: Tag)
-  extends Table[(String, String, String, String, String, Timestamp)](tag, "region_export") {
+    extends Table[(String, String, String, String, String, Timestamp)](tag, "region_export") {
 
   def email: Rep[String] = column[String]("email")
 
@@ -36,8 +35,9 @@ class RegionExportTable(tag: Tag)
 object RegionExportQueries {
   val regionExports: TableQuery[RegionExportTable] = TableQuery[RegionExportTable]
 
-  def get(email: String, region: String, createdAt: Long)
-         (implicit ec: ExecutionContext): DBIOAction[Option[RegionExport], NoStream, Effect.Read] =
+  def get(email: String, region: String, createdAt: Long)(implicit
+      ec: ExecutionContext
+  ): DBIOAction[Option[RegionExport], NoStream, Effect.Read] =
     regionExports
       .filter(_.email === email)
       .filter(_.region === region)
@@ -45,8 +45,9 @@ object RegionExportQueries {
       .result
       .map(_.headOption.map(x => regionExportFromRow(x)))
 
-  def getAll(email: String, region: String)
-            (implicit ec: ExecutionContext): DBIOAction[Seq[RegionExport], NoStream, Effect.Read] =
+  def getAll(email: String, region: String)(implicit
+      ec: ExecutionContext
+  ): DBIOAction[Seq[RegionExport], NoStream, Effect.Read] =
     regionExports
       .filter(_.email.toLowerCase === email.toLowerCase)
       .filter(_.region.toLowerCase === region.toLowerCase)
@@ -68,8 +69,8 @@ object RegionExportQueries {
 
   private def matches(regionExport: RegionExport, export: RegionExportTable): Rep[Boolean] = {
     export.email.toLowerCase === regionExport.email.toLowerCase &&
-      export.region.toLowerCase === regionExport.region.toLowerCase &&
-      export.createdAt === new Timestamp(regionExport.createdAt.millisSinceEpoch)
+    export.region.toLowerCase === regionExport.region.toLowerCase &&
+    export.createdAt === new Timestamp(regionExport.createdAt.millisSinceEpoch)
   }
 
   private def regionExportFromRow(row: (String, String, String, String, String, Timestamp)): RegionExport = {

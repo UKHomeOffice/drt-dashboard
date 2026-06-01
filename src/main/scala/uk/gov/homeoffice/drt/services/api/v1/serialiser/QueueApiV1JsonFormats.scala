@@ -2,7 +2,7 @@ package uk.gov.homeoffice.drt.services.api.v1.serialiser
 
 import spray.json._
 import uk.gov.homeoffice.drt.ports.Queues.Queue
-import uk.gov.homeoffice.drt.routes.api.v1.QueueApiV1Routes.{QueueJsonV1, QueueJsonResponseV1, SlotJsonV1}
+import uk.gov.homeoffice.drt.routes.api.v1.QueueApiV1Routes.{ QueueJsonResponseV1, QueueJsonV1, SlotJsonV1 }
 import uk.gov.homeoffice.drt.time.SDateLike
 
 trait QueueApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV1 {
@@ -11,7 +11,7 @@ trait QueueApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV1
 
     override def read(json: JsValue): Queue = json match {
       case JsString(value) => Queue(value)
-      case unexpected => throw new Exception(s"Failed to parse Queue. Expected JsString. Got ${unexpected.getClass}")
+      case unexpected      => throw new Exception(s"Failed to parse Queue. Expected JsString. Got ${unexpected.getClass}")
     }
   }
 
@@ -23,11 +23,11 @@ trait QueueApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV1
 
     override def write(obj: QueueJsonResponseV1): JsValue = obj match {
       case obj: QueueJsonResponseV1 => JsObject(Map(
-        "periodStart" -> obj.periodStart.toJson,
-        "periodEnd" -> obj.periodEnd.toJson,
-        "periodLengthMinutes" -> obj.slotSizeMinutes.toJson,
-        "periods" -> obj.slots.toJson,
-      ))
+          "periodStart" -> obj.periodStart.toJson,
+          "periodEnd" -> obj.periodEnd.toJson,
+          "periodLengthMinutes" -> obj.slotSizeMinutes.toJson,
+          "periods" -> obj.slots.toJson
+        ))
     }
 
     override def read(json: JsValue): QueueJsonResponseV1 = json match {
@@ -36,9 +36,10 @@ trait QueueApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV1
           periodStart = fields("periodStart").convertTo[SDateLike],
           periodEnd = fields("periodEnd").convertTo[SDateLike],
           slotSizeMinutes = fields("periodLengthMinutes").convertTo[Int],
-          slots = fields("periods").convertTo[Seq[SlotJsonV1]],
+          slots = fields("periods").convertTo[Seq[SlotJsonV1]]
         )
-      case unexpected => throw new Exception(s"Failed to parse QueueJsonResponse. Expected JsObject. Got ${unexpected.getClass}")
+      case unexpected =>
+        throw new Exception(s"Failed to parse QueueJsonResponse. Expected JsObject. Got ${unexpected.getClass}")
     }
   }
 }

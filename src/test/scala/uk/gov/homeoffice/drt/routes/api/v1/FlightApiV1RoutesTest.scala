@@ -9,11 +9,11 @@ import org.apache.pekko.testkit.TestProbe
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.homeoffice.drt.ports.PortCode
-import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{FlightJsonResponseV1, FlightJsonV1}
+import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{ FlightJsonResponseV1, FlightJsonV1 }
 import uk.gov.homeoffice.drt.services.api.v1.serialiser.FlightApiV1JsonFormats
 import uk.gov.homeoffice.drt.time.SDate
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 class FlightApiV1RoutesTest extends AnyWordSpec with Matchers with ScalatestRouteTest with FlightApiV1JsonFormats {
   implicit val typedSystem: ActorSystem[Nothing] = ActorSystem.wrap(system)
@@ -41,64 +41,67 @@ class FlightApiV1RoutesTest extends AnyWordSpec with Matchers with ScalatestRout
   "Given a request for the flight status, I should see a JSON response containing the flight status" in {
     val routes = FlightApiV1Routes(
       enabledPorts = Seq(PortCode("LHR"), PortCode("LGW")),
-      dateRangeJsonForPorts = _ => (_, _) => Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq(flightJson, flightJson))),
+      dateRangeJsonForPorts =
+        _ => (_, _) => Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq(flightJson, flightJson)))
     )
 
-    Get("/flights?start=" + start + "&end=" + end) ~>
+    Get("/flights?start=" + start + "&end=" + end)                 ~>
       RawHeader("X-Forwarded-Groups", "LHR,LGW,api-flight-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      RawHeader("X-Forwarded-Email", "my@email.com")               ~>
+      routes                                                       ~> check {
 
-      val expected = FlightApiV1Routes.FlightJsonResponseV1(SDate(start), SDate(end), Seq(flightJson, flightJson))
-      responseAs[String] shouldEqual expected.toJson.compactPrint
-    }
+        val expected = FlightApiV1Routes.FlightJsonResponseV1(SDate(start), SDate(end), Seq(flightJson, flightJson))
+        responseAs[String] shouldEqual expected.toJson.compactPrint
+      }
   }
 
   "Given a failed response from a port the response status should be 500" in {
     val routes = FlightApiV1Routes(
       enabledPorts = Seq(PortCode("LHR"), PortCode("LGW")),
-      dateRangeJsonForPorts = _ => (_, _) => Future.failed(new Exception("Failed to get flights")),
+      dateRangeJsonForPorts = _ => (_, _) => Future.failed(new Exception("Failed to get flights"))
     )
 
-    Get("/flights?start=" + start + "&end=" + end) ~>
+    Get("/flights?start=" + start + "&end=" + end)                 ~>
       RawHeader("X-Forwarded-Groups", "LHR,LGW,api-flight-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      RawHeader("X-Forwarded-Email", "my@email.com")               ~>
+      routes                                                       ~> check {
 
-      response.status.intValue() shouldEqual 500
-    }
+        response.status.intValue() shouldEqual 500
+      }
   }
 
   "Given a request from a user with access to some ports that are not enabled, only the enabled ports should be passed to the source function" in {
     val probe = TestProbe("flight-source")
     val routes = FlightApiV1Routes(
       enabledPorts = Seq(PortCode("LHR")),
-      dateRangeJsonForPorts = portCodes => (_, _) => {
-        probe.ref ! portCodes
-        Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq.empty))
-      },
+      dateRangeJsonForPorts = portCodes =>
+        (_, _) => {
+          probe.ref ! portCodes
+          Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq.empty))
+        }
     )
 
-    Get("/flights?start=" + start + "&end=" + end) ~>
+    Get("/flights?start=" + start + "&end=" + end)                     ~>
       RawHeader("X-Forwarded-Groups", "LHR,LGW,STN,api-flight-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
-      probe.expectMsg(Seq(PortCode("LHR")))
-    }
+      RawHeader("X-Forwarded-Email", "my@email.com")                   ~>
+      routes                                                           ~> check {
+        probe.expectMsg(Seq(PortCode("LHR")))
+      }
   }
 
   "Given a request from a user without access to the flight api, the response should be 403" in {
     val routes = FlightApiV1Routes(
       enabledPorts = Seq(PortCode("LHR")),
-      dateRangeJsonForPorts = _ => (_, _) => Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq.empty)),
+      dateRangeJsonForPorts =
+        _ => (_, _) => Future.successful(FlightJsonResponseV1(SDate(start), SDate(end), Seq.empty))
     )
 
-    Get("/flights?start=" + start + "&end=" + end) ~>
-      RawHeader("X-Forwarded-Groups", "LHR") ~>
+    Get("/flights?start=" + start + "&end=" + end)   ~>
+      RawHeader("X-Forwarded-Groups", "LHR")         ~>
       RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      routes                                         ~> check {
 
-      rejection.isInstanceOf[AuthorizationFailedRejection] shouldBe true
-    }
+        rejection.isInstanceOf[AuthorizationFailedRejection] shouldBe true
+      }
   }
 }

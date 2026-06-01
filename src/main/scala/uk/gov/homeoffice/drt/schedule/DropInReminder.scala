@@ -1,14 +1,14 @@
 package uk.gov.homeoffice.drt.schedule
 
 import org.apache.pekko.actor.typed.Behavior
-import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
-import org.slf4j.{Logger, LoggerFactory}
+import org.apache.pekko.actor.typed.scaladsl.{ ActorContext, Behaviors, TimerScheduler }
+import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.homeoffice.drt.ServerConfig
-import uk.gov.homeoffice.drt.db.{DropInDao, DropInRegistrationDao, ProdDatabase, UserAccessRequestDao, UserDao}
+import uk.gov.homeoffice.drt.db.{ DropInDao, DropInRegistrationDao, ProdDatabase, UserAccessRequestDao, UserDao }
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
-import uk.gov.homeoffice.drt.services.{DropInService, UserRequestService, UserService}
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import uk.gov.homeoffice.drt.services.{ DropInService, UserRequestService, UserService }
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor }
+import scala.concurrent.duration.{ DurationInt, FiniteDuration }
 
 sealed trait DropInCommand
 
@@ -17,30 +17,43 @@ object DropInReminder {
 
   private case object DropInUserNotificationCheck extends DropInCommand
 
-  def apply(serverConfig: ServerConfig, timerInitialDelay: FiniteDuration, maxSize: Int, notifications: EmailNotifications): Behavior[DropInCommand] =
+  def apply(
+      serverConfig: ServerConfig,
+      timerInitialDelay: FiniteDuration,
+      maxSize: Int,
+      notifications: EmailNotifications
+  ): Behavior[DropInCommand] =
     Behaviors.setup { context: ActorContext[DropInCommand] =>
       implicit val ec: ExecutionContextExecutor = context.executionContext
-      val dropInService: DropInService = new DropInService(DropInDao(ProdDatabase),
+      val dropInService: DropInService = new DropInService(
+        DropInDao(ProdDatabase),
         DropInRegistrationDao(ProdDatabase),
         UserService(UserDao(ProdDatabase)),
-        UserRequestService(UserAccessRequestDao(ProdDatabase)), serverConfig.teamEmail)
+        UserRequestService(UserAccessRequestDao(ProdDatabase)),
+        serverConfig.teamEmail
+      )
 
-      Behaviors.withTimers(timers => new DropInReminder(
-        notifications,
-        dropInService,
-        timers,
-        timerInitialDelay,
-        serverConfig.dropInRemindersCheckFrequency.minutes,
-        context).dropInReminderNotification)
+      Behaviors.withTimers(timers =>
+        new DropInReminder(
+          notifications,
+          dropInService,
+          timers,
+          timerInitialDelay,
+          serverConfig.dropInRemindersCheckFrequency.minutes,
+          context
+        ).dropInReminderNotification
+      )
     }
 }
 
-class DropInReminder(notifications: EmailNotifications,
-                     dropInService: DropInService,
-                     timers: TimerScheduler[DropInCommand],
-                     timerInitialDelay: FiniteDuration,
-                     timerInterval: FiniteDuration,
-                     context: ActorContext[DropInCommand]) {
+class DropInReminder(
+    notifications: EmailNotifications,
+    dropInService: DropInService,
+    timers: TimerScheduler[DropInCommand],
+    timerInitialDelay: FiniteDuration,
+    timerInterval: FiniteDuration,
+    context: ActorContext[DropInCommand]
+) {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import DropInReminder._
@@ -61,6 +74,3 @@ class DropInReminder(notifications: EmailNotifications,
     }
   }
 }
-
-
-

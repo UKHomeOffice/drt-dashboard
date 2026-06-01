@@ -16,4 +16,3 @@ trait ProdSendAndReceive extends WithSendAndReceive {
 
   override def sendAndReceive: SendReceive = request => Http()(system).singleRequest(request)
 }
-

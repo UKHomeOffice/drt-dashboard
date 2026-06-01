@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.notifications
 
-import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethods, HttpRequest, HttpResponse}
+import org.apache.pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpMethods, HttpRequest, HttpResponse }
 import org.apache.pekko.stream.Materializer
 import org.slf4j.LoggerFactory
 import uk.gov.homeoffice.drt.HttpClient
@@ -22,13 +22,13 @@ case class SlackClientImpl(httpClient: HttpClient, webhookUrl: String) extends S
     val payload = s"""{"text": "$message"}"""
     val entity = HttpEntity(ContentTypes.`application/json`, payload)
 
-    httpClient.send(HttpRequest(method = HttpMethods.POST, uri = webhookUrl, entity = entity)).onComplete({
+    httpClient.send(HttpRequest(method = HttpMethods.POST, uri = webhookUrl, entity = entity)).onComplete {
       case scala.util.Success(HttpResponse(_, _, entity, _)) =>
         entity.dataBytes.runReduce(_ ++ _).foreach { body =>
           log.info(s"Slack response: ${body.utf8String}")
         }
       case scala.util.Failure(t) =>
         log.error(s"Error while sending slack message: $message", t)
-    })
+    }
   }
 }

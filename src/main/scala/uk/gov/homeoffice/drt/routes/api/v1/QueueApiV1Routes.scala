@@ -13,11 +13,10 @@ import uk.gov.homeoffice.drt.ports.Queues.Queue
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
 import uk.gov.homeoffice.drt.services.api.v1.serialiser.QueueApiV1JsonFormats
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
-
+import scala.util.{ Failure, Success }
 
 object QueueApiV1Routes extends DefaultJsonProtocol with QueueApiV1JsonFormats {
   private val log = LoggerFactory.getLogger(getClass)
@@ -30,10 +29,17 @@ object QueueApiV1Routes extends DefaultJsonProtocol with QueueApiV1JsonFormats {
 
   case class SlotJsonV1(slotStartTime: SDateLike, portCode: PortCode, terminal: Terminal, queues: Iterable[QueueJsonV1])
 
-  case class QueueJsonResponseV1(periodStart: SDateLike, periodEnd: SDateLike, slotSizeMinutes: Int, slots: Seq[SlotJsonV1])
+  case class QueueJsonResponseV1(
+      periodStart: SDateLike,
+      periodEnd: SDateLike,
+      slotSizeMinutes: Int,
+      slots: Seq[SlotJsonV1]
+  )
 
-  def apply(enabledPorts: Iterable[PortCode],
-            dateRangeJsonForPortsAndSlotSize: (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1]): Route =
+  def apply(
+      enabledPorts: Iterable[PortCode],
+      dateRangeJsonForPortsAndSlotSize: (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1]
+  ): Route =
     AuthByRole(ApiQueueAccess) {
       (get & path("queues")) {
         pathEnd(
@@ -51,7 +57,7 @@ object QueueApiV1Routes extends DefaultJsonProtocol with QueueApiV1JsonFormats {
 
                 onComplete(dateRangeJson(start, end)) {
                   case Success(value) => complete(value.toJson.compactPrint)
-                  case Failure(t) =>
+                  case Failure(t)     =>
                     log.error(s"Failed to get export: ${t.getMessage}", t)
                     complete(InternalServerError)
                 }

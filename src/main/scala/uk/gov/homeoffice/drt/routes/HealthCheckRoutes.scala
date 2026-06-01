@@ -5,9 +5,9 @@ import org.apache.pekko.http.scaladsl.model._
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.slf4j.LoggerFactory
-import spray.json.{DefaultJsonProtocol, JsObject, JsValue, RootJsonFormat, enrichAny}
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsObject, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.auth.Roles.HealthChecksEdit
-import uk.gov.homeoffice.drt.healthchecks.{HealthCheck, IncidentPriority, ScheduledPause}
+import uk.gov.homeoffice.drt.healthchecks.{ HealthCheck, IncidentPriority, ScheduledPause }
 import uk.gov.homeoffice.drt.json.HealthCheckAlarmJsonFormats
 import uk.gov.homeoffice.drt.json.ScheduledPauseJsonFormats.scheduledPauseJsonFormat
 import uk.gov.homeoffice.drt.persistence.ScheduledHealthCheckPausePersistence
@@ -15,9 +15,8 @@ import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
 import uk.gov.homeoffice.drt.time.SDate
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
-
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
+import scala.util.{ Failure, Success }
 
 trait HealthCheckJsonFormats extends DefaultJsonProtocol {
   implicit object IncidentPriorityJsonFormat extends RootJsonFormat[IncidentPriority] {
@@ -34,7 +33,7 @@ trait HealthCheckJsonFormats extends DefaultJsonProtocol {
       JsObject(Map(
         "name" -> obj.name.toJson,
         "description" -> obj.description.toJson,
-        "priority" -> obj.priority.toJson,
+        "priority" -> obj.priority.toJson
       ))
   }
 }
@@ -42,11 +41,11 @@ trait HealthCheckJsonFormats extends DefaultJsonProtocol {
 object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJsonFormats {
   private val log = LoggerFactory.getLogger(getClass)
 
-  def apply(getAlarmStatuses: () => Future[Map[PortCode, Map[String, Boolean]]],
-            healthChecks: Seq[HealthCheck[_]],
-            scheduledPausePersistence: ScheduledHealthCheckPausePersistence,
-           )
-           (implicit ec: ExecutionContextExecutor): Route = {
+  def apply(
+      getAlarmStatuses: () => Future[Map[PortCode, Map[String, Boolean]]],
+      healthChecks: Seq[HealthCheck[_]],
+      scheduledPausePersistence: ScheduledHealthCheckPausePersistence
+  )(implicit ec: ExecutionContextExecutor): Route = {
     concat(
       pathPrefix("health-checks") {
         concat(
@@ -60,7 +59,7 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
               case _ =>
                 complete(StatusCodes.InternalServerError)
             }
-          },
+          }
         )
       },
       pathPrefix("health-check-pauses") {
@@ -69,7 +68,10 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
             AuthByRole(HealthChecksEdit) {
               entity(as[ScheduledPause]) { scheduledPause =>
                 log.info(s"Received health check pause to save")
-                handleFutureOperation(scheduledPausePersistence.insert(scheduledPause), "Failed to save health check pause")
+                handleFutureOperation(
+                  scheduledPausePersistence.insert(scheduledPause),
+                  "Failed to save health check pause"
+                )
               }
             }
           },
@@ -84,7 +86,10 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
               val toMillis = to.toLong
               AuthByRole(HealthChecksEdit) {
                 log.info(s"Received health check pause to delete")
-                handleFutureOperation(scheduledPausePersistence.delete(fromMillis, toMillis), "Failed to delete health check pause")
+                handleFutureOperation(
+                  scheduledPausePersistence.delete(fromMillis, toMillis),
+                  "Failed to delete health check pause"
+                )
               }
             }
           }
@@ -93,8 +98,7 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
     )
   }
 
-  private def handleFutureOperation(eventual: Future[_], errorMsg: String)
-                                   (implicit ec: ExecutionContext): Route =
+  private def handleFutureOperation(eventual: Future[_], errorMsg: String)(implicit ec: ExecutionContext): Route =
     onComplete(eventual) {
       case Success(_) => complete(Future(StatusCodes.OK))
       case Failure(t) =>

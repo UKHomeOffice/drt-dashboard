@@ -37,7 +37,8 @@ class IsoCountriesSpec extends AnyWordSpec with Matchers {
       matches should ===(List(
         Map("ISO name" -> "Belarus", "DRT name" -> "Belarus", "ISO code" -> "BLR"),
         Map("ISO name" -> "Belgium", "DRT name" -> "Belgium", "ISO code" -> "BEL"),
-        Map("ISO name" -> "Belize", "DRT name" -> "Belize", "ISO code" -> "BLZ")))
+        Map("ISO name" -> "Belize", "DRT name" -> "Belize", "ISO code" -> "BLZ")
+      ))
     }
   }
 }

@@ -63,10 +63,10 @@ object Dashboard {
   }
 
   def dateFormatter(millis: Long) = millis match {
-    case t if t < oneHourMillis => minutesAndSecondsFormat
-    case t if t < oneDayMillis => hoursFormat
+    case t if t < oneHourMillis  => minutesAndSecondsFormat
+    case t if t < oneDayMillis   => hoursFormat
     case t if t < twoWeeksMillis => daysAndWeeksFormatter
-    case _ =>
+    case _                       =>
       veryLongTimeFormat
   }
 
@@ -115,15 +115,16 @@ object Dashboard {
 
   def timeWarningLevel(millis: Long, warnThreshold: Duration, errorThreshold: Duration): AlertLevel = millis match {
     case millis if millis > errorThreshold.toMillis => ErrorStatus
-    case millis if millis > warnThreshold.toMillis => WarningStatus
-    case _ => OkStatus
+    case millis if millis > warnThreshold.toMillis  => WarningStatus
+    case _                                          => OkStatus
   }
 
-  def lessThanThresholdWarningLevel(millis: Long, warnThreshold: Duration, errorThreshold: Duration): AlertLevel = millis match {
-    case millis if millis < errorThreshold.toMillis => ErrorStatus
-    case millis if millis < warnThreshold.toMillis => WarningStatus
-    case _ => OkStatus
-  }
+  def lessThanThresholdWarningLevel(millis: Long, warnThreshold: Duration, errorThreshold: Duration): AlertLevel =
+    millis match {
+      case millis if millis < errorThreshold.toMillis => ErrorStatus
+      case millis if millis < warnThreshold.toMillis  => WarningStatus
+      case _                                          => OkStatus
+    }
 
   def timeSince(millis: Long): Long = System.currentTimeMillis() - millis
 

@@ -3,24 +3,30 @@ package uk.gov.homeoffice.drt.rccu
 import org.apache.pekko.http.scaladsl.model.StatusCodes.OK
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
-import org.slf4j.{Logger, LoggerFactory}
-import uk.gov.homeoffice.drt.exports.{DailyExportType, ExportType}
+import org.slf4j.{ Logger, LoggerFactory }
+import uk.gov.homeoffice.drt.exports.{ DailyExportType, ExportType }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.time.{LocalDate, SDateLike}
-import uk.gov.homeoffice.drt.{Dashboard, HttpClient}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDateLike }
+import uk.gov.homeoffice.drt.{ Dashboard, HttpClient }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 object RestExportCsvService {
-  def getUri(exportType: ExportType, start: LocalDate, end: LocalDate, portCode: PortCode, maybeTerminal: Option[Terminal]): String = {
+  def getUri(
+      exportType: ExportType,
+      start: LocalDate,
+      end: LocalDate,
+      portCode: PortCode,
+      maybeTerminal: Option[Terminal]
+  ): String = {
     val granularity = exportType match {
       case _: DailyExportType => "daily"
-      case _ => "total"
+      case _                  => "total"
     }
     val terminalName = maybeTerminal match {
       case Some(terminal) => s"/$terminal"
-      case None => ""
+      case None           => ""
     }
     s"${Dashboard.drtInternalUriForPortCode(portCode)}/api/${exportType.routePrefix}/$start/$end$terminalName?granularity=$granularity"
   }
@@ -30,8 +36,10 @@ case class RestExportCsvService(httpClient: HttpClient) {
 
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def responseContentAsByteString(uri: String, portCode: PortCode)
-                                 (implicit executionContext: ExecutionContext, mat: Materializer): Future[ByteString] = {
+  def responseContentAsByteString(uri: String, portCode: PortCode)(implicit
+      executionContext: ExecutionContext,
+      mat: Materializer
+  ): Future[ByteString] = {
     val httpRequest = httpClient.httpRequestForPortCsv(uri, portCode)
 
     httpClient
@@ -46,8 +54,7 @@ case class RestExportCsvService(httpClient: HttpClient) {
               log.error(s"Error while requesting export for $uri", e)
               throw new Exception(s"Error while requesting export for $uri", e)
             }
-        }
-        else {
+        } else {
           r.entity.discardBytes()
           throw new Exception(s"Got non-200 response ${r.status} from $uri")
         }
@@ -61,7 +68,8 @@ case class RestExportCsvService(httpClient: HttpClient) {
 
     val date = f"${createdAt.getFullYear}${createdAt.getMonth}%02d${createdAt.getDate}%02d"
     val milliseconds = createdAt.millisSinceEpoch.toString.takeRight(3)
-    val timestamp = date + f"${createdAt.getHours}%02d${createdAt.getMinutes}%02d${createdAt.getSeconds}%02d.$milliseconds"
+    val timestamp = date +
+      f"${createdAt.getHours}%02d${createdAt.getMinutes}%02d${createdAt.getSeconds}%02d.$milliseconds"
 
     s"$timestamp-$start$endDate.csv"
   }

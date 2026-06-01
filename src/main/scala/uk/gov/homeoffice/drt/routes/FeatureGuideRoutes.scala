@@ -1,24 +1,23 @@
 package uk.gov.homeoffice.drt.routes
 
-
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import org.apache.pekko.http.scaladsl.model.HttpEntity.ChunkStreamPart
 import org.apache.pekko.http.scaladsl.model._
 import org.apache.pekko.http.scaladsl.model.headers.RawHeader
 import org.apache.pekko.http.scaladsl.server.Directives._
-import org.apache.pekko.http.scaladsl.server.{Route, StandardRoute}
+import org.apache.pekko.http.scaladsl.server.{ Route, StandardRoute }
 import org.apache.pekko.stream.IOResult
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import org.slf4j.{Logger, LoggerFactory}
-import spray.json.{JsValue, enrichAny}
+import org.slf4j.{ Logger, LoggerFactory }
+import spray.json.{ enrichAny, JsValue }
 import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
-import uk.gov.homeoffice.drt.services.s3.{S3Downloader, S3Uploader}
+import uk.gov.homeoffice.drt.services.s3.{ S3Downloader, S3Uploader }
 import uk.gov.homeoffice.drt.uploadTraining.FeatureGuideService
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
+import scala.util.{ Failure, Success }
 
 case class FeaturePublished(published: Boolean)
 
@@ -28,14 +27,13 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
   def routeResponse(responseF: Future[StandardRoute]): Route = {
     onComplete(responseF) {
       case Success(result) => result
-      case Failure(ex) =>
+      case Failure(ex)     =>
         log.error(s"Error while uploading", ex)
         complete(StatusCodes.InternalServerError, ex.getMessage)
     }
   }
 
-  def getFeatureFile(downloader: S3Downloader)
-                    (implicit ec: ExecutionContextExecutor): Route =
+  def getFeatureFile(downloader: S3Downloader)(implicit ec: ExecutionContextExecutor): Route =
     path("get-feature-file" / Segment) { filename =>
       get {
         val responseStreamF: Future[Source[ByteString, Future[IOResult]]] = downloader.download(filename)
@@ -43,24 +41,27 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
         val fileEntityF: Future[ResponseEntity] = responseStreamF.map(responseStream =>
           HttpEntity.Chunked(
             contentType = ContentTypes.`application/octet-stream`,
-            chunks = responseStream.map(ChunkStreamPart.apply(_: ByteString))))
+            chunks = responseStream.map(ChunkStreamPart.apply(_: ByteString))
+          )
+        )
 
         val contentDispositionHeader: HttpHeader =
           RawHeader("Content-Disposition", s"attachment; filename=$filename")
 
-        val responseF = fileEntityF.map { fileEntity => complete(HttpResponse(entity = fileEntity, headers = List(contentDispositionHeader))) }
+        val responseF = fileEntityF.map { fileEntity =>
+          complete(HttpResponse(entity = fileEntity, headers = List(contentDispositionHeader)))
+        }
 
         routeResponse(responseF)
       }
     }
 
-  def getFeatureGuide(featureGuideService: FeatureGuideService)
-                     (implicit ec: ExecutionContextExecutor): Route = {
+  def getFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor): Route = {
     get {
       path(Segment) { id =>
         val responseF = featureGuideService.getFeatureGuide(id.toInt).map {
           case Some(featureGuide) => complete(StatusCodes.OK, featureGuide.toJson)
-          case None => complete(StatusCodes.NotFound, s"Feature guide with id $id not found")
+          case None               => complete(StatusCodes.NotFound, s"Feature guide with id $id not found")
         }
 
         routeResponse(responseF)
@@ -68,8 +69,7 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
     }
   }
 
-  def getFeatureGuides(featureGuideService: FeatureGuideService)
-                      (implicit ec: ExecutionContextExecutor): Route =
+  def getFeatureGuides(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor): Route =
     get {
       val responseF = featureGuideService.getFeatureGuides.map { featureGuides =>
         val json: JsValue = featureGuides.toJson
@@ -79,8 +79,9 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
       routeResponse(responseF)
     }
 
-  def createFeatureGuide(featureGuideService: FeatureGuideService, uploader: S3Uploader)
-                        (implicit ec: ExecutionContext): Route =
+  def createFeatureGuide(featureGuideService: FeatureGuideService, uploader: S3Uploader)(implicit
+      ec: ExecutionContext
+  ): Route =
     post {
       entity(as[Multipart.FormData]) { _ =>
         formFields('title, 'markdownContent) { (title, markdownContent) =>
@@ -96,8 +97,10 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
       }
     }
 
-  def updateFeatureGuide(featureGuideService: FeatureGuideService)
-                        (implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
+  def updateFeatureGuide(featureGuideService: FeatureGuideService)(implicit
+      ec: ExecutionContextExecutor,
+      system: ActorSystem[Nothing]
+  ): Route =
     put {
       path(Segment) { featureId =>
         entity(as[Multipart.FormData]) { _ =>
@@ -111,8 +114,7 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
       }
     }
 
-  def publishFeatureGuide(featureGuideService: FeatureGuideService)
-                         (implicit ec: ExecutionContextExecutor): Route =
+  def publishFeatureGuide(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor): Route =
     path("update-published" / Segment) { featureId =>
       post {
         entity(as[FeaturePublished]) { featurePublished =>
@@ -124,8 +126,7 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
       }
     }
 
-  def deleteFeature(featureGuideService: FeatureGuideService)
-                   (implicit ec: ExecutionContextExecutor): Route =
+  def deleteFeature(featureGuideService: FeatureGuideService)(implicit ec: ExecutionContextExecutor): Route =
     delete {
       path(Segment) { featureId =>
         val responseF: Future[StandardRoute] = featureGuideService.deleteFeatureGuide(featureId).map { featureGuides =>
@@ -137,21 +138,23 @@ object FeatureGuideRoutes extends DefaultTimeJsonProtocol {
       }
     }
 
-  def apply(featureGuideService: FeatureGuideService, uploader: S3Uploader, downloader: S3Downloader)
-           (implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
+  def apply(featureGuideService: FeatureGuideService, uploader: S3Uploader, downloader: S3Downloader)(implicit
+      ec: ExecutionContextExecutor,
+      system: ActorSystem[Nothing]
+  ): Route =
     pathPrefix("feature-guides") {
       concat(
         pathEnd {
           concat(
             getFeatureGuides(featureGuideService),
-            createFeatureGuide(featureGuideService, uploader),
+            createFeatureGuide(featureGuideService, uploader)
           )
         },
         getFeatureFile(downloader),
         getFeatureGuide(featureGuideService),
         updateFeatureGuide(featureGuideService),
         publishFeatureGuide(featureGuideService),
-        deleteFeature(featureGuideService),
+        deleteFeature(featureGuideService)
       )
     }
 }

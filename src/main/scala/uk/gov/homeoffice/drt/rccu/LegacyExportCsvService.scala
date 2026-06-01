@@ -3,12 +3,12 @@ package uk.gov.homeoffice.drt.rccu
 import org.apache.pekko.http.scaladsl.model.StatusCodes.OK
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
-import org.slf4j.{Logger, LoggerFactory}
-import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
+import org.slf4j.{ Logger, LoggerFactory }
+import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
 import uk.gov.homeoffice.drt.time.SDateLike
-import uk.gov.homeoffice.drt.{Dashboard, HttpClient}
+import uk.gov.homeoffice.drt.{ Dashboard, HttpClient }
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 case class LegacyExportCsvService(httpClient: HttpClient) {
 
@@ -16,13 +16,17 @@ case class LegacyExportCsvService(httpClient: HttpClient) {
 
   private val drtExportCsvRoutePath = "export/arrivals"
 
-  def getPortRegion(region: String): Option[PortRegion] = PortRegion.regions.find(_.name.toLowerCase == region.toLowerCase)
+  def getPortRegion(region: String): Option[PortRegion] =
+    PortRegion.regions.find(_.name.toLowerCase == region.toLowerCase)
 
   def getUri(portCode: String, start: String, end: String, terminal: String): String =
     s"${Dashboard.drtInternalUriForPortCode(PortCode(portCode))}/$drtExportCsvRoutePath/$start/$end/$terminal"
 
-  def getPortResponseForTerminal(start: String, end: String, regionName: String, port: String, terminal: String)
-                                (implicit executionContext: ExecutionContextExecutor, mat: Materializer): Future[ByteString] = {
+  def getPortResponseForTerminal(start: String, end: String, regionName: String, port: String, terminal: String)(
+      implicit
+      executionContext: ExecutionContextExecutor,
+      mat: Materializer
+  ): Future[ByteString] = {
     val uri = getUri(port, start, end, terminal)
     val httpRequest = httpClient.httpRequestForPortCsv(uri, PortCode(port))
     httpClient
@@ -38,15 +42,13 @@ case class LegacyExportCsvService(httpClient: HttpClient) {
                 .split("\n")
                 .filterNot(_.contains("ICAO"))
                 .map(line => s"$regionName,$port,$terminal," + line)
-                .mkString("\n") + "\n"
-              )
+                .mkString("\n") + "\n")
             }
             .recover { case e: Throwable =>
               log.error(s"Error while requesting export for $uri", e)
               throw new Exception(s"Error while requesting export for $uri", e)
             }
-        }
-        else {
+        } else {
           r.entity.discardBytes()
           throw new Exception(s"Got non-200 response ${r.status} from $uri")
         }
@@ -58,7 +60,8 @@ case class LegacyExportCsvService(httpClient: HttpClient) {
       f"-to-$end"
     else ""
 
-    val timestamp = f"${createdAt.getFullYear}${createdAt.getMonth}%02d${createdAt.getDate}%02d${createdAt.getHours}%02d${createdAt.getMinutes}%02d${createdAt.getSeconds}%02d"
+    val timestamp =
+      f"${createdAt.getFullYear}${createdAt.getMonth}%02d${createdAt.getDate}%02d${createdAt.getHours}%02d${createdAt.getMinutes}%02d${createdAt.getSeconds}%02d"
 
     s"$portRegion-$timestamp-$start$endDate.csv".toLowerCase
   }

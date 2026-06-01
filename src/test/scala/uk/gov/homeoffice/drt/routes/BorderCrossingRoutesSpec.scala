@@ -3,7 +3,7 @@ package uk.gov.homeoffice.drt.routes
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.http.scaladsl.model.Multipart.FormData
 import org.apache.pekko.http.scaladsl.model.headers.RawHeader
-import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, Multipart}
+import org.apache.pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, Multipart }
 import org.apache.pekko.http.scaladsl.server.AuthorizationFailedRejection
 import org.apache.pekko.http.scaladsl.server.directives.FileInfo
 import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
@@ -12,17 +12,16 @@ import org.apache.pekko.testkit.TestProbe
 import org.apache.pekko.util.ByteString
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.homeoffice.drt.db.tables.GateTypes.{EGate, Pcp}
+import uk.gov.homeoffice.drt.db.tables.GateTypes.{ EGate, Pcp }
 import uk.gov.homeoffice.drt.db.tables._
 import uk.gov.homeoffice.drt.ports.PortCode
-import uk.gov.homeoffice.drt.ports.Terminals.{T1, T2, Terminal}
+import uk.gov.homeoffice.drt.ports.Terminals.{ T1, T2, Terminal }
 import uk.gov.homeoffice.drt.time.UtcDate
 
 import java.io.File
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-
 
 class BorderCrossingRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest {
   implicit val typedSystem: ActorSystem[Nothing] = ActorSystem.wrap(system)
@@ -46,25 +45,27 @@ class BorderCrossingRoutesSpec extends AnyWordSpec with Matchers with ScalatestR
       Multipart.FormData.BodyPart.Strict(
         "excel",
         HttpEntity(ContentTypes.`application/octet-stream`, fileContent),
-        Map("filename" -> "bx.xlsx")))
+        Map("filename" -> "bx.xlsx")
+      )
+    )
 
   "BorderCrossingRoutes" should {
     "upload a file" in {
-      Post("/border-crossing", multipartForm) ~>
-        RawHeader("X-Forwarded-Groups", "manage-users") ~>
-        RawHeader("X-Forwarded-Email", "my@email.com") ~>
+      Post("/border-crossing", multipartForm)             ~>
+        RawHeader("X-Forwarded-Groups", "manage-users")   ~>
+        RawHeader("X-Forwarded-Email", "my@email.com")    ~>
         BorderCrossingRoutes(replaceHoursForPortTerminal) ~>
         check {
           List(
             BorderCrossing(PortCode("ABZ"), T1, UtcDate(2024, 7, 1), Pcp, 0, 5),
-            BorderCrossing(PortCode("BHX"), T2, UtcDate(2024, 7, 2), EGate, 10, 280),
+            BorderCrossing(PortCode("BHX"), T2, UtcDate(2024, 7, 2), EGate, 10, 280)
           ).map(checkRow)
         }
     }
     "reject a request without the ManageUsers role" in {
-      Post("/border-crossing", multipartForm) ~>
-        RawHeader("X-Forwarded-Groups", "") ~>
-        RawHeader("X-Forwarded-Email", ")") ~>
+      Post("/border-crossing", multipartForm)             ~>
+        RawHeader("X-Forwarded-Groups", "")               ~>
+        RawHeader("X-Forwarded-Email", ")")               ~>
         BorderCrossingRoutes(replaceHoursForPortTerminal) ~>
         check {
           rejection should ===(AuthorizationFailedRejection)

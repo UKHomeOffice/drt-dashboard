@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{ DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat, enrichAny }
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.ports.PortRegion
 
 object PortRegionJsonFormats extends DefaultJsonProtocol {
@@ -9,6 +9,7 @@ object PortRegionJsonFormats extends DefaultJsonProtocol {
 
     override def write(obj: PortRegion): JsValue = JsObject(Map(
       "name" -> obj.name.toJson,
-      "ports" -> JsArray(obj.ports.map(pc => JsString(pc.iata)).toVector)))
+      "ports" -> JsArray(obj.ports.map(pc => JsString(pc.iata)).toVector)
+    ))
   }
 }

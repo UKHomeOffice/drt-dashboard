@@ -2,38 +2,45 @@ package uk.gov.homeoffice.drt.services.api.v1_1
 
 import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.Materializer
-import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import uk.gov.homeoffice.drt.models.{CrunchMinute, MinuteLike}
+import org.apache.pekko.stream.scaladsl.{ Sink, Source }
+import uk.gov.homeoffice.drt.models.{ CrunchMinute, MinuteLike }
 import uk.gov.homeoffice.drt.ports.Queues.Queue
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
 import uk.gov.homeoffice.drt.ports.config.AirportConfigs
-import uk.gov.homeoffice.drt.ports.{PortCode, Queues}
-import uk.gov.homeoffice.drt.routes.api.v1_1.QueueApiV1_1Routes.{QueueJsonV1_1, QueueJsonResponseV1_1, SlotJsonV1_1}
+import uk.gov.homeoffice.drt.ports.{ PortCode, Queues }
+import uk.gov.homeoffice.drt.routes.api.v1_1.QueueApiV1_1Routes.{ QueueJsonResponseV1_1, QueueJsonV1_1, SlotJsonV1_1 }
 import uk.gov.homeoffice.drt.time.MilliDate.MillisSinceEpoch
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike, UtcDate}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike, UtcDate }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 object QueueExportV1_1 {
 
   private val defaultSlotSize = 15
 
-  def queues(queuesForPortAndDatesAndSlotSize: (PortCode, Terminal, UtcDate, UtcDate) => Source[CrunchMinute, NotUsed])
-            (implicit ec: ExecutionContext, mat: Materializer): (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1_1] =
-    (portCodes, slotSize) => (start, end) => {
-      if (slotSize % defaultSlotSize != 0) throw new IllegalArgumentException(s"Slot size must be a multiple of $defaultSlotSize minutes. Got $slotSize")
-      val groupSize = slotSize / defaultSlotSize
+  def queues(queuesForPortAndDatesAndSlotSize: (PortCode, Terminal, UtcDate, UtcDate) => Source[CrunchMinute, NotUsed])(
+      implicit
+      ec: ExecutionContext,
+      mat: Materializer
+  ): (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1_1] =
+    (portCodes, slotSize) =>
+      (start, end) => {
+        if (slotSize % defaultSlotSize != 0)
+          throw new IllegalArgumentException(s"Slot size must be a multiple of $defaultSlotSize minutes. Got $slotSize")
+        val groupSize = slotSize / defaultSlotSize
 
-      val dates = Set(start.toUtcDate, end.toUtcDate)
+        val dates = Set(start.toUtcDate, end.toUtcDate)
 
-      Source(portCodes)
-        .mapAsync(1) { portCode =>
-          val terminals = AirportConfigs.confByPort(portCode).terminalsForDateRange(start.toLocalDate, end.toLocalDate)
-          val eventualPortQueueSlots = terminals.map { terminal =>
+        Source(portCodes)
+          .mapAsync(1) { portCode =>
+            val terminals =
+              AirportConfigs.confByPort(portCode).terminalsForDateRange(start.toLocalDate, end.toLocalDate)
+            val eventualPortQueueSlots = terminals.map { terminal =>
               queuesForPortAndDatesAndSlotSize(portCode, terminal, dates.min, dates.max)
                 .runWith(Sink.seq)
                 .map { mins: Seq[CrunchMinute] =>
-                  val minsInRange = mins.filter(m => start.millisSinceEpoch <= m.minute && m.minute < end.millisSinceEpoch)
+                  val minsInRange =
+                    mins.filter(m => start.millisSinceEpoch <= m.minute && m.minute < end.millisSinceEpoch)
 
                   val byMinute = terminalMinutesByMinute(minsInRange, terminal)
                   val grouped = groupCrunchMinutesBy(groupSize)(byMinute, terminal, Queues.queueOrder)
@@ -45,27 +52,29 @@ object QueueExportV1_1 {
                 }
             }
 
-          Future
-            .sequence(eventualPortQueueSlots)
-            .map(_.flatten)
-        }
-        .runWith(Sink.fold(Seq.empty[SlotJsonV1_1])(_ ++ _))
-        .map(QueueJsonResponseV1_1(start, end, slotSize, _))
-    }
+            Future
+              .sequence(eventualPortQueueSlots)
+              .map(_.flatten)
+          }
+          .runWith(Sink.fold(Seq.empty[SlotJsonV1_1])(_ ++ _))
+          .map(QueueJsonResponseV1_1(start, end, slotSize, _))
+      }
 
-  private def terminalMinutesByMinute[T <: MinuteLike[_, _]](minutes: Seq[T],
-                                                             terminalName: Terminal): Seq[(MillisSinceEpoch, Seq[T])] =
+  private def terminalMinutesByMinute[T <: MinuteLike[_, _]](
+      minutes: Seq[T],
+      terminalName: Terminal
+  ): Seq[(MillisSinceEpoch, Seq[T])] =
     minutes
       .filter(_.terminal == terminalName)
       .groupBy(_.minute)
       .toList
       .sortBy(_._1)
 
-  def groupCrunchMinutesBy(groupSize: Int)
-                          (crunchMinutes: Seq[(MillisSinceEpoch, Seq[CrunchMinute])],
-                           terminalName: Terminal,
-                           queueOrder: Seq[Queue],
-                          ): Seq[(MillisSinceEpoch, Seq[CrunchMinute])] =
+  def groupCrunchMinutesBy(groupSize: Int)(
+      crunchMinutes: Seq[(MillisSinceEpoch, Seq[CrunchMinute])],
+      terminalName: Terminal,
+      queueOrder: Seq[Queue]
+  ): Seq[(MillisSinceEpoch, Seq[CrunchMinute])] =
     crunchMinutes
       .sortBy(_._1)
       .grouped(groupSize).toList

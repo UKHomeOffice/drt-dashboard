@@ -14,7 +14,7 @@ object AuthByRole {
       emailHeader <- ctx.request.getHeader("X-Forwarded-Email").toScala
     } yield User.fromRoles(emailHeader.value(), rolesHeader.value())) match {
       case Some(user) => user.hasRole(role)
-      case None => false
+      case None       => false
     }
   })
 }

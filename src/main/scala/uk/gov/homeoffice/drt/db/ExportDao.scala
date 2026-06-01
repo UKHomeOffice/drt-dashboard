@@ -5,13 +5,13 @@ import slick.lifted.Tag
 import slick.sql.FixedSqlAction
 import uk.gov.homeoffice.drt.db.Db.slickProfile.api._
 import uk.gov.homeoffice.drt.models.Export
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate }
 
 import java.sql.Timestamp
 import scala.concurrent.ExecutionContext
 
 class ExportTable(tag: Tag)
-  extends Table[(String, String, String, String, String, Timestamp)](tag, "export") {
+    extends Table[(String, String, String, String, String, Timestamp)](tag, "export") {
 
   def email: Rep[String] = column[String]("email")
 
@@ -33,8 +33,9 @@ class ExportTable(tag: Tag)
 object ExportQueries {
   val regionExports: TableQuery[ExportTable] = TableQuery[ExportTable]
 
-  def get(email: String, createdAt: Long)
-         (implicit ec: ExecutionContext): DBIOAction[Option[Export], NoStream, Effect.Read] = {
+  def get(email: String, createdAt: Long)(implicit
+      ec: ExecutionContext
+  ): DBIOAction[Option[Export], NoStream, Effect.Read] = {
     val createdAtTs = new Timestamp(createdAt)
     regionExports
       .filter(_.email === email)
@@ -43,8 +44,7 @@ object ExportQueries {
       .map(_.headOption.map(x => exportFromRow(x)))
   }
 
-  def getAll(email: String)
-            (implicit ec: ExecutionContext): DBIOAction[Seq[Export], NoStream, Effect.Read] =
+  def getAll(email: String)(implicit ec: ExecutionContext): DBIOAction[Seq[Export], NoStream, Effect.Read] =
     regionExports
       .filter(_.email === email)
       .result
@@ -64,7 +64,8 @@ object ExportQueries {
   }
 
   private def matches(regionExport: Export, export: ExportTable): Rep[Boolean] = {
-    export.email === regionExport.email && export.terminals === regionExport.terminals && export.createdAt === new Timestamp(regionExport.createdAt.millisSinceEpoch)
+    export.email === regionExport.email && export.terminals === regionExport.terminals &&
+    export.createdAt === new Timestamp(regionExport.createdAt.millisSinceEpoch)
   }
 
   private def exportFromRow(row: (String, String, String, String, String, Timestamp)): Export = {

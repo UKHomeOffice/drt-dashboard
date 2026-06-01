@@ -4,7 +4,6 @@ import slick.jdbc.JdbcProfile
 import slick.lifted.TableQuery
 import uk.gov.homeoffice.drt.db.tables.UserFeedbackTable
 
-
 trait AppDatabase extends CentralDatabase {
   val profile: slick.jdbc.JdbcProfile
 

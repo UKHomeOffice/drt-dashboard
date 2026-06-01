@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.routes
 
-import org.apache.pekko.http.scaladsl.model.{ContentType, MediaTypes}
+import org.apache.pekko.http.scaladsl.model.{ ContentType, MediaTypes }
 import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -16,13 +16,18 @@ class ExportConfigRoutesSpec extends AnyWordSpec with Matchers with ScalatestRou
   "Request test port config" should {
     "e-gate schedule data" in {
       Get("/export-config") ~>
-        ExportConfigRoutes(mockHttpClient(
-          s"""E-gates schedule
+        ExportConfigRoutes(
+          mockHttpClient(
+            s"""E-gates schedule
              |Terminal,Effective from,OpenGates per bank
              |T1,2020-01-01T0000,bank-1  10/10
-             |""".stripMargin), Seq(PortCode("TEST"))) ~>
+             |""".stripMargin
+          ),
+          Seq(PortCode("TEST"))
+        ) ~>
         check {
-          contentType should ===(ContentType(MediaTypes.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
+          contentType should
+            ===(ContentType(MediaTypes.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
           val responseBytes = responseAs[Array[Byte]]
           val inputStream = new ByteArrayInputStream(responseBytes)
           val workbook = new XSSFWorkbook(inputStream)
@@ -40,10 +45,15 @@ class ExportConfigRoutesSpec extends AnyWordSpec with Matchers with ScalatestRou
 
     "excluding commas as delimiter" in {
       Get("/export-config") ~>
-        ExportConfigRoutes(mockHttpClient(
-          s""""Processing, Times"""".stripMargin), Seq(PortCode("TEST"))) ~>
+        ExportConfigRoutes(
+          mockHttpClient(
+            s""""Processing, Times"""".stripMargin
+          ),
+          Seq(PortCode("TEST"))
+        ) ~>
         check {
-          contentType should ===(ContentType(MediaTypes.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
+          contentType should
+            ===(ContentType(MediaTypes.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
           val responseBytes = responseAs[Array[Byte]]
           val inputStream = new ByteArrayInputStream(responseBytes)
           val workbook = new XSSFWorkbook(inputStream)

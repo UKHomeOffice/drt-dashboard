@@ -1,29 +1,30 @@
 package uk.gov.homeoffice.drt.db
 
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.{ProvenShape, TableQuery, Tag}
+import slick.lifted.{ ProvenShape, TableQuery, Tag }
 import spray.json.RootJsonFormat
 import uk.gov.homeoffice.drt.authentication.AccessRequest
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait UserAccessRequestJsonSupport extends DateTimeJsonSupport {
   implicit val userAccessRequestFormatParser: RootJsonFormat[UserAccessRequest] = jsonFormat12(UserAccessRequest)
 }
 
 case class UserAccessRequest(
-  email: String,
-  portsRequested: String,
-  allPorts: Boolean,
-  regionsRequested: String,
-  staffEditing: Boolean,
-  lineManager: String,
-  agreeDeclaration: Boolean,
-  accountType: String,
-  portOrRegionText: String,
-  staffText: String,
-  status: String,
-  requestTime: java.sql.Timestamp)
+    email: String,
+    portsRequested: String,
+    allPorts: Boolean,
+    regionsRequested: String,
+    staffEditing: Boolean,
+    lineManager: String,
+    agreeDeclaration: Boolean,
+    accountType: String,
+    portOrRegionText: String,
+    staffText: String,
+    status: String,
+    requestTime: java.sql.Timestamp
+)
 
 class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "user_access_requests") {
 
@@ -53,11 +54,29 @@ class UserAccessRequestsTable(tag: Tag) extends Table[UserAccessRequest](tag, "u
 
   val pk = primaryKey("user_access_requests_pkey", (email, requestTime))
 
-  def * : ProvenShape[UserAccessRequest] = (email, portsRequested, allPorts, regionsRequested, staffing, lineManager, agreeDeclaration, accountType, portOrRegionText, staffText, status, requestTime).mapTo[UserAccessRequest]
+  def * : ProvenShape[UserAccessRequest] = (
+    email,
+    portsRequested,
+    allPorts,
+    regionsRequested,
+    staffing,
+    lineManager,
+    agreeDeclaration,
+    accountType,
+    portOrRegionText,
+    staffText,
+    status,
+    requestTime
+  ).mapTo[UserAccessRequest]
 }
 
 trait IUserAccessRequestDao {
-  def userAccessRequest(email: String, accessRequest: AccessRequest, timestamp: java.sql.Timestamp, status: String): UserAccessRequest =
+  def userAccessRequest(
+      email: String,
+      accessRequest: AccessRequest,
+      timestamp: java.sql.Timestamp,
+      status: String
+  ): UserAccessRequest =
     UserAccessRequest(
       email = email,
       portsRequested = accessRequest.portsRequested.mkString(","),
@@ -70,7 +89,8 @@ trait IUserAccessRequestDao {
       portOrRegionText = accessRequest.portOrRegionText,
       staffText = accessRequest.staffText,
       status = status,
-      requestTime = timestamp)
+      requestTime = timestamp
+    )
 
   def insertOrUpdate(userAccessRequest: UserAccessRequest): Future[Int]
 
@@ -97,5 +117,6 @@ case class UserAccessRequestDao(db: CentralDatabase) extends IUserAccessRequestD
     db.run(userAccessRequests.filter(_.status === status).result)
   }
 
-  def selectByEmail(email: String): Future[Seq[UserAccessRequest]] = db.run(userAccessRequests.filter(_.email === email).result)
+  def selectByEmail(email: String): Future[Seq[UserAccessRequest]] =
+    db.run(userAccessRequests.filter(_.email === email).result)
 }

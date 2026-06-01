@@ -2,25 +2,28 @@ package uk.gov.homeoffice.drt.schedule
 
 import org.apache.pekko.actor
 import org.apache.pekko.actor.typed.scaladsl.AskPattern.Askable
-import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
-import org.apache.pekko.actor.typed.{ActorRef, Behavior, Scheduler}
+import org.apache.pekko.actor.typed.scaladsl.{ ActorContext, Behaviors, TimerScheduler }
+import org.apache.pekko.actor.typed.{ ActorRef, Behavior, Scheduler }
 import org.apache.pekko.util.Timeout
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.homeoffice.drt.ServerConfig
-import uk.gov.homeoffice.drt.db.{ProdDatabase, UserDao, UserRow}
+import uk.gov.homeoffice.drt.db.{ ProdDatabase, UserDao, UserRow }
 import uk.gov.homeoffice.drt.keycloak.KeyCloakAuthTokenService.GetToken
-import uk.gov.homeoffice.drt.keycloak.{KeyCloakAuthToken, KeyCloakAuthTokenService, KeyCloakUser, KeycloakService}
+import uk.gov.homeoffice.drt.keycloak.{ KeyCloakAuthToken, KeyCloakAuthTokenService, KeyCloakUser, KeycloakService }
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
-import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{inactiveUserNotificationTemplateId, revokeAccessTemplateId}
+import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{
+  inactiveUserNotificationTemplateId,
+  revokeAccessTemplateId
+}
 import uk.gov.homeoffice.drt.services.UserService
 
 import java.sql.Timestamp
 import java.util.Date
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
 
 sealed trait Command
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.duration.{ DurationInt, FiniteDuration }
 
 object UserTracking {
   private case object UserTrackingKey extends Command
@@ -33,33 +36,45 @@ object UserTracking {
 
   private case class PerformAccountRevocations(token: KeyCloakAuthToken) extends Command
 
-  def apply(serverConfig: ServerConfig, timerInitialDelay: FiniteDuration, maxSize: Int, notifications: EmailNotifications): Behavior[Command] =
+  def apply(
+      serverConfig: ServerConfig,
+      timerInitialDelay: FiniteDuration,
+      maxSize: Int,
+      notifications: EmailNotifications
+  ): Behavior[Command] =
     Behaviors.setup { context: ActorContext[Command] =>
       implicit val ec: ExecutionContextExecutor = context.executionContext
       val userService: UserService = UserService(UserDao(ProdDatabase))
 
-      Behaviors.withTimers(timers => new UserTracking(
-        serverConfig,
-        notifications,
-        userService,
-        timers, timerInitialDelay,
-        serverConfig.dormantUsersCheckFrequency.minutes,
-        serverConfig.inactivityDays,
-        serverConfig.deactivateAfterWarningDays,
-        maxSize, context).userBehaviour)
+      Behaviors.withTimers(timers =>
+        new UserTracking(
+          serverConfig,
+          notifications,
+          userService,
+          timers,
+          timerInitialDelay,
+          serverConfig.dormantUsersCheckFrequency.minutes,
+          serverConfig.inactivityDays,
+          serverConfig.deactivateAfterWarningDays,
+          maxSize,
+          context
+        ).userBehaviour
+      )
     }
 }
 
-class UserTracking(serverConfig: ServerConfig,
-  notifications: EmailNotifications,
-  userService: UserService,
-  timers: TimerScheduler[Command],
-  timerInitialDelay: FiniteDuration,
-  timerInterval: FiniteDuration,
-  numberOfInactivityDays: Int,
-  deactivateAfterWarningDays: Int,
-  maxSize: Int,
-  context: ActorContext[Command]) {
+class UserTracking(
+    serverConfig: ServerConfig,
+    notifications: EmailNotifications,
+    userService: UserService,
+    timers: TimerScheduler[Command],
+    timerInitialDelay: FiniteDuration,
+    timerInterval: FiniteDuration,
+    numberOfInactivityDays: Int,
+    deactivateAfterWarningDays: Int,
+    maxSize: Int,
+    context: ActorContext[Command]
+) {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import UserTracking._
@@ -68,8 +83,13 @@ class UserTracking(serverConfig: ServerConfig,
   timers.startTimerWithFixedDelay(UserTrackingKey, InactiveUserCheck, timerInitialDelay, timerInterval)
   timers.startTimerWithFixedDelay(UserTrackingRevokeKey, RevokeUserCheck, timerInitialDelay, timerInterval)
   private val keyCloakAuthTokenService: Behavior[KeyCloakAuthTokenService.Token] =
-    KeyCloakAuthTokenService.getTokenBehavior(serverConfig.keyClockConfig, serverConfig.keycloakUsername, serverConfig.keycloakPassword)
-  private val keycloakServiceBehavior: ActorRef[KeyCloakAuthTokenService.Token] = context.spawn(keyCloakAuthTokenService, "keycloakServiceActor")
+    KeyCloakAuthTokenService.getTokenBehavior(
+      serverConfig.keyClockConfig,
+      serverConfig.keycloakUsername,
+      serverConfig.keycloakPassword
+    )
+  private val keycloakServiceBehavior: ActorRef[KeyCloakAuthTokenService.Token] =
+    context.spawn(keyCloakAuthTokenService, "keycloakServiceActor")
 
   private def userBehaviour()(implicit ec: ExecutionContext): Behavior[Command] = {
     Behaviors.receiveMessage[Command] {
@@ -84,13 +104,18 @@ class UserTracking(serverConfig: ServerConfig,
                 serverConfig.rootDomain,
                 serverConfig.teamEmail,
                 inactiveUserNotificationTemplateId,
-                "inactive user notification")
+                "inactive user notification"
+              )
               logger.info(s"User with email ${user.email} notified due to inactivity")
             } else {
               logger.info(s"No email for $user to notify")
             }
-            userService.upsertUser(user.copy(inactive_email_sent = Some(new Timestamp(new Date().getTime))), Some("inactivity"))
-          })
+            userService.upsertUser(
+              user.copy(inactive_email_sent = Some(new Timestamp(new Date().getTime))),
+              Some("inactivity")
+            )
+          }
+        )
         Behaviors.same
 
       case RevokeUserCheck =>
@@ -102,7 +127,8 @@ class UserTracking(serverConfig: ServerConfig,
       case PerformAccountRevocations(token: KeyCloakAuthToken) =>
         context.log.info("KeyCloakToken-RevokeAccess")
         implicit val actorSystem: actor.ActorSystem = context.system.classicSystem
-        val usersToRevoke = userService.getUsersToRevoke(numberOfInactivityDays, deactivateAfterWarningDays).map(_.take(maxSize))
+        val usersToRevoke =
+          userService.getUsersToRevoke(numberOfInactivityDays, deactivateAfterWarningDays).map(_.take(maxSize))
         val keyClockClient = KeyCloakAuthTokenService.getKeyClockClient(serverConfig.keyClockConfig.url, token)
         val keycloakService = KeycloakService(keyClockClient)
         usersToRevoke.map { utrOption =>
@@ -117,7 +143,8 @@ class UserTracking(serverConfig: ServerConfig,
                       serverConfig.rootDomain,
                       serverConfig.teamEmail,
                       revokeAccessTemplateId,
-                      "revoked DRT Access")
+                      "revoked DRT Access"
+                    )
                     logger.info(s"User with email ${userToRevoke.email} access revoked due to inactivity")
                   }
                 }
@@ -143,10 +170,10 @@ class UserTracking(serverConfig: ServerConfig,
     }
   }
 
-  def removeUser(keycloakService: KeycloakService, uId: KeyCloakUser, utr: UserRow)
-    (implicit ec: ExecutionContext): Future[Int] = {
+  def removeUser(keycloakService: KeycloakService, uId: KeyCloakUser, utr: UserRow)(implicit
+      ec: ExecutionContext
+  ): Future[Int] = {
     keycloakService.removeUser(uId.id)
     userService.upsertUser(utr.copy(revoked_access = Some(new Timestamp(new Date().getTime))), Some("revoked"))
   }
 }
-

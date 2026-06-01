@@ -1,10 +1,13 @@
 package uk.gov.homeoffice.drt.notifications
 
-import org.slf4j.{Logger, LoggerFactory}
-import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
-import uk.gov.homeoffice.drt.db.{DropInDao, DropInRow, UserAccessRequest}
-import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{lineManagerNotificationTemplateId, requestTemplateId}
-import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
+import org.slf4j.{ Logger, LoggerFactory }
+import uk.gov.homeoffice.drt.authentication.{ AccessRequest, ClientUserRequestedAccessData }
+import uk.gov.homeoffice.drt.db.{ DropInDao, DropInRow, UserAccessRequest }
+import uk.gov.homeoffice.drt.notifications.templates.AccessRequestTemplates.{
+  lineManagerNotificationTemplateId,
+  requestTemplateId
+}
+import uk.gov.service.notify.{ NotificationClientApi, SendEmailResponse }
 
 import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
@@ -38,7 +41,8 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       s"https://${curad.portsRequested.trim.toLowerCase()}.$domain/"
   }
 
-  val getDropInBookingUrlForAPort: (String, String) => String = (portsString, domain) => s"https://${portsString.split(",").toList.headOption.map(_.toLowerCase()).getOrElse("lhr")}.$domain/#trainingHub/dropInBooking"
+  val getDropInBookingUrlForAPort: (String, String) => String = (portsString, domain) =>
+    s"https://${portsString.split(",").toList.headOption.map(_.toLowerCase()).getOrElse("lhr")}.$domain/#trainingHub/dropInBooking"
 
   def sendDropInReminderEmail(email: String, dropIn: DropInRow, teamEmail: String) = {
     import DropInDao._
@@ -49,13 +53,15 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       "dropInDate" -> getDate(dropIn.startTime),
       "startTime" -> getStartTime(dropIn.startTime),
       "endTime" -> getEndTime(dropIn.endTime),
-      "meetingLink" -> dropIn.meetingLink.getOrElse(""),
+      "meetingLink" -> dropIn.meetingLink.getOrElse("")
     ).asJava
 
     Try(client.sendEmail(
       dropInReminderTemplateId,
       email,
-      personalisation, "Drop-In Reminder")).recover {
+      personalisation,
+      "Drop-In Reminder"
+    )).recover {
       case e => log.error(s"Error sending drop-in registration email to user $email", e)
     }
 
@@ -73,16 +79,21 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
         dropInNotificationTemplateId,
         userAccessRequest.email,
         personalisation,
-        "drop-in notification")
-      ).recover {
-        case e => log.error(s"Error while sending email to requester ${userAccessRequest.email} for drop-in notification")
+        "drop-in notification"
+      )).recover {
+        case e =>
+          log.error(s"Error while sending email to requester ${userAccessRequest.email} for drop-in notification")
           throw e
       }
     }.getOrElse(throw new Exception("UserAccessRequest not found"))
 
   }
 
-  def sendAccessGranted(clientUserRequestedAccessData: ClientUserRequestedAccessData, domain: String, teamEmail: String): Try[SendEmailResponse] = {
+  def sendAccessGranted(
+      clientUserRequestedAccessData: ClientUserRequestedAccessData,
+      domain: String,
+      teamEmail: String
+  ): Try[SendEmailResponse] = {
     val personalisation: util.Map[String, String] =
       Map(
         "requesterUsername" -> getFirstName(clientUserRequestedAccessData.email),
@@ -94,18 +105,24 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       accessGrantedTemplateId,
       clientUserRequestedAccessData.email,
       personalisation,
-      "access granted")
-    ).recover {
-      case e => log.error(s"Error while sending email to requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+      "access granted"
+    )).recover {
+      case e =>
+        log.error(
+          s"Error while sending email to requester ${clientUserRequestedAccessData.email} for grant access confirmation"
+        )
         throw e
     }
     Try(client.sendEmail(
       accessGrantedTemplateId,
       teamEmail,
       personalisation,
-      "access granted bcc")
-    ).recover {
-      case e => log.error(s"Error while sending bcc email to team $teamEmail for requester ${clientUserRequestedAccessData.email} for grant access confirmation")
+      "access granted bcc"
+    )).recover {
+      case e =>
+        log.error(
+          s"Error while sending bcc email to team $teamEmail for requester ${clientUserRequestedAccessData.email} for grant access confirmation"
+        )
         throw e
     }
   }
@@ -124,7 +141,8 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
         if (accessRequest.allPorts) "all ports" else accessRequest.portsRequested.mkString(", ").toUpperCase
       else "n/a"
 
-    val rccuRegionsRequested = if (accessRequest.rccOption == "rccu") accessRequest.regionsRequested.mkString(", ").toUpperCase else "n/a"
+    val rccuRegionsRequested =
+      if (accessRequest.rccOption == "rccu") accessRequest.regionsRequested.mkString(", ").toUpperCase else "n/a"
 
     val personalisation: util.Map[String, String] = Map(
       "requesterUsername" -> getFirstName(requester),
@@ -136,25 +154,33 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       "lineManager" -> manager,
       "agreeDeclaration" -> agreeDeclaration,
       "portOrRegionText" -> getTextForField(accessRequest.portOrRegionText),
-      "staffText" -> getTextForField(accessRequest.staffText)).asJava
+      "staffText" -> getTextForField(accessRequest.staffText)
+    ).asJava
 
     accessRequestEmails.map { accessRequestEmail =>
       val maybeResponse: Try[SendEmailResponse] = Try(client.sendEmail(
         requestTemplateId,
         accessRequestEmail,
         personalisation,
-        ""))
+        ""
+      ))
       (accessRequestEmail, maybeResponse)
     }.flatMap { accessEmailResponse =>
-      if (accessRequest.lineManager.nonEmpty && (accessRequest.staffing || accessRequest.allPorts || accessRequest.portsRequested.size > 1 || accessRequest.regionsRequested.size > 1)) {
+      if (
+        accessRequest.lineManager.nonEmpty &&
+        (accessRequest.staffing || accessRequest.allPorts || accessRequest.portsRequested.size > 1 ||
+          accessRequest.regionsRequested.size > 1)
+      ) {
         val managerAccessEmailResponse: Try[SendEmailResponse] = Try(client.sendEmail(
           lineManagerNotificationTemplateId,
           manager,
           personalisation,
-          ""))
+          ""
+        ))
         List(
           (manager, managerAccessEmailResponse),
-          accessEmailResponse)
+          accessEmailResponse
+        )
       } else {
         List(accessEmailResponse)
       }
@@ -162,7 +188,13 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
     }
   }
 
-  def sendUserInactivityEmailNotification(email: String, domain: String, teamEmail: String, templateId: String, reference: String): Try[SendEmailResponse] = {
+  def sendUserInactivityEmailNotification(
+      email: String,
+      domain: String,
+      teamEmail: String,
+      templateId: String,
+      reference: String
+  ): Try[SendEmailResponse] = {
     val personalisation: util.Map[String, String] = {
       Map(
         "emailAddress" -> email,
@@ -175,9 +207,10 @@ case class EmailNotifications(accessRequestEmails: List[String], client: Notific
       templateId,
       email,
       personalisation,
-      reference)
-    ).recover {
-      case e => log.error(s"Error while sending email to user $email for $reference notification", e)
+      reference
+    )).recover {
+      case e =>
+        log.error(s"Error while sending email to user $email for $reference notification", e)
         throw e
     }
   }

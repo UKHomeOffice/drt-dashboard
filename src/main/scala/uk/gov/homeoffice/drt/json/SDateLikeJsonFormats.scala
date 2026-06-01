@@ -1,7 +1,7 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{DefaultJsonProtocol, JsNumber, JsString, JsValue, RootJsonFormat, enrichAny}
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsNumber, JsString, JsValue, RootJsonFormat }
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 object SDateLikeJsonFormats extends DefaultJsonProtocol {
 

@@ -9,14 +9,16 @@ trait HealthCheckResponse[A] {
   val maybeIsPass: Option[Boolean]
 }
 
-case class PercentageHealthCheckResponse(priority: IncidentPriority,
-                                         name: String,
-                                         value: Try[Option[Double]],
-                                         maybeIsPass: Option[Boolean],
-                                        ) extends HealthCheckResponse[Double]
+case class PercentageHealthCheckResponse(
+    priority: IncidentPriority,
+    name: String,
+    value: Try[Option[Double]],
+    maybeIsPass: Option[Boolean]
+) extends HealthCheckResponse[Double]
 
-case class BooleanHealthCheckResponse(priority: IncidentPriority,
-                                      name: String,
-                                      value: Try[Option[Boolean]],
-                                      maybeIsPass: Option[Boolean],
-                                     ) extends HealthCheckResponse[Boolean]
+case class BooleanHealthCheckResponse(
+    priority: IncidentPriority,
+    name: String,
+    value: Try[Option[Boolean]],
+    maybeIsPass: Option[Boolean]
+) extends HealthCheckResponse[Boolean]

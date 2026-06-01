@@ -5,9 +5,16 @@ import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-case class FeatureGuideRow(id: Option[Int], uploadTime: Timestamp, fileName: Option[String], title: Option[String], markdownContent: String, published: Boolean)
+case class FeatureGuideRow(
+    id: Option[Int],
+    uploadTime: Timestamp,
+    fileName: Option[String],
+    title: Option[String],
+    markdownContent: String,
+    published: Boolean
+)
 
 class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_guide") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -22,9 +29,9 @@ class FeatureGuideTable(tag: Tag) extends Table[FeatureGuideRow](tag, "feature_g
 
   def published: Rep[Boolean] = column[Boolean]("published")
 
-  def * : ProvenShape[FeatureGuideRow] = (id, uploadTime, fileName, title, markdownContent, published).mapTo[FeatureGuideRow]
+  def * : ProvenShape[FeatureGuideRow] =
+    (id, uploadTime, fileName, title, markdownContent, published).mapTo[FeatureGuideRow]
 }
-
 
 case class FeatureGuideDao(db: CentralDatabase) {
   val FeatureGuideTable = TableQuery[FeatureGuideTable]
@@ -38,8 +45,9 @@ case class FeatureGuideDao(db: CentralDatabase) {
   }
 
   def updateFeatureGuide(featureId: String, title: String, markdownContent: String) = {
-    val query = FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.title, f.markdownContent, f.uploadTime))
-      .update((Some(title), markdownContent, getCurrentTime))
+    val query =
+      FeatureGuideTable.filter(_.id === featureId.trim.toInt).map(f => (f.title, f.markdownContent, f.uploadTime))
+        .update((Some(title), markdownContent, getCurrentTime))
     db.run(query)
   }
 
@@ -48,8 +56,7 @@ case class FeatureGuideDao(db: CentralDatabase) {
     db.run(query)
   }
 
-  def getFeatureGuide(id: Int)
-                     (implicit ec: ExecutionContext): Future[Option[FeatureGuideRow]] = {
+  def getFeatureGuide(id: Int)(implicit ec: ExecutionContext): Future[Option[FeatureGuideRow]] = {
     val query = FeatureGuideTable.filter(_.id === id).result
     db.run(query).map(_.headOption)
   }
@@ -61,7 +68,8 @@ case class FeatureGuideDao(db: CentralDatabase) {
   }
 
   def insertFeatureGuide(fileName: String, title: String, markdownContent: String): Unit = {
-    val insertAction = FeatureGuideTable += FeatureGuideRow(None, getCurrentTime, Some(fileName), Some(title), markdownContent, false)
+    val insertAction = FeatureGuideTable +=
+      FeatureGuideRow(None, getCurrentTime, Some(fileName), Some(title), markdownContent, false)
     db.run(insertAction)
   }
 }

@@ -2,14 +2,14 @@ package uk.gov.homeoffice.drt.notifications
 
 import org.apache.pekko.actor.testkit.typed.scaladsl.ActorTestKit
 import org.apache.pekko.actor.typed.ActorSystem
-import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethods, HttpRequest, HttpResponse}
+import org.apache.pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpMethods, HttpRequest, HttpResponse }
 import org.apache.pekko.stream.Materializer
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.specs2.mutable.Specification
 import uk.gov.homeoffice.drt.HttpClient
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 class SlackClientSpec extends Specification {
   val testKit: ActorTestKit = ActorTestKit()

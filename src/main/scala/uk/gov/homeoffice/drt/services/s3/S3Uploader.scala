@@ -4,16 +4,18 @@ import org.apache.pekko.Done
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.services.s3.model._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
-case class S3Uploader(uploader: S3MultipartUploader, bucketName: String, prefix: Option[String])
-                     (implicit mat: Materializer, ec: ExecutionContext) {
+case class S3Uploader(uploader: S3MultipartUploader, bucketName: String, prefix: Option[String])(implicit
+    mat: Materializer,
+    ec: ExecutionContext
+) {
   private val log = LoggerFactory.getLogger(getClass)
 
   val upload: (String, Source[ByteString, _]) => Future[Done] =
@@ -57,18 +59,25 @@ case class S3Uploader(uploader: S3MultipartUploader, bucketName: String, prefix:
         }
     }
 
-  private def completeUpload(completeMultipartUploadRequest: CompleteMultipartUploadRequest)
-                            (implicit ec: ExecutionContext): Future[CompleteMultipartUploadResponse] = {
+  private def completeUpload(completeMultipartUploadRequest: CompleteMultipartUploadRequest)(implicit
+      ec: ExecutionContext
+  ): Future[CompleteMultipartUploadResponse] = {
     val eventualUploadResult = uploader.completeMultipartUpload(completeMultipartUploadRequest)
 
     eventualUploadResult.onComplete {
-      case Success(response) => log.info(s"Finished upload to S3: $response")
+      case Success(response)  => log.info(s"Finished upload to S3: $response")
       case Failure(exception) => log.error("Failed to upload to S3", exception)
     }
     eventualUploadResult
   }
 
-  private def makeCompleteRequest(log: Logger, bucketName: String, objectKey: String, uploadId: String, parts: List[CompletedPart]) = {
+  private def makeCompleteRequest(
+      log: Logger,
+      bucketName: String,
+      objectKey: String,
+      uploadId: String,
+      parts: List[CompletedPart]
+  ) = {
     val completedMultipartUpload = CompletedMultipartUpload.builder
       .parts(parts.asJava)
       .build
@@ -82,8 +91,13 @@ case class S3Uploader(uploader: S3MultipartUploader, bucketName: String, prefix:
     completeMultipartUploadRequest
   }
 
-  private def uploadChunk(bucketName: String, objectKey: String, uploadId: String, next: Seq[ByteString], idx: Long)
-                         (implicit ec: ExecutionContext): Future[CompletedPart] = {
+  private def uploadChunk(
+      bucketName: String,
+      objectKey: String,
+      uploadId: String,
+      next: Seq[ByteString],
+      idx: Long
+  )(implicit ec: ExecutionContext): Future[CompletedPart] = {
     val partNumber = idx.toInt + 1
     val chunk = next.foldLeft(Array[Byte]())(_ ++ _.toArray)
     log.info(s"Uploading chunk $partNumber - ${chunk.length} bytes")

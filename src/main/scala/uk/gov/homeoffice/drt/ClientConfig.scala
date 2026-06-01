@@ -1,32 +1,39 @@
 package uk.gov.homeoffice.drt
 
-import spray.json.{DefaultJsonProtocol, JsObject, JsValue, RootJsonFormat, enrichAny}
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsObject, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
+import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
 
-case class ClientConfig(portsByRegion: Iterable[PortRegion], terminalsByPortForDate: () => Map[PortCode, Seq[Terminal]], domain: String, teamEmail: String)
+case class ClientConfig(
+    portsByRegion: Iterable[PortRegion],
+    terminalsByPortForDate: () => Map[PortCode, Seq[Terminal]],
+    domain: String,
+    teamEmail: String
+)
 
 trait ClientConfigJsonFormats extends DefaultJsonProtocol {
   implicit object ClientConfigJsonFormat extends RootJsonFormat[ClientConfig] {
-    override def read(json: JsValue): ClientConfig = throw new Exception("ClientConfig deserialisation not yet implemented")
+    override def read(json: JsValue): ClientConfig =
+      throw new Exception("ClientConfig deserialisation not yet implemented")
 
     override def write(obj: ClientConfig): JsValue = JsObject(Map(
-      "portsByRegion" -> obj.portsByRegion
-        .map { r =>
-          JsObject(Map(
-            "name" -> r.name.toJson,
-            "ports" -> r.ports.filter(p => obj.terminalsByPortForDate().contains(p)).map(_.iata).toJson,
-          ))
-        }
-        .toJson,
+      "portsByRegion" ->
+        obj.portsByRegion
+          .map { r =>
+            JsObject(Map(
+              "name" -> r.name.toJson,
+              "ports" -> r.ports.filter(p => obj.terminalsByPortForDate().contains(p)).map(_.iata).toJson
+            ))
+          }
+          .toJson,
       "ports" -> obj.terminalsByPortForDate().map {
         case (portCode, terminals) => JsObject(Map(
-          "iata" -> portCode.iata.toJson,
-          "terminals" -> terminals.map(_.toString).toJson
-        ))
+            "iata" -> portCode.iata.toJson,
+            "terminals" -> terminals.map(_.toString).toJson
+          ))
       }.toJson,
       "domain" -> obj.domain.toJson,
-      "teamEmail" -> obj.teamEmail.toJson,
+      "teamEmail" -> obj.teamEmail.toJson
     ))
   }
 }

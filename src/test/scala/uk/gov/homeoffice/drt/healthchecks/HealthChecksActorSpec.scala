@@ -1,23 +1,23 @@
 package uk.gov.homeoffice.drt.healthchecks
 
 import org.apache.pekko.actor.typed.scaladsl.AskPattern.Askable
-import org.apache.pekko.actor.{ActorSystem, typed}
-import org.apache.pekko.testkit.{ImplicitSender, TestKit}
+import org.apache.pekko.actor.{ typed, ActorSystem }
+import org.apache.pekko.testkit.{ ImplicitSender, TestKit }
 import org.apache.pekko.util.Timeout
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import uk.gov.homeoffice.drt.healthchecks.alarms.{AlarmActive, AlarmInactive}
+import uk.gov.homeoffice.drt.healthchecks.alarms.{ AlarmActive, AlarmInactive }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.time.SDate
 
 import scala.collection.immutable.SortedMap
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class HealthChecksActorSpec
-  extends TestKit(ActorSystem("MySpec"))
+    extends TestKit(ActorSystem("MySpec"))
     with ImplicitSender
     with AnyWordSpecLike
     with Matchers
@@ -42,7 +42,8 @@ class HealthChecksActorSpec
       val nowMillis = SDate.now().millisSinceEpoch
 
       val retainMaxResponses = 5
-      val result = HealthChecksActor.updateState(emptyState, port, successResponse, "test", nowMillis, retainMaxResponses)
+      val result =
+        HealthChecksActor.updateState(emptyState, port, successResponse, "test", nowMillis, retainMaxResponses)
 
       result should ===(Map(port -> Map("test" -> SortedMap(nowMillis -> successResponse))))
     }
@@ -54,7 +55,13 @@ class HealthChecksActorSpec
       val port = PortCode("LHR")
       val failureResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Option(false)), Option(false))
       val successResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Some(true)), Option(true))
-      val failureState = Map(port -> Map("test" -> SortedMap(1L -> successResponse, 2L -> successResponse, 3L -> failureResponse, 4L -> failureResponse, 5L -> failureResponse)))
+      val failureState = Map(port -> Map("test" -> SortedMap(
+        1L -> successResponse,
+        2L -> successResponse,
+        3L -> failureResponse,
+        4L -> failureResponse,
+        5L -> failureResponse
+      )))
 
       val result = HealthChecksActor.isHcAlarmActive(failureState, port, "test", alarmTriggerConsecutiveFailures)
 
@@ -64,7 +71,13 @@ class HealthChecksActorSpec
       val port = PortCode("LHR")
       val failureResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Option(false)), Option(false))
       val successResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Some(true)), Option(true))
-      val failureState = Map(port -> Map("test" -> SortedMap(1L -> failureResponse, 2L -> successResponse, 3L -> successResponse, 4L -> failureResponse, 5L -> failureResponse)))
+      val failureState = Map(port -> Map("test" -> SortedMap(
+        1L -> failureResponse,
+        2L -> successResponse,
+        3L -> successResponse,
+        4L -> failureResponse,
+        5L -> failureResponse
+      )))
 
       val result = HealthChecksActor.isHcAlarmActive(failureState, port, "test", alarmTriggerConsecutiveFailures)
 
@@ -74,7 +87,8 @@ class HealthChecksActorSpec
       val port = PortCode("LHR")
       val failureResponse = PercentageHealthCheckResponse(Priority1, "test", Success(Option(25.4)), Option(false))
       val successResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Some(true)), Option(true))
-      val failureState = Map(port -> Map("test" -> SortedMap(1L -> failureResponse, 2L -> failureResponse, 3L -> successResponse)))
+      val failureState =
+        Map(port -> Map("test" -> SortedMap(1L -> failureResponse, 2L -> failureResponse, 3L -> successResponse)))
 
       val result = HealthChecksActor.isHcAlarmActive(failureState, port, "test", alarmTriggerConsecutiveFailures)
 
@@ -92,7 +106,8 @@ class HealthChecksActorSpec
     val now = () => SDate.now().millisSinceEpoch
 
     val port = PortCode("LHR")
-    val failureResponse = BooleanHealthCheckResponse(Priority1, "test", Failure(new Exception("Failed to parse response")), None)
+    val failureResponse =
+      BooleanHealthCheckResponse(Priority1, "test", Failure(new Exception("Failed to parse response")), None)
     val nonPassResponse = PercentageHealthCheckResponse(Priority1, "test", Success(Option(0)), Option(false))
     val successResponse = BooleanHealthCheckResponse(Priority1, "test", Success(Some(true)), Option(true))
 
@@ -100,9 +115,20 @@ class HealthChecksActorSpec
       alarmSounded = false
       alarmSilenced = false
       val port = PortCode("LHR")
-      val startState = Map(port -> Map("test" -> SortedMap(1L -> successResponse, 2L -> failureResponse, 3L -> failureResponse)))
+      val startState =
+        Map(port -> Map("test" -> SortedMap(1L -> successResponse, 2L -> failureResponse, 3L -> failureResponse)))
 
-      val actor = typedSystem.systemActorOf(HealthChecksActor(soundAlarm, silenceAlarm, now, alarmTriggerConsecutiveFailures, retainMaxResponses, startState), "test1")
+      val actor = typedSystem.systemActorOf(
+        HealthChecksActor(
+          soundAlarm,
+          silenceAlarm,
+          now,
+          alarmTriggerConsecutiveFailures,
+          retainMaxResponses,
+          startState
+        ),
+        "test1"
+      )
 
       val response = actor.ask(replyTo => HealthChecksActor.PortHealthCheckResponse(port, failureResponse, replyTo))
       Await.result(response, 1.second) === AlarmActive
@@ -114,9 +140,20 @@ class HealthChecksActorSpec
     "update the state and silence the alarm" in {
       alarmSounded = false
       alarmSilenced = false
-      val startState = Map(port -> Map("test" -> SortedMap(1L -> failureResponse, 2L -> nonPassResponse, 3L -> failureResponse)))
+      val startState =
+        Map(port -> Map("test" -> SortedMap(1L -> failureResponse, 2L -> nonPassResponse, 3L -> failureResponse)))
 
-      val actor = typedSystem.systemActorOf(HealthChecksActor(soundAlarm, silenceAlarm, now, alarmTriggerConsecutiveFailures, retainMaxResponses, startState), "test2")
+      val actor = typedSystem.systemActorOf(
+        HealthChecksActor(
+          soundAlarm,
+          silenceAlarm,
+          now,
+          alarmTriggerConsecutiveFailures,
+          retainMaxResponses,
+          startState
+        ),
+        "test2"
+      )
 
       val response = actor.ask(replyTo => HealthChecksActor.PortHealthCheckResponse(port, successResponse, replyTo))
       Await.result(response, 1.second) === AlarmInactive

@@ -7,7 +7,6 @@ import software.amazon.awssdk.services.s3.model._
 import scala.concurrent.Future
 import scala.jdk.FutureConverters._
 
-
 trait S3MultipartUploader {
   val createMultipartUpload: CreateMultipartUploadRequest => Future[CreateMultipartUploadResponse]
   val completeMultipartUpload: CompleteMultipartUploadRequest => Future[CompleteMultipartUploadResponse]

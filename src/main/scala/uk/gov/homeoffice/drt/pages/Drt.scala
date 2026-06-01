@@ -5,13 +5,14 @@ import scalatags.Text.all._
 import uk.gov.homeoffice.drt.Dashboard._
 import uk.gov.homeoffice.drt.services.drt.DashboardPortStatus
 
-import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.language.postfixOps
 
 object Drt {
 
   private val feedOrder = Seq(
-    DrtFeedDisplay("ApiFeedSource",
+    DrtFeedDisplay(
+      "ApiFeedSource",
       "API",
       successWarningThreshold = 2 minutes,
       successErrorThreshold = 10 minutes,
@@ -20,7 +21,8 @@ object Drt {
       failureLessThanWarningThreshold = 1 day,
       failureLessThanErrorThreshold = 3 hours
     ),
-    DrtFeedDisplay("AclFeedSource",
+    DrtFeedDisplay(
+      "AclFeedSource",
       "ACL",
       successWarningThreshold = 15 minutes,
       successErrorThreshold = 30 minutes,
@@ -29,7 +31,8 @@ object Drt {
       failureLessThanWarningThreshold = 1 day,
       failureLessThanErrorThreshold = 3 hours
     ),
-    DrtFeedDisplay("LiveBaseFeedSource",
+    DrtFeedDisplay(
+      "LiveBaseFeedSource",
       "Cirium",
       successWarningThreshold = 1 minute,
       successErrorThreshold = 5 minutes,
@@ -38,7 +41,8 @@ object Drt {
       failureLessThanWarningThreshold = 1 day,
       failureLessThanErrorThreshold = 3 hours
     ),
-    DrtFeedDisplay("LiveFeedSource",
+    DrtFeedDisplay(
+      "LiveFeedSource",
       "Port Live",
       successWarningThreshold = 2 minutes,
       successErrorThreshold = 10 minutes,
@@ -47,7 +51,8 @@ object Drt {
       failureLessThanWarningThreshold = 1 day,
       failureLessThanErrorThreshold = 3 hours
     ),
-    DrtFeedDisplay("ForecastFeedSource",
+    DrtFeedDisplay(
+      "ForecastFeedSource",
       "Port Forecast",
       successWarningThreshold = 5 minutes,
       successErrorThreshold = 20 minutes,
@@ -61,7 +66,6 @@ object Drt {
   def apply(portStatuses: List[DashboardPortStatus]): Text.TypedTag[String] = {
 
     div(
-
       h1("DRT Port Status"),
       div(
         cls := "status-box",
@@ -69,66 +73,79 @@ object Drt {
           cls := "table drt-dashboard__dashboard",
           tr(
             td("Port"),
-            feedOrder.map(f => td(colspan := 3, f.displayName))),
+            feedOrder.map(f => td(colspan := 3, f.displayName))
+          ),
           tr(
             cls := "drt-dashboard__dashboard__last-status",
             td(),
-            feedOrder.map(_ => Seq(td("Last Success"), td("Last Updated"), td("Last Failure")))),
+            feedOrder.map(_ => Seq(td("Last Success"), td("Last Updated"), td("Last Failure")))
+          ),
           for (status <- portStatuses) yield {
             tr(
               td(status.portCode),
               feedOrder.map(f => {
                 status.feedStatuses.byFeed.get(f.sourceName) match {
                   case Some(s) => Seq(
-                    td(
-                      cls := maybeTimestampToWarningLevelClass(
-                        s.lastSuccessAt,
-                        f.successWarningThreshold,
-                        f.successErrorThreshold,
-                        timeWarningLevel
+                      td(
+                        cls := maybeTimestampToWarningLevelClass(
+                          s.lastSuccessAt,
+                          f.successWarningThreshold,
+                          f.successErrorThreshold,
+                          timeWarningLevel
+                        ),
+                        maybeTimestampToWords(s.lastSuccessAt)
                       ),
-                      maybeTimestampToWords(s.lastSuccessAt)
-                    ),
-                    td(
-                      cls := maybeTimestampToWarningLevelClass(
-                        s.lastUpdatesAt,
-                        f.updatedWarningThreshold,
-                        f.updatedErrorThreshold,
-                        timeWarningLevel
+                      td(
+                        cls := maybeTimestampToWarningLevelClass(
+                          s.lastUpdatesAt,
+                          f.updatedWarningThreshold,
+                          f.updatedErrorThreshold,
+                          timeWarningLevel
+                        ),
+                        maybeTimestampToWords(s.lastUpdatesAt)
                       ),
-                      maybeTimestampToWords(s.lastUpdatesAt)
-                    ),
-                    td(
-                      cls := maybeTimestampToWarningLevelClass(
-                        s.lastFailureAt,
-                        f.failureLessThanWarningThreshold,
-                        f.successErrorThreshold,
-                        lessThanThresholdWarningLevel
-                      ),
-                      maybeTimestampToWords(s.lastFailureAt)
+                      td(
+                        cls := maybeTimestampToWarningLevelClass(
+                          s.lastFailureAt,
+                          f.failureLessThanWarningThreshold,
+                          f.successErrorThreshold,
+                          lessThanThresholdWarningLevel
+                        ),
+                        maybeTimestampToWords(s.lastFailureAt)
+                      )
                     )
-                  )
                   case _ =>
                     List.fill(3)(td(cls := InfoStatus.className))
                 }
-              }))
-          })))
+              })
+            )
+          }
+        )
+      )
+    )
   }
 
   private def maybeTimestampToWords(maybeLong: Option[Long]) = maybeLong
     .map(l => timeAgoInWords(timeSince(l))).getOrElse("")
 
-  private def maybeTimestampToWarningLevelClass(maybeLastEvent: Option[Long], warningThreshold: FiniteDuration, errorThreshold: FiniteDuration, errorThresholdFunction: (Long, Duration, Duration) => AlertLevel) = maybeLastEvent
-    .map(l => errorThresholdFunction(timeSince(l), warningThreshold, errorThreshold).className).getOrElse(InfoStatus.className)
+  private def maybeTimestampToWarningLevelClass(
+      maybeLastEvent: Option[Long],
+      warningThreshold: FiniteDuration,
+      errorThreshold: FiniteDuration,
+      errorThresholdFunction: (Long, Duration, Duration) => AlertLevel
+  ) = maybeLastEvent
+    .map(l => errorThresholdFunction(timeSince(l), warningThreshold, errorThreshold).className).getOrElse(
+      InfoStatus.className
+    )
 
-  case class DrtFeedDisplay(sourceName: String,
-                            displayName: String,
-                            successWarningThreshold: FiniteDuration,
-                            successErrorThreshold: FiniteDuration,
-                            updatedWarningThreshold: FiniteDuration,
-                            updatedErrorThreshold: FiniteDuration,
-                            failureLessThanWarningThreshold: FiniteDuration,
-                            failureLessThanErrorThreshold: FiniteDuration,
-                           )
+  case class DrtFeedDisplay(
+      sourceName: String,
+      displayName: String,
+      successWarningThreshold: FiniteDuration,
+      successErrorThreshold: FiniteDuration,
+      updatedWarningThreshold: FiniteDuration,
+      updatedErrorThreshold: FiniteDuration,
+      failureLessThanWarningThreshold: FiniteDuration,
+      failureLessThanErrorThreshold: FiniteDuration
+  )
 }
-

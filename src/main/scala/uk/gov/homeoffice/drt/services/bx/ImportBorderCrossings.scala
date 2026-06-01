@@ -1,18 +1,18 @@
 package uk.gov.homeoffice.drt.services.bx
 
 import org.apache.pekko.stream.Materializer
-import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import org.apache.poi.ss.usermodel.{DataFormatter, Row, Sheet, WorkbookFactory}
+import org.apache.pekko.stream.scaladsl.{ Sink, Source }
+import org.apache.poi.ss.usermodel.{ DataFormatter, Row, Sheet, WorkbookFactory }
 import org.slf4j.LoggerFactory
-import uk.gov.homeoffice.drt.db.tables.{BorderCrossing, GateType}
+import uk.gov.homeoffice.drt.db.tables.{ BorderCrossing, GateType }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.time.{DateRange, SDate, UtcDate}
+import uk.gov.homeoffice.drt.time.{ DateRange, SDate, UtcDate }
 
 import java.io.File
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.IteratorHasAsScala
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object ImportBorderCrossings {
   private val log = LoggerFactory.getLogger(getClass)
@@ -21,20 +21,28 @@ object ImportBorderCrossings {
   private val cellOffset = 2
   private val dateStartOffset = 4
 
-  def apply(replaceHoursForPortTerminal: (PortCode, Terminal, GateType, Iterable[BorderCrossing]) => Future[Int])
-           (implicit mat: Materializer): String => Future[Int] =
+  def apply(replaceHoursForPortTerminal: (
+      PortCode,
+      Terminal,
+      GateType,
+      Iterable[BorderCrossing]
+  ) => Future[Int])(implicit mat: Materializer): String => Future[Int] =
     filePath => {
       val file = new File(filePath)
       val workbook = WorkbookFactory.create(file)
 
-      val sheet = workbook.iterator().asScala.toSeq.find(_.getSheetName == "Data Response").getOrElse(throw new Exception("Sheet not found"))
+      val sheet = workbook.iterator().asScala.toSeq.find(
+        _.getSheetName == "Data Response"
+      ).getOrElse(throw new Exception("Sheet not found"))
       val formatter: DataFormatter = new DataFormatter()
 
       val fromMonthRow = findMonthRow(sheet, formatter)
       val (month, year) = extractMonthAndYear(formatter, fromMonthRow)
       log.info(s"Found month: $month, year: $year")
       val fromHeadingsRow = findHeadingsRow(fromMonthRow, formatter)
-      log.info(s"Found headings row: ${fromHeadingsRow.head.cellIterator().asScala.toSeq.map(c => formatter.formatCellValue(c)).mkString(", ")}")
+      log.info(
+        s"Found headings row: ${fromHeadingsRow.head.cellIterator().asScala.toSeq.map(c => formatter.formatCellValue(c)).mkString(", ")}"
+      )
 
       val startDate = SDate(f"$year-${SDate.monthsOfTheYear.indexOf(month) + 1}%02d-01")
       val endDate = startDate.addMonths(1).addDays(-1)
@@ -59,7 +67,7 @@ object ImportBorderCrossings {
                   Future.successful(0)
               }
           } match {
-            case Success(source) => source
+            case Success(source)    => source
             case Failure(exception) =>
               log.info(s"Skipping row ${row.getRowNum}: ${exception.getMessage}")
               Source.empty
@@ -68,14 +76,15 @@ object ImportBorderCrossings {
         .runWith(Sink.fold(0)(_ + _))
     }
 
-  private def parseAndRecordPax(gateType: String,
-                                hour: Int,
-                                portCode: String,
-                                terminal: String,
-                                date: UtcDate,
-                                cellStr: String,
-                                replaceHoursForPortTerminal: (PortCode, Terminal, GateType, Iterable[BorderCrossing]) => Future[Int],
-                               ): Future[Int] = {
+  private def parseAndRecordPax(
+      gateType: String,
+      hour: Int,
+      portCode: String,
+      terminal: String,
+      date: UtcDate,
+      cellStr: String,
+      replaceHoursForPortTerminal: (PortCode, Terminal, GateType, Iterable[BorderCrossing]) => Future[Int]
+  ): Future[Int] = {
     Try(cellStr.replace(",", "").toDouble.toInt).map { count =>
       (date, count)
     } match {
@@ -97,7 +106,9 @@ object ImportBorderCrossings {
       } else {
         val cell1 = formatter.formatCellValue(cells(cellOffset + 0))
         val cell2 = formatter.formatCellValue(cells(cellOffset + 1))
-        log.info(s"Looking for headings row: ${row.getRowNum}: $cell1, $cell2 (from ${cells.map(c => formatter.formatCellValue(c)).mkString(", ")})")
+        log.info(s"Looking for headings row: ${row.getRowNum}: $cell1, $cell2 (from ${cells.map(c =>
+            formatter.formatCellValue(c)
+          ).mkString(", ")})")
         !(cell1 == "Port" && cell2 == "Terminal")
       }
     }
@@ -174,7 +185,7 @@ object ImportBorderCrossings {
     ("Southampton", "") -> ("SOU", "T1"),
     ("Southend", "") -> ("SEN", "T1"),
     ("Stansted", "") -> ("STN", "T1"),
-    ("Teesside", "") -> ("MME", "T1"),
+    ("Teesside", "") -> ("MME", "T1")
   )
 
   private def getDrtPortAndTerminal(bxPort: String, bxTerminal: String): (String, String) =

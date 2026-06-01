@@ -2,13 +2,13 @@ package uk.gov.homeoffice.drt.routes
 
 import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
 import org.apache.pekko.actor.typed.ActorSystem
-import org.apache.pekko.http.scaladsl.common.{CsvEntityStreamingSupport, EntityStreamingSupport}
+import org.apache.pekko.http.scaladsl.common.{ CsvEntityStreamingSupport, EntityStreamingSupport }
 import org.apache.pekko.http.scaladsl.model.headers.RawHeader
 import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import org.apache.pekko.{Done, NotUsed}
+import org.apache.pekko.{ Done, NotUsed }
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -16,13 +16,12 @@ import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile.api._
 import uk.gov.homeoffice.drt.MockHttpClient
 import uk.gov.homeoffice.drt.arrivals.ArrivalExportHeadings
-import uk.gov.homeoffice.drt.db.{AppDatabase, TestDatabase}
+import uk.gov.homeoffice.drt.db.{ AppDatabase, TestDatabase }
 import uk.gov.homeoffice.drt.routes.LegacyExportRoutes.LegacyRegionExportRequest
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate, SDateLike }
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 
 class LegacyExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest with BeforeAndAfter {
   implicit val typedSystem: ActorSystem[Nothing] = ActorSystem.wrap(system)
@@ -45,12 +44,13 @@ class LegacyExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRou
   val mockHttpClient: MockHttpClient = MockHttpClient(() => csv)
   val uploadProbe: TestProbe[(String, String)] = TestProbe[(String, String)]()
   val downloadProbe: TestProbe[String] = TestProbe[String]()
-  val mockUploader: (String, Source[ByteString, Any]) => Future[Done.type] = (objectKey: String, data: Source[ByteString, Any]) =>
-    data
-      .runReduce[ByteString](_ ++ _).map { bytes =>
-      uploadProbe.ref ! (objectKey, bytes.utf8String)
-      Done
-    }
+  val mockUploader: (String, Source[ByteString, Any]) => Future[Done.type] =
+    (objectKey: String, data: Source[ByteString, Any]) =>
+      data
+        .runReduce[ByteString](_ ++ _).map { bytes =>
+          uploadProbe.ref ! (objectKey, bytes.utf8String)
+          Done
+        }
   val mockDownloader: String => Future[Source[ByteString, NotUsed]] = (objectKey: String) => {
     downloadProbe.ref ! objectKey
     Future.successful(Source(Seq(ByteString("1"), ByteString("2"), ByteString("3"))))
@@ -66,20 +66,28 @@ class LegacyExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRou
   "Request heathrow arrival export" should {
     "collate all terminal arrivals" in {
       val request = LegacyRegionExportRequest("Heathrow", LocalDate(2022, 8, 2), LocalDate(2022, 8, 3))
-      Post("/export-region", request) ~> RawHeader("X-Forwarded-Email", "someone@somwehere.com") ~> LegacyExportRoutes(mockHttpClient, mockUploader, mockDownloader, nowProvider) ~> check {
-        uploadProbe.expectMessage((s"heathrow-$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv", heathrowRegionPortTerminalData))
-        responseAs[String] should ===("ok")
-      }
+      Post("/export-region", request)                                                 ~> RawHeader("X-Forwarded-Email", "someone@somwehere.com") ~>
+        LegacyExportRoutes(mockHttpClient, mockUploader, mockDownloader, nowProvider) ~> check {
+          uploadProbe.expectMessage((
+            s"heathrow-$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv",
+            heathrowRegionPortTerminalData
+          ))
+          responseAs[String] should ===("ok")
+        }
     }
   }
 
   "Request north arrival export" should {
     "collate all terminal arrivals" in {
       val request = LegacyRegionExportRequest("North", LocalDate(2022, 8, 2), LocalDate(2022, 8, 3))
-      Post("/export-region", request) ~> RawHeader("X-Forwarded-Email", "someone@somwehere.com") ~> LegacyExportRoutes(mockHttpClient, mockUploader, mockDownloader, nowProvider) ~> check {
-        uploadProbe.expectMessage((s"north-$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv", northRegionPortTerminalData))
-        responseAs[String] should ===("ok")
-      }
+      Post("/export-region", request)                                                 ~> RawHeader("X-Forwarded-Email", "someone@somwehere.com") ~>
+        LegacyExportRoutes(mockHttpClient, mockUploader, mockDownloader, nowProvider) ~> check {
+          uploadProbe.expectMessage((
+            s"north-$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv",
+            northRegionPortTerminalData
+          ))
+          responseAs[String] should ===("ok")
+        }
     }
   }
 

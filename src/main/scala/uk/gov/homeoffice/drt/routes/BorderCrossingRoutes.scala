@@ -1,13 +1,19 @@
 package uk.gov.homeoffice.drt.routes
 
 import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.apache.pekko.http.scaladsl.server.Directives.{complete, onComplete, pathPrefix, storeUploadedFile, withRequestTimeout}
+import org.apache.pekko.http.scaladsl.server.Directives.{
+  complete,
+  onComplete,
+  pathPrefix,
+  storeUploadedFile,
+  withRequestTimeout
+}
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.http.scaladsl.server.directives.FileInfo
 import org.apache.pekko.stream.Materializer
 import org.slf4j.LoggerFactory
 import uk.gov.homeoffice.drt.auth.Roles.ManageUsers
-import uk.gov.homeoffice.drt.db.tables.{BorderCrossing, GateType}
+import uk.gov.homeoffice.drt.db.tables.{ BorderCrossing, GateType }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
@@ -18,8 +24,7 @@ import java.nio.file.Files
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
-
+import scala.util.{ Failure, Success }
 
 object BorderCrossingRoutes {
   private val log = LoggerFactory.getLogger(getClass)
@@ -27,8 +32,12 @@ object BorderCrossingRoutes {
   private def tempDestination(fileInfo: FileInfo): File =
     Files.createTempFile(fileInfo.fileName, ".tmp").toFile
 
-  def apply(replaceHoursForPortTerminal: (PortCode, Terminal, GateType, Iterable[BorderCrossing]) => Future[Int])
-           (implicit mat: Materializer): Route = {
+  def apply(replaceHoursForPortTerminal: (
+      PortCode,
+      Terminal,
+      GateType,
+      Iterable[BorderCrossing]
+  ) => Future[Int])(implicit mat: Materializer): Route = {
 
     val importFile: String => Future[Int] = ImportBorderCrossings(replaceHoursForPortTerminal)
 
@@ -46,7 +55,7 @@ object BorderCrossingRoutes {
 
               onComplete(eventualDone) {
                 case Success(insertCount) => complete("""{"inserted": """ + insertCount + """}""")
-                case Failure(error) =>
+                case Failure(error)       =>
                   log.error(s"Error importing border crossings: ${error.getMessage}", error)
                   complete(StatusCodes.InternalServerError)
               }

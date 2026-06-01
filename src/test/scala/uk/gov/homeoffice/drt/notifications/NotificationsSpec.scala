@@ -29,10 +29,12 @@ class NotificationsSpec extends Specification {
             agreeDeclaration = true,
             rccOption = "rccu",
             portOrRegionText = "",
-            staffText = ""))
+            staffText = ""
+          )
+        )
           .exists {
             case (_, Failure(_)) => true
-            case _ => false
+            case _               => false
           }
 
         someFailures === false

@@ -6,26 +6,29 @@ import slick.jdbc.PostgresProfile.api._
 import uk.gov.homeoffice.drt.time.MilliDate.MillisSinceEpoch
 
 import java.sql.Timestamp
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.{ ZoneId, ZonedDateTime }
 import java.time.format.DateTimeFormatter
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
+case class DropIn(
+    id: Option[Int],
+    title: String,
+    startTime: MillisSinceEpoch,
+    endTime: MillisSinceEpoch,
+    isPublished: Boolean,
+    meetingLink: Option[String],
+    lastUpdatedAt: MillisSinceEpoch
+)
 
-case class DropIn(id: Option[Int],
-                  title: String,
-                  startTime: MillisSinceEpoch,
-                  endTime: MillisSinceEpoch,
-                  isPublished: Boolean,
-                  meetingLink: Option[String],
-                  lastUpdatedAt: MillisSinceEpoch)
-
-case class DropInRow(id: Option[Int],
-                     title: String,
-                     startTime: Timestamp,
-                     endTime: Timestamp,
-                     isPublished: Boolean,
-                     meetingLink: Option[String],
-                     lastUpdatedAt: Timestamp)
+case class DropInRow(
+    id: Option[Int],
+    title: String,
+    startTime: Timestamp,
+    endTime: Timestamp,
+    isPublished: Boolean,
+    meetingLink: Option[String],
+    lastUpdatedAt: Timestamp
+)
 
 class DropInTable(tag: Tag) extends Table[DropInRow](tag, "drop_in") {
   def id: Rep[Option[Int]] = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
@@ -42,7 +45,8 @@ class DropInTable(tag: Tag) extends Table[DropInRow](tag, "drop_in") {
 
   def lastUpdatedAt: Rep[Timestamp] = column[Timestamp]("last_updated_at")
 
-  def * : ProvenShape[DropInRow] = (id, title, startTime, endTime, isPublished, meetingLink, lastUpdatedAt).mapTo[DropInRow]
+  def * : ProvenShape[DropInRow] =
+    (id, title, startTime, endTime, isPublished, meetingLink, lastUpdatedAt).mapTo[DropInRow]
 }
 
 object DropInDao {
@@ -52,7 +56,8 @@ object DropInDao {
 
   val zonedUKDateTime: Timestamp => ZonedDateTime = timestamp => timestamp.toInstant.atZone(ZoneId.of("Europe/London"))
 
-  def getUKStringDate(timestamp: Timestamp, formatter: DateTimeFormatter): String = zonedUKDateTime(timestamp).format(formatter)
+  def getUKStringDate(timestamp: Timestamp, formatter: DateTimeFormatter): String =
+    zonedUKDateTime(timestamp).format(formatter)
 
   def getDate(startTime: Timestamp): String = getUKStringDate(startTime, dateFormatter)
 
@@ -74,8 +79,9 @@ case class DropInDao(db: CentralDatabase) {
 
   def updateDropIn(dropInRow: DropInRow): Future[Int] = dropInRow.id match {
     case Some(id) =>
-      val query = dropInTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.lastUpdatedAt))
-        .update(dropInRow.title, dropInRow.startTime, dropInRow.endTime, dropInRow.meetingLink, getCurrentTime)
+      val query =
+        dropInTable.filter(_.id === id).map(f => (f.title, f.startTime, f.endTime, f.meetingLink, f.lastUpdatedAt))
+          .update(dropInRow.title, dropInRow.startTime, dropInRow.endTime, dropInRow.meetingLink, getCurrentTime)
       db.run(query)
     case None => Future.successful(0)
   }
@@ -106,12 +112,18 @@ case class DropInDao(db: CentralDatabase) {
   }
 
   def getFutureDropIns: Future[Seq[DropInRow]] = {
-    val query = dropInTable.filter(_.startTime > new Timestamp(DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis)).sortBy(_.startTime).result
+    val query = dropInTable.filter(_.startTime >
+      new Timestamp(DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis)).sortBy(_.startTime).result
     val result = db.run(query)
     result
   }
 
-  def insertDropIn(title: String, startTime: Timestamp, endTime: Timestamp, meetingLink: Option[String]): Future[Int] = {
+  def insertDropIn(
+      title: String,
+      startTime: Timestamp,
+      endTime: Timestamp,
+      meetingLink: Option[String]
+  ): Future[Int] = {
     val insertAction = dropInTable += DropInRow(None, title, startTime, endTime, false, meetingLink, getCurrentTime)
     db.run(insertAction)
   }

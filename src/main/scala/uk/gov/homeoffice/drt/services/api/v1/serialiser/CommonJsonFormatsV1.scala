@@ -1,10 +1,10 @@
 package uk.gov.homeoffice.drt.services.api.v1.serialiser
 
 import spray.json.DefaultJsonProtocol.StringJsonFormat
-import spray.json.{JsString, JsValue, RootJsonFormat, enrichAny}
+import spray.json.{ enrichAny, JsString, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 trait CommonJsonFormatsV1 {
   implicit object SDateLikeISOJsonFormat extends RootJsonFormat[SDateLike] {
@@ -20,7 +20,7 @@ trait CommonJsonFormatsV1 {
 
     override def read(json: JsValue): PortCode = json match {
       case JsString(value) => PortCode(value)
-      case unexpected => throw new Exception(s"Failed to parse Terminal. Expected JsString. Got ${unexpected.getClass}")
+      case unexpected      => throw new Exception(s"Failed to parse Terminal. Expected JsString. Got ${unexpected.getClass}")
     }
   }
 
@@ -29,7 +29,7 @@ trait CommonJsonFormatsV1 {
 
     override def read(json: JsValue): Terminal = json match {
       case JsString(value) => Terminal(value)
-      case unexpected => throw new Exception(s"Failed to parse Terminal. Expected JsString. Got ${unexpected.getClass}")
+      case unexpected      => throw new Exception(s"Failed to parse Terminal. Expected JsString. Got ${unexpected.getClass}")
     }
   }
 }

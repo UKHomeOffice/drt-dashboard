@@ -4,11 +4,10 @@ import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.apache.pekko.http.scaladsl.model.headers.RawHeader
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.homeoffice.drt.Urls
 import uk.gov.homeoffice.drt.authentication.User
 import uk.gov.homeoffice.drt.ports.PortCode
-
 
 case class IndexRoute(urls: Urls, indexResource: Route) {
   val log: Logger = LoggerFactory.getLogger(getClass)
@@ -27,12 +26,12 @@ case class IndexRoute(urls: Urls, indexResource: Route) {
             respondWithHeaders(Seq(
               RawHeader("Cache-Control", "no-cache, no-store, must-revalidate"),
               RawHeader("Pragma", "no-cache"),
-              RawHeader("Expires", "0"),
+              RawHeader("Expires", "0")
             ))(indexRouteDirectives)
-          },
+          }
         )
       },
-      indexRouteDirectives,
+      indexRouteDirectives
     )
 
   def indexRouteDirectives: Route = {
@@ -43,7 +42,9 @@ case class IndexRoute(urls: Urls, indexResource: Route) {
             val user = User.fromRoles("", rolesStr)
             if (user.accessiblePorts.contains(PortCode(portCode))) {
               val portLogoutUrl = urls.logoutUrlForPort(portCode)
-              log.info(s"DRT v2's user session is out of date. Redirecting user to log out of port $portCode ($portLogoutUrl)")
+              log.info(
+                s"DRT v2's user session is out of date. Redirecting user to log out of port $portCode ($portLogoutUrl)"
+              )
               redirect(portLogoutUrl, StatusCodes.TemporaryRedirect)
             } else {
               log.info(s"Redirecting to root url as originating $portCode is not available to user")

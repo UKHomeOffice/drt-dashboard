@@ -8,40 +8,41 @@ import spray.json._
 import uk.gov.homeoffice.drt.arrivals.ApiFlightWithSplits
 import uk.gov.homeoffice.drt.auth.Roles.ApiFlightAccess
 import uk.gov.homeoffice.drt.authentication.User
-import uk.gov.homeoffice.drt.ports.{FeedSource, PortCode, Queues}
+import uk.gov.homeoffice.drt.ports.{ FeedSource, PortCode, Queues }
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
 import uk.gov.homeoffice.drt.services.AirportInfoService
 import uk.gov.homeoffice.drt.services.api.v1_1.serialiser.FlightApiV1_1JsonFormats
 import uk.gov.homeoffice.drt.splits.ApiSplitsToSplitRatio
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
-
+import scala.util.{ Failure, Success, Try }
 
 object FlightApiV1_1Routes extends DefaultJsonProtocol with FlightApiV1_1JsonFormats {
   private val log = LoggerFactory.getLogger(getClass)
 
-  case class FlightJsonV1_1(arrivalPortCode: String,
-                            arrivalTerminal: String,
-                            code: String,
-                            originPortIata: String,
-                            originPortName: String,
-                            scheduledTime: Long,
-                            estimatedLandingTime: Option[Long],
-                            actualChocksTime: Option[Long],
-                            estimatedPcpStartTime: Option[Long],
-                            estimatedPcpEndTime: Option[Long],
-                            estimatedPaxCount: Option[Int],
-                            status: String,
-                            queuePaxCounts: Option[Seq[FlightQueuePaxCountJsonV1_1]],
-                       )
+  case class FlightJsonV1_1(
+      arrivalPortCode: String,
+      arrivalTerminal: String,
+      code: String,
+      originPortIata: String,
+      originPortName: String,
+      scheduledTime: Long,
+      estimatedLandingTime: Option[Long],
+      actualChocksTime: Option[Long],
+      estimatedPcpStartTime: Option[Long],
+      estimatedPcpEndTime: Option[Long],
+      estimatedPaxCount: Option[Int],
+      status: String,
+      queuePaxCounts: Option[Seq[FlightQueuePaxCountJsonV1_1]]
+  )
 
   case class FlightQueuePaxCountJsonV1_1(queue: String, paxCount: Int)
 
   object FlightJsonV1_1 {
-    def apply(portCode: PortCode, fws: ApiFlightWithSplits)
-             (implicit sourceOrderPreference: List[FeedSource]): FlightJsonV1_1 = {
+    def apply(portCode: PortCode, fws: ApiFlightWithSplits)(implicit
+        sourceOrderPreference: List[FeedSource]
+    ): FlightJsonV1_1 = {
       val ar = fws.apiFlight
       val queuePaxCounts: Option[Seq[FlightQueuePaxCountJsonV1_1]] =
         ApiSplitsToSplitRatio
@@ -60,15 +61,17 @@ object FlightApiV1_1Routes extends DefaultJsonProtocol with FlightApiV1_1JsonFor
         estimatedPcpEndTime = Try(ar.pcpRange(sourceOrderPreference).max).toOption,
         estimatedPaxCount = ar.bestPcpPaxEstimate(sourceOrderPreference),
         status = ar.displayStatus.description,
-        queuePaxCounts = queuePaxCounts,
+        queuePaxCounts = queuePaxCounts
       )
     }
   }
 
   case class FlightJsonResponseV1_1(periodStart: SDateLike, periodEnd: SDateLike, flights: Seq[FlightJsonV1_1])
 
-  def apply(enabledPorts: Iterable[PortCode],
-            dateRangeJsonForPorts: Seq[PortCode] => (SDateLike, SDateLike) => Future[FlightJsonResponseV1_1]): Route =
+  def apply(
+      enabledPorts: Iterable[PortCode],
+      dateRangeJsonForPorts: Seq[PortCode] => (SDateLike, SDateLike) => Future[FlightJsonResponseV1_1]
+  ): Route =
     AuthByRole(ApiFlightAccess) {
       (get & path("flights")) {
         pathEnd(
@@ -84,7 +87,7 @@ object FlightApiV1_1Routes extends DefaultJsonProtocol with FlightApiV1_1JsonFor
 
                 onComplete(dateRangeJson(start, end)) {
                   case Success(value) => complete(value.toJson.compactPrint)
-                  case Failure(t) =>
+                  case Failure(t)     =>
                     log.error(s"Failed to get export: ${t.getMessage}", t)
                     complete(InternalServerError)
                 }
