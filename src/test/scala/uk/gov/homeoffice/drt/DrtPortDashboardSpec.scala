@@ -17,8 +17,8 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
 class DrtPortDashboardSpec extends TestKit(ActorSystem("testActorSystem", ConfigFactory.empty()))
-  with SpecificationLike
-  with AfterEach {
+    with SpecificationLike
+    with AfterEach {
 
   override def after: Unit = TestKit.shutdownActorSystem(system)
 
@@ -29,12 +29,16 @@ class DrtPortDashboardSpec extends TestKit(ActorSystem("testActorSystem", Config
 
       val result: immutable.Seq[FeedSourceStatus] = Await.result(
         mockClient.get("")
-          .flatMap(res => Unmarshal[HttpResponse](res).to[List[FeedSourceStatus]]), 1.second)
+          .flatMap(res => Unmarshal[HttpResponse](res).to[List[FeedSourceStatus]]),
+        1.second
+      )
 
       val expected = List(
         FeedSourceStatus(
           "LiveFeedSource",
-          FeedStatuses(List("100001"), List("100002"), List("100003"))))
+          FeedStatuses(List("100001"), List("100002"), List("100003"))
+        )
+      )
 
       result === expected
     }
@@ -44,15 +48,20 @@ class DrtPortDashboardSpec extends TestKit(ActorSystem("testActorSystem", Config
 
       val result: immutable.Seq[FeedSourceStatus] = Await.result(
         mockClient.get("")
-          .flatMap(res => Unmarshal[HttpResponse](res).to[List[FeedSourceStatus]]), 1.second)
+          .flatMap(res => Unmarshal[HttpResponse](res).to[List[FeedSourceStatus]]),
+        1.second
+      )
 
       val expected = List(
         FeedSourceStatus(
           "LiveFeedSource",
-          FeedStatuses(List("100001"), List("100002"), List("100003"))),
+          FeedStatuses(List("100001"), List("100002"), List("100003"))
+        ),
         FeedSourceStatus(
           "LiveBaseFeedSource",
-          FeedStatuses(List("200001"), List("200002"), List("200003"))))
+          FeedStatuses(List("200001"), List("200002"), List("200003"))
+        )
+      )
 
       result === expected
     }
@@ -76,14 +85,21 @@ class DrtPortDashboardSpec extends TestKit(ActorSystem("testActorSystem", Config
       val drtResponse = List(
         FeedSourceStatus(
           "LiveFeedSource",
-          FeedStatuses(List("100001"), List("100002"), List("100003"))))
+          FeedStatuses(List("100001"), List("100002"), List("100003"))
+        )
+      )
 
-      val expected = DashboardPortStatus("TST", PortFeedStatuses(List(
-        PortFeedStatus(
-          "LiveFeedSource",
-          lastSuccessAt = Option(100001),
-          lastFailureAt = Option(100002),
-          lastUpdatesAt = Option(100003)))))
+      val expected = DashboardPortStatus(
+        "TST",
+        PortFeedStatuses(List(
+          PortFeedStatus(
+            "LiveFeedSource",
+            lastSuccessAt = Option(100001),
+            lastFailureAt = Option(100002),
+            lastUpdatesAt = Option(100003)
+          )
+        ))
+      )
 
       val result = DashboardPortStatus("TST", drtResponse)
 
@@ -94,22 +110,31 @@ class DrtPortDashboardSpec extends TestKit(ActorSystem("testActorSystem", Config
       val drtResponse = List(
         FeedSourceStatus(
           "LiveFeedSource",
-          FeedStatuses(List("100001"), List("100002"), List("100003"))),
+          FeedStatuses(List("100001"), List("100002"), List("100003"))
+        ),
         FeedSourceStatus(
           "LiveBaseFeedSource",
-          FeedStatuses(List("200001"), List("200002"), List("200003"))))
+          FeedStatuses(List("200001"), List("200002"), List("200003"))
+        )
+      )
 
-      val expected = DashboardPortStatus("TST", PortFeedStatuses(List(
-        PortFeedStatus(
-          "LiveFeedSource",
-          lastSuccessAt = Option(100001),
-          lastFailureAt = Option(100002),
-          lastUpdatesAt = Option(100003)),
-        PortFeedStatus(
-          "LiveBaseFeedSource",
-          lastSuccessAt = Option(200001),
-          lastFailureAt = Option(200002),
-          lastUpdatesAt = Option(200003)))))
+      val expected = DashboardPortStatus(
+        "TST",
+        PortFeedStatuses(List(
+          PortFeedStatus(
+            "LiveFeedSource",
+            lastSuccessAt = Option(100001),
+            lastFailureAt = Option(100002),
+            lastUpdatesAt = Option(100003)
+          ),
+          PortFeedStatus(
+            "LiveBaseFeedSource",
+            lastSuccessAt = Option(200001),
+            lastFailureAt = Option(200002),
+            lastUpdatesAt = Option(200003)
+          )
+        ))
+      )
 
       val result = DashboardPortStatus("TST", drtResponse)
 

@@ -1,9 +1,9 @@
 package uk.gov.homeoffice.drt.keycloak
 
 import org.apache.pekko.http.scaladsl.model.HttpResponse
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait IKeycloakService {
   implicit val ec: ExecutionContext
@@ -17,8 +17,7 @@ trait IKeycloakService {
   def logout(username: String): Future[Option[Future[HttpResponse]]]
 }
 
-case class KeycloakService(keycloakClient: KeyCloakClient)
-                          (implicit val ec: ExecutionContext) extends IKeycloakService {
+case class KeycloakService(keycloakClient: KeyCloakClient)(implicit val ec: ExecutionContext) extends IKeycloakService {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
   def getUserForEmail(email: String): Future[Option[KeyCloakUser]] = {
@@ -44,7 +43,8 @@ case class KeycloakService(keycloakClient: KeyCloakClient)
             case s if s > 200 && s < 300 =>
               log.info(s"Added group $group  to userId $userId , with response status: ${r.status}  $r")
               r
-            case _ => throw new Exception(s"unable to add group $group to userId $userId response from keycloak $response")
+            case _ =>
+              throw new Exception(s"unable to add group $group to userId $userId response from keycloak $response")
           }
         }
 
@@ -60,4 +60,3 @@ case class KeycloakService(keycloakClient: KeyCloakClient)
       .map(_.map(ud => keycloakClient.logUserOut(ud.id)))
 
 }
-

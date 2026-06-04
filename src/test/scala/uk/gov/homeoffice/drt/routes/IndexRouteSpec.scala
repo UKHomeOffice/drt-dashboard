@@ -25,14 +25,14 @@ class IndexRouteSpec extends Specification with Specs2RouteTest {
   val routes: Route = indexRoute.indexRouteDirectives
 
   "A user with no port access and no referer should see the application" >> {
-    Get("/") ~>
+    Get("/")                                                                    ~>
       RawHeader("X-Forwarded-Groups", Seq(BorderForceStaff.name).mkString(",")) ~> routes ~> check {
         responseAs[String] shouldEqual "the app"
       }
   }
 
   "A user with port access and no referer should see the application" >> {
-    Get("/") ~>
+    Get("/")                                                                              ~>
       RawHeader("X-Forwarded-Groups", Seq(BorderForceStaff.name, LHR.name).mkString(",")) ~> routes ~> check {
         responseAs[String] shouldEqual "the app"
       }
@@ -40,19 +40,20 @@ class IndexRouteSpec extends Specification with Specs2RouteTest {
 
   "A user with referer uri for LHR, and no role access to LHR should see the application" >> {
     val lhrUrl = urls.urlForPort(LHR.name)
-    Get("/") ~>
+    Get("/")                                                                              ~>
       RawHeader("X-Forwarded-Groups", Seq(BorderForceStaff.name, BHX.name).mkString(",")) ~>
-      RawHeader("Referer", lhrUrl + "/") ~> routes ~> check {
+      RawHeader("Referer", lhrUrl + "/")                                                  ~> routes ~> check {
         responseAs[String] shouldEqual "the app"
       }
   }
 
   "A user with referer uri for LHR, and role access to LHR should get redirected back to LHR' logout url" >> {
     val lhrUrl = urls.urlForPort(LHR.name)
-    Get("/?fromPort=lhr") ~>
+    Get("/?fromPort=lhr")                                                                 ~>
       RawHeader("X-Forwarded-Groups", Seq(BorderForceStaff.name, LHR.name).mkString(",")) ~> routes ~> check {
         val isTempRedirected = status shouldEqual StatusCodes.TemporaryRedirect
-        val isLhrLogoutUrl = header("Location") shouldEqual Option(Location(s"$lhrUrl/oauth2/sign_out?redirect=$lhrUrl"))
+        val isLhrLogoutUrl = header("Location") shouldEqual
+          Option(Location(s"$lhrUrl/oauth2/sign_out?redirect=$lhrUrl"))
         isTempRedirected && isLhrLogoutUrl
       }
   }

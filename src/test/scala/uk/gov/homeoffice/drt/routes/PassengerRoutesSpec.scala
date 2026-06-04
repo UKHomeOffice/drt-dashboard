@@ -15,8 +15,8 @@ import uk.gov.homeoffice.drt.jsonformats.PassengersSummaryFormat.JsonFormat
 import uk.gov.homeoffice.drt.models.PassengersSummary
 import uk.gov.homeoffice.drt.ports.Queues.Queue
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.ports.{PortCode, Queues}
-import uk.gov.homeoffice.drt.services.PassengerSummaryStreams.{Daily, Granularity, Hourly, Total}
+import uk.gov.homeoffice.drt.ports.{ PortCode, Queues }
+import uk.gov.homeoffice.drt.services.PassengerSummaryStreams.{ Daily, Granularity, Hourly, Total }
 import uk.gov.homeoffice.drt.time.LocalDate
 
 import scala.concurrent.ExecutionContextExecutor
@@ -39,12 +39,16 @@ class PassengerRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteT
     None
   )
 
-  val mockSummary: (LocalDate, LocalDate, Granularity, Option[Terminal]) => PortCode => Source[(Map[Queue, Int], Int, Map[Queue, Int], Option[Any]), NotUsed] =
-    (_, _, granularity, maybeTerminal) => _ => {
-      probeGranularity.ref ! granularity
-      probeTerminal.ref ! maybeTerminal
-      Source.single((Map(Queues.EeaDesk -> 1), 2, Map(Queues.EeaDesk -> 3), None))
-    }
+  val mockSummary: (LocalDate, LocalDate, Granularity, Option[Terminal]) => PortCode => Source[
+    (Map[Queue, Int], Int, Map[Queue, Int], Option[Any]),
+    NotUsed
+  ] =
+    (_, _, granularity, maybeTerminal) =>
+      _ => {
+        probeGranularity.ref ! granularity
+        probeTerminal.ref ! maybeTerminal
+        Source.single((Map(Queues.EeaDesk -> 1), 2, Map(Queues.EeaDesk -> 3), None))
+      }
 
   "PassengerRoutes" should {
     val header = RawHeader("X-Forwarded-Email", "someone@somewhere.com")
@@ -54,27 +58,30 @@ class PassengerRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteT
     val hourGranularity = "hourly"
 
     "call the corresponding port uri for the port and dates, given no granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "?port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
-        probeGranularity.expectMsg(Total)
-        probeTerminal.expectMsg(None)
-        responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
-      }
+      Get("/passengers/" + startDate + "/" + endDate + "?port-codes=stn") ~> addHeader(header) ~>
+        PassengerRoutes(mockSummary)                                      ~> check {
+          probeGranularity.expectMsg(Total)
+          probeTerminal.expectMsg(None)
+          responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
+        }
     }
 
     "call the corresponding port uri for the port and dates, given daily granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "?granularity=" + dailyGranularity + "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
-        probeGranularity.expectMsg(Daily)
-        probeTerminal.expectMsg(None)
-        responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
-      }
+      Get("/passengers/" + startDate + "/" + endDate + "?granularity=" + dailyGranularity + "&port-codes=stn") ~>
+        addHeader(header)                                                                                      ~> PassengerRoutes(mockSummary) ~> check {
+          probeGranularity.expectMsg(Daily)
+          probeTerminal.expectMsg(None)
+          responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
+        }
     }
 
     "call the corresponding port uri for the port and dates, given hourly granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "?granularity=" + hourGranularity + "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
-        probeGranularity.expectMsg(Hourly)
-        probeTerminal.expectMsg(None)
-        responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
-      }
+      Get("/passengers/" + startDate + "/" + endDate + "?granularity=" + hourGranularity + "&port-codes=stn") ~>
+        addHeader(header)                                                                                     ~> PassengerRoutes(mockSummary) ~> check {
+          probeGranularity.expectMsg(Hourly)
+          probeTerminal.expectMsg(None)
+          responseAs[String].parseJson shouldEqual Seq(stnSummary).toJson
+        }
     }
 
     val terminal = "t1"
@@ -82,15 +89,17 @@ class PassengerRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteT
     val stnSummaryWithTerminal = stnSummary.copy(terminalName = Option(terminal))
 
     "call the corresponding terminal uri for the port and dates, given no granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
-        probeGranularity.expectMsg(Total)
-        probeTerminal.expectMsg(Option(Terminal(terminal)))
-        responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal).toJson
-      }
+      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?port-codes=stn") ~> addHeader(header) ~>
+        PassengerRoutes(mockSummary)                                                       ~> check {
+          probeGranularity.expectMsg(Total)
+          probeTerminal.expectMsg(Option(Terminal(terminal)))
+          responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal).toJson
+        }
     }
 
     "call the corresponding terminal uri for the port and dates, given daily granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?granularity=" + dailyGranularity + "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
+      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?granularity=" + dailyGranularity +
+        "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
         probeGranularity.expectMsg(Daily)
         probeTerminal.expectMsg(Option(Terminal(terminal)))
         responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal).toJson
@@ -98,7 +107,8 @@ class PassengerRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteT
     }
 
     "call the corresponding terminal uri for the port and dates, given hourly granularity" in {
-      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?granularity=" + hourGranularity + "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
+      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?granularity=" + hourGranularity +
+        "&port-codes=stn") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
         probeGranularity.expectMsg(Hourly)
         probeTerminal.expectMsg(Option(Terminal(terminal)))
         responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal).toJson
@@ -106,10 +116,11 @@ class PassengerRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteT
     }
 
     "call combine the output from each requested port" in {
-      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?port-codes=stn,lhr") ~> addHeader(header) ~> PassengerRoutes(mockSummary) ~> check {
-        val lhrSummaryWithTerminal = stnSummaryWithTerminal.copy(portCode = "lhr", regionName = "Heathrow")
-        responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal, lhrSummaryWithTerminal).toJson
-      }
+      Get("/passengers/" + startDate + "/" + endDate + "/" + terminal + "?port-codes=stn,lhr") ~> addHeader(header) ~>
+        PassengerRoutes(mockSummary)                                                           ~> check {
+          val lhrSummaryWithTerminal = stnSummaryWithTerminal.copy(portCode = "lhr", regionName = "Heathrow")
+          responseAs[String].parseJson shouldEqual Seq(stnSummaryWithTerminal, lhrSummaryWithTerminal).toJson
+        }
     }
   }
 }

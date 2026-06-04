@@ -1,9 +1,9 @@
 package uk.gov.homeoffice.drt.authentication
 
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import spray.json.{DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat}
+import spray.json.{ DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.auth.Roles
-import uk.gov.homeoffice.drt.auth.Roles.{PortAccess, Role}
+import uk.gov.homeoffice.drt.auth.Roles.{ PortAccess, Role }
 import uk.gov.homeoffice.drt.ports.PortCode
 
 case class User(email: String, roles: Set[Role]) {
@@ -26,7 +26,7 @@ trait UserJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
     override def read(json: JsValue): Role = json match {
       case str: JsString => Roles.parse(str.value).getOrElse(throw new Exception(s"Invalid role '${str.value}''"))
-      case u => throw new Exception(s"Expected valid Role json: $u")
+      case u             => throw new Exception(s"Expected valid Role json: $u")
     }
   }
 
@@ -34,7 +34,8 @@ trait UserJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     override def write(user: User): JsValue = JsObject(Map(
       "ports" -> JsArray(user.accessiblePorts.map(pc => JsString(pc.iata)).toVector),
       "roles" -> JsArray(user.roles.map(r => JsString(r.name)).toVector),
-      "email" -> JsString(user.email)))
+      "email" -> JsString(user.email)
+    ))
 
     override def read(json: JsValue): User = json match {
       case JsObject(fields) =>
@@ -49,4 +50,3 @@ trait UserJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 }
-

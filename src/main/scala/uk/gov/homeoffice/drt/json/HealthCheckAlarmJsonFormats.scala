@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat, enrichAny}
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.ports.PortCode
 
 trait HealthCheckAlarmJsonFormats extends DefaultJsonProtocol {
@@ -13,7 +13,8 @@ trait HealthCheckAlarmJsonFormats extends DefaultJsonProtocol {
   }
 
   implicit object alarmStatusFormat extends RootJsonFormat[Map[PortCode, Map[String, Boolean]]] {
-    override def read(json: JsValue): Map[PortCode, Map[String, Boolean]] = throw new UnsupportedOperationException("Not implemented")
+    override def read(json: JsValue): Map[PortCode, Map[String, Boolean]] =
+      throw new UnsupportedOperationException("Not implemented")
 
     override def write(obj: Map[PortCode, Map[String, Boolean]]): JsValue = JsArray(
       obj.map {
@@ -22,9 +23,9 @@ trait HealthCheckAlarmJsonFormats extends DefaultJsonProtocol {
             "port" -> portCode.toJson,
             "alarms" -> JsArray(alarmStatuses.map {
               case (checkName, isActive) => JsObject(Map(
-                "name" -> checkName.toJson,
-                "isActive" -> isActive.toJson,
-              ))
+                  "name" -> checkName.toJson,
+                  "isActive" -> isActive.toJson
+                ))
             }.toVector)
           ))
       }.toVector

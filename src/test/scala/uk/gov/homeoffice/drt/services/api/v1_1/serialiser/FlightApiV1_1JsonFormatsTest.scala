@@ -2,12 +2,17 @@ package uk.gov.homeoffice.drt.services.api.v1_1.serialiser
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.homeoffice.drt.routes.api.v1_1.FlightApiV1_1Routes.{FlightJsonResponseV1_1, FlightJsonV1_1}
+import uk.gov.homeoffice.drt.routes.api.v1_1.FlightApiV1_1Routes.{ FlightJsonResponseV1_1, FlightJsonV1_1 }
 import uk.gov.homeoffice.drt.time.SDate
 
 class FlightApiV1_1JsonFormatsTest extends AnyWordSpec with Matchers with QueueApiV1_1JsonFormats {
   "FlightJsonFormat should serialise and deserialise correctly" in {
-    val queue = FlightJsonV1_1("LHR", "T2", "BA123", "JFK", "John F. Kennedy International Airport",
+    val queue = FlightJsonV1_1(
+      "LHR",
+      "T2",
+      "BA123",
+      "JFK",
+      "John F. Kennedy International Airport",
       SDate("2024-10-20T10:00").millisSinceEpoch,
       Some(SDate("2024-10-20T10:05").millisSinceEpoch),
       None,
@@ -15,7 +20,7 @@ class FlightApiV1_1JsonFormatsTest extends AnyWordSpec with Matchers with QueueA
       Some(SDate("2024-10-20T10:45").millisSinceEpoch),
       Some(150),
       "On Time",
-      Some(Seq.empty),
+      Some(Seq.empty)
     )
     val json = queue.toJson
     val deserialised = json.convertTo[FlightJsonV1_1]
@@ -39,7 +44,7 @@ class FlightApiV1_1JsonFormatsTest extends AnyWordSpec with Matchers with QueueA
       estimatedPcpEndTime = Some(start.addMinutes(45).millisSinceEpoch),
       estimatedPaxCount = Some(150),
       status = "On Time",
-      queuePaxCounts = Some(Seq.empty),
+      queuePaxCounts = Some(Seq.empty)
     )
     val response = FlightJsonResponseV1_1(start, end, Seq(flightJson))
     val json = response.toJson

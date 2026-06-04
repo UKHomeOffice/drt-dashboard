@@ -12,7 +12,8 @@ class EmailNotificationsSpec extends Specification {
       val emailClient = Mockito.mock(classOf[NotificationClientApi])
       val emailNotifications = EmailNotifications(List.empty, emailClient)
       emailNotifications.getDropInBookingUrlForAPort(
-        UserAccessRequest(email = "test@test.com",
+        UserAccessRequest(
+          email = "test@test.com",
           portsRequested = "LHR",
           allPorts = false,
           regionsRequested = "",
@@ -25,14 +26,16 @@ class EmailNotificationsSpec extends Specification {
           status = "Approved",
           requestTime = java.sql.Timestamp.valueOf("2021-01-01 00:00:00.0")
         ).portsRequested,
-        "drt-test.gov.uk") === "https://lhr.drt-test.gov.uk/#trainingHub/dropInBooking"
+        "drt-test.gov.uk"
+      ) === "https://lhr.drt-test.gov.uk/#trainingHub/dropInBooking"
     }
 
     "for user with multiple ports access requested" >> {
       val emailClient = Mockito.mock(classOf[NotificationClientApi])
       val emailNotifications = EmailNotifications(List.empty, emailClient)
       emailNotifications.getDropInBookingUrlForAPort(
-        UserAccessRequest(email = "test@test.com",
+        UserAccessRequest(
+          email = "test@test.com",
           portsRequested = "LGW,NQY,CWL,SOU,SEN,BRS,EXT,BOH",
           allPorts = false,
           regionsRequested = "South",
@@ -45,14 +48,16 @@ class EmailNotificationsSpec extends Specification {
           status = "Approved",
           requestTime = java.sql.Timestamp.valueOf("2021-01-01 00:00:00.0")
         ).portsRequested,
-        "drt-test.gov.uk") === "https://lgw.drt-test.gov.uk/#trainingHub/dropInBooking"
+        "drt-test.gov.uk"
+      ) === "https://lgw.drt-test.gov.uk/#trainingHub/dropInBooking"
     }
 
     "for user with regional port access requested" >> {
       val emailClient = Mockito.mock(classOf[NotificationClientApi])
       val emailNotifications = EmailNotifications(List.empty, emailClient)
       emailNotifications.getDropInBookingUrlForAPort(
-        UserAccessRequest(email = "test@test.com",
+        UserAccessRequest(
+          email = "test@test.com",
           portsRequested = "GLA,LPL,MME,MAN,LBA,NCL,HUY,ABZ,EDI,PIK,INV,BHD,BFS",
           allPorts = false,
           regionsRequested = "North",
@@ -65,7 +70,8 @@ class EmailNotificationsSpec extends Specification {
           status = "Approved",
           requestTime = java.sql.Timestamp.valueOf("2021-01-01 00:00:00.0")
         ).portsRequested,
-        "drt-test.gov.uk") === "https://gla.drt-test.gov.uk/#trainingHub/dropInBooking"
+        "drt-test.gov.uk"
+      ) === "https://gla.drt-test.gov.uk/#trainingHub/dropInBooking"
     }
   }
 }

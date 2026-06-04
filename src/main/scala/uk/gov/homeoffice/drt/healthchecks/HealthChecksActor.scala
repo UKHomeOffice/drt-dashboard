@@ -2,36 +2,40 @@ package uk.gov.homeoffice.drt.healthchecks
 
 import org.apache.pekko.actor.typed.ActorRef
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
-import uk.gov.homeoffice.drt.healthchecks.alarms.{AlarmActive, AlarmInactive, AlarmState}
+import uk.gov.homeoffice.drt.healthchecks.alarms.{ AlarmActive, AlarmInactive, AlarmState }
 import uk.gov.homeoffice.drt.ports.PortCode
 
 import scala.collection.immutable.SortedMap
 
-
 object HealthChecksActor {
   trait Command
 
-  case class PortHealthCheckResponse(portCode: PortCode,
-                                     response: HealthCheckResponse[_],
-                                     replyTo: ActorRef[AlarmState],
-                                    ) extends Command
+  case class PortHealthCheckResponse(
+      portCode: PortCode,
+      response: HealthCheckResponse[_],
+      replyTo: ActorRef[AlarmState]
+  ) extends Command
 
   case class GetAlarmStatuses(replyTo: ActorRef[Map[PortCode, Map[String, Boolean]]]) extends Command
 
-  def apply(soundAlarm: (PortCode, String, IncidentPriority) => Unit,
-            silenceAlarm: (PortCode, String, IncidentPriority) => Unit,
-            now: () => Long,
-            alarmTriggerConsecutiveFailures: Int,
-            retainMaxResponses: Int,
-            portChecks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]]): Behaviors.Receive[Command] = {
+  def apply(
+      soundAlarm: (PortCode, String, IncidentPriority) => Unit,
+      silenceAlarm: (PortCode, String, IncidentPriority) => Unit,
+      now: () => Long,
+      alarmTriggerConsecutiveFailures: Int,
+      retainMaxResponses: Int,
+      portChecks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]]
+  ): Behaviors.Receive[Command] = {
 
-    def behaviour(checks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]]): Behaviors.Receive[Command] =
+    def behaviour(checks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]])
+        : Behaviors.Receive[Command] =
       Behaviors.receiveMessage {
         case GetAlarmStatuses(replyTo) =>
           replyTo ! checks.map {
             case (portCode, portResponses) =>
               portCode -> portResponses.map {
-                case (checkName, _) => checkName -> isHcAlarmActive(checks, portCode, checkName, alarmTriggerConsecutiveFailures)
+                case (checkName, _) => checkName ->
+                    isHcAlarmActive(checks, portCode, checkName, alarmTriggerConsecutiveFailures)
               }
           }
           Behaviors.same
@@ -58,13 +62,14 @@ object HealthChecksActor {
     behaviour(portChecks)
   }
 
-  def updateState(state: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]],
-                  portCode: PortCode,
-                  response: HealthCheckResponse[_],
-                  checkName: String,
-                  now: Long,
-                  retainMaxResponses: Int,
-                 ): Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]] = {
+  def updateState(
+      state: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]],
+      portCode: PortCode,
+      response: HealthCheckResponse[_],
+      checkName: String,
+      now: Long,
+      retainMaxResponses: Int
+  ): Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]] = {
     val portResponses = state.getOrElse(portCode, Map.empty)
     val hcResponses = getHcResponses(portResponses, checkName)
     val newHcResponses = if (hcResponses.size >= retainMaxResponses)
@@ -75,15 +80,18 @@ object HealthChecksActor {
     state.updated(portCode, newPortResponses)
   }
 
-  private def getHcResponses(portResponses: Map[String, SortedMap[Long, HealthCheckResponse[_]]],
-                             checkName: String): SortedMap[Long, HealthCheckResponse[_]] =
+  private def getHcResponses(
+      portResponses: Map[String, SortedMap[Long, HealthCheckResponse[_]]],
+      checkName: String
+  ): SortedMap[Long, HealthCheckResponse[_]] =
     portResponses.getOrElse(checkName, SortedMap.empty[Long, HealthCheckResponse[_]])
 
-  def isHcAlarmActive(portChecks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]],
-                      portCode: PortCode,
-                      checkName: String,
-                      alarmTriggerConsecutiveFailures: Int,
-                     ): Boolean = {
+  def isHcAlarmActive(
+      portChecks: Map[PortCode, Map[String, SortedMap[Long, HealthCheckResponse[_]]]],
+      portCode: PortCode,
+      checkName: String,
+      alarmTriggerConsecutiveFailures: Int
+  ): Boolean = {
     val portResponses = portChecks.getOrElse(portCode, Map.empty)
     val hcResponses = getHcResponses(portResponses, checkName)
 

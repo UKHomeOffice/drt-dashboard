@@ -4,13 +4,17 @@ case class DashboardPortStatus(portCode: String, feedStatuses: PortFeedStatuses)
 
 object DashboardPortStatus {
   def apply(portCode: String, feedSourceStatuses: List[FeedSourceStatus]): DashboardPortStatus = {
-    DashboardPortStatus(portCode, PortFeedStatuses(feedSourceStatuses.map(fss => {
-      PortFeedStatus(
-        fss.feedSource,
-        stringListToLongOption(fss.feedStatuses.lastSuccessAt),
-        stringListToLongOption(fss.feedStatuses.lastFailureAt),
-        stringListToLongOption(fss.feedStatuses.lastUpdatesAt))
-    })))
+    DashboardPortStatus(
+      portCode,
+      PortFeedStatuses(feedSourceStatuses.map(fss => {
+        PortFeedStatus(
+          fss.feedSource,
+          stringListToLongOption(fss.feedStatuses.lastSuccessAt),
+          stringListToLongOption(fss.feedStatuses.lastFailureAt),
+          stringListToLongOption(fss.feedStatuses.lastUpdatesAt)
+        )
+      }))
+    )
   }
 
   def stringListToLongOption(strings: List[String]): Option[Long] = strings.headOption.map(_.toLong)
@@ -21,8 +25,8 @@ case class PortFeedStatuses(statuses: List[PortFeedStatus]) {
 }
 
 case class PortFeedStatus(
-  feedSource: String,
-  lastSuccessAt: Option[Long],
-  lastFailureAt: Option[Long],
-  lastUpdatesAt: Option[Long])
-
+    feedSource: String,
+    lastSuccessAt: Option[Long],
+    lastFailureAt: Option[Long],
+    lastUpdatesAt: Option[Long]
+)

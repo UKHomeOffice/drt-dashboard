@@ -3,12 +3,12 @@ package uk.gov.homeoffice.drt.routes
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.model.StatusCodes.InternalServerError
-import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{ HttpRequest, HttpResponse, StatusCodes }
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.stream.Materializer
 import org.joda.time.DateTime
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import spray.json.enrichAny
 import uk.gov.homeoffice.drt.auth.Roles.ManageUsers
 import uk.gov.homeoffice.drt.authentication._
@@ -17,20 +17,20 @@ import uk.gov.homeoffice.drt.keycloak._
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 import uk.gov.homeoffice.drt.routes.AlertsRoutes.clientUserAccessDataJsonSupportDataFormatParser
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
-import uk.gov.homeoffice.drt.services.{UserRequestService, UserService}
-import uk.gov.homeoffice.drt.{ClientConfig, db}
+import uk.gov.homeoffice.drt.services.{ UserRequestService, UserService }
+import uk.gov.homeoffice.drt.{ db, ClientConfig }
 
 import java.sql.Timestamp
 import java.util.Date
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.util.{ Failure, Success }
 
 object UserRoutes extends db.UserAccessRequestJsonSupport
-  with UserJsonSupport
-  with UserRowJsonSupport
-  with AccessRequestJsonSupport
-  with KeyCloakUserParserProtocol
-  with KeyCloakAuthTokenParserProtocol {
+    with UserJsonSupport
+    with UserRowJsonSupport
+    with AccessRequestJsonSupport
+    with KeyCloakUserParserProtocol
+    with KeyCloakAuthTokenParserProtocol {
   val log: Logger = LoggerFactory.getLogger(getClass)
 
   private def userRowForApprovedRequest(userRequestedAccessData: ClientUserRequestedAccessData): db.UserRow =
@@ -42,7 +42,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
       inactive_email_sent = None,
       revoked_access = None,
       drop_in_notification_at = None,
-      created_at = Some(new Timestamp(DateTime.now().getMillis)),
+      created_at = Some(new Timestamp(DateTime.now().getMillis))
     )
 
   private def groupsToAdd(userRequestedAccessData: ClientUserRequestedAccessData): Seq[String] = {
@@ -59,16 +59,17 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
     (requestedGroups ++ Seq("Border Force") ++ staffGroups).distinct
   }
 
-  private def grantUserAccess(id: String,
-                              userRequestedAccessData: ClientUserRequestedAccessData,
-                              keycloakService: IKeycloakService,
-                              userRequestService: UserRequestService,
-                              userService: UserService,
-                              notifications: EmailNotifications,
-                              clientConfig: ClientConfig,
-                             )
-                             (implicit ec: ExecutionContextExecutor): Future[String] = {
-    val addGroups = Future.sequence(groupsToAdd(userRequestedAccessData).map(group => keycloakService.addUserToGroup(id, group)))
+  private def grantUserAccess(
+      id: String,
+      userRequestedAccessData: ClientUserRequestedAccessData,
+      keycloakService: IKeycloakService,
+      userRequestService: UserRequestService,
+      userService: UserService,
+      notifications: EmailNotifications,
+      clientConfig: ClientConfig
+  )(implicit ec: ExecutionContextExecutor): Future[String] = {
+    val addGroups =
+      Future.sequence(groupsToAdd(userRequestedAccessData).map(group => keycloakService.addUserToGroup(id, group)))
 
     addGroups.flatMap { _ =>
       for {
@@ -81,13 +82,13 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
     }
   }
 
-  def apply(clientConfig: ClientConfig,
-            userService: UserService,
-            userRequestService: UserRequestService,
-            notifications: EmailNotifications,
-            keyCloakUrl: String,
-           )
-           (implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route = {
+  def apply(
+      clientConfig: ClientConfig,
+      userService: UserService,
+      userRequestService: UserRequestService,
+      notifications: EmailNotifications,
+      keyCloakUrl: String
+  )(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route = {
 
     implicit val mat: Materializer = Materializer.matFromSystem(system.classicSystem)
     val sendHttpRequest: HttpRequest => Future[HttpResponse] = request => Http().singleRequest(request)
@@ -100,14 +101,14 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
     apply(clientConfig, userService, userRequestService, notifications, keyCloakUrl, getKeyCloakService)
   }
 
-  def apply(clientConfig: ClientConfig,
-            userService: UserService,
-            userRequestService: UserRequestService,
-            notifications: EmailNotifications,
-            keyCloakUrl: String,
-            keyCloakServiceForToken: String => IKeycloakService,
-           )
-           (implicit ec: ExecutionContextExecutor): Route = {
+  def apply(
+      clientConfig: ClientConfig,
+      userService: UserService,
+      userRequestService: UserRequestService,
+      notifications: EmailNotifications,
+      keyCloakUrl: String,
+      keyCloakServiceForToken: String => IKeycloakService
+  )(implicit ec: ExecutionContextExecutor): Route = {
 
     concat(
       (get & path("user")) {
@@ -133,8 +134,9 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
                   created_at = Some(new Timestamp(new Date().getTime))
                 ),
                 Some("userTracking")
-              )) {
-              case Success(_) => complete(StatusCodes.OK)
+              )
+            ) {
+              case Success(_)  => complete(StatusCodes.OK)
               case Failure(ex) =>
                 log.error(s"Failed to track user $email", ex)
                 complete(InternalServerError)
@@ -148,10 +150,12 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
             headerValueByName("X-Forwarded-Email") { userEmail =>
               entity(as[AccessRequest]) { accessRequest =>
                 userRequestService.saveUserRequest(userEmail, accessRequest, new Timestamp(DateTime.now().getMillis))
-                val failures = notifications.sendRequest(userEmail, accessRequest).foldLeft(List[(String, Throwable)]()) {
-                  case (exceptions, (_, Success(_))) => exceptions
-                  case (exceptions, (requestAddress, Failure(newException))) => (requestAddress, newException) :: exceptions
-                }
+                val failures =
+                  notifications.sendRequest(userEmail, accessRequest).foldLeft(List[(String, Throwable)]()) {
+                    case (exceptions, (_, Success(_)))                         => exceptions
+                    case (exceptions, (requestAddress, Failure(newException))) => (requestAddress, newException) ::
+                        exceptions
+                  }
                 if (failures.nonEmpty) {
                   failures.foreach {
                     case (failedEmail, exception) =>
@@ -167,7 +171,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
               headerValueByName("X-Forwarded-Groups") { _ =>
                 onComplete(userRequestService.getUserRequest(status)) {
                   case Success(value) => complete(value.toJson)
-                  case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+                  case Failure(ex)    => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
                 }
               }
             }
@@ -176,7 +180,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
             headerValueByName("X-Forwarded-Groups") { _ =>
               onComplete(userService.getUsers()) {
                 case Success(value) => complete(value.toJson)
-                case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+                case Failure(ex)    => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
               }
             }
           },
@@ -190,7 +194,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
                     val keyCloakUser: Future[KeyCloakUser] =
                       keycloakService.getUserForEmail(userEmail).map {
                         case Some(keyCloakUser) => keyCloakUser
-                        case None =>
+                        case None               =>
                           log.error(s"Failed at $keyCloakUrl/data/userDetails/$userEmail}")
                           KeyCloakUser("", "", enabled = false, emailVerified = false, "", "", "")
                       }
@@ -207,7 +211,10 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
                   headerValueByName("X-Forwarded-Access-Token") { xAuthToken =>
                     entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
                       val keycloakService = keyCloakServiceForToken(xAuthToken)
-                      if (userRequestedAccessData.allPorts || userRequestedAccessData.portsRequested.nonEmpty || userRequestedAccessData.regionsRequested.nonEmpty) {
+                      if (
+                        userRequestedAccessData.allPorts || userRequestedAccessData.portsRequested.nonEmpty ||
+                        userRequestedAccessData.regionsRequested.nonEmpty
+                      ) {
                         onComplete(grantUserAccess(
                           id,
                           userRequestedAccessData,
@@ -215,10 +222,10 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
                           userRequestService,
                           userService,
                           notifications,
-                          clientConfig,
+                          clientConfig
                         )) {
                           case Success(value) => complete(value)
-                          case Failure(ex) =>
+                          case Failure(ex)    =>
                             log.error(s"Failed to approve access request for ${userRequestedAccessData.email}", ex)
                             complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
                         }
@@ -238,7 +245,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
                   entity(as[ClientUserRequestedAccessData]) { userRequestedAccessData =>
                     onComplete(userRequestService.updateUserRequest(userRequestedAccessData, status)) {
                       case Success(value) => complete(s"The result was $value")
-                      case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+                      case Failure(ex)    => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
                     }
                   }
                 }
@@ -246,7 +253,7 @@ object UserRoutes extends db.UserAccessRequestJsonSupport
             }
           }
         )
-      },
+      }
     )
   }
 }

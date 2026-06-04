@@ -2,7 +2,7 @@ package uk.gov.homeoffice.drt.db
 
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
-import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat, deserializationError }
+import spray.json.{ deserializationError, DefaultJsonProtocol, JsString, JsValue, JsonFormat }
 
 import java.sql.Timestamp
 
@@ -16,7 +16,7 @@ trait DateTimeJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
           DateTime.parse(rawDate).asInstanceOf[Timestamp]
         } catch {
           case _: IllegalArgumentException => deserializationError("Invalid date format")
-          case _: Exception => deserializationError(s"Couldn't parse date time, got $rawDate")
+          case _: Exception                => deserializationError(s"Couldn't parse date time, got $rawDate")
         }
       }
     }

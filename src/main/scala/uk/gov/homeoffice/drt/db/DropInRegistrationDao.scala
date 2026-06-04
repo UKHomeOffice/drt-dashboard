@@ -6,10 +6,12 @@ import slick.lifted.ProvenShape
 import java.sql.Timestamp
 import scala.concurrent.Future
 
-case class DropInRegistrationRow(email: String,
-                                 dropInId: Int,
-                                 registeredAt: Timestamp,
-                                 emailSentAt: Option[Timestamp])
+case class DropInRegistrationRow(
+    email: String,
+    dropInId: Int,
+    registeredAt: Timestamp,
+    emailSentAt: Option[Timestamp]
+)
 
 class DropInRegistrationTable(tag: Tag) extends Table[DropInRegistrationRow](tag, "drop_in_registration") {
 
@@ -27,14 +29,13 @@ class DropInRegistrationTable(tag: Tag) extends Table[DropInRegistrationRow](tag
 
 }
 
-
 case class DropInRegistrationDao(db: CentralDatabase) {
   val dropInRegistrationTable = TableQuery[DropInRegistrationTable]
 
   private def getCurrentTime = new Timestamp(new DateTime().getMillis)
 
   def updateEmailSentTime(dropInId: String) = {
-    val query = dropInRegistrationTable.filter(_.dropInId === dropInId.trim.toInt).map(f => (f.emailSentAt))
+    val query = dropInRegistrationTable.filter(_.dropInId === dropInId.trim.toInt).map(f => f.emailSentAt)
       .update(Some(getCurrentTime))
     db.run(query)
   }
@@ -56,7 +57,9 @@ case class DropInRegistrationDao(db: CentralDatabase) {
     val numberOfDaysBeforeSeminar = new Timestamp(dropInDate.getTime - sevenDaysMilliSeconds)
 
     val query = dropInRegistrationTable
-      .filter(r => r.dropInId === dropInId.trim.toInt && r.emailSentAt.map(es => es < numberOfDaysBeforeSeminar).getOrElse(true))
+      .filter(r =>
+        r.dropInId === dropInId.trim.toInt && r.emailSentAt.map(es => es < numberOfDaysBeforeSeminar).getOrElse(true)
+      )
       .sortBy(_.registeredAt.desc).result
 
     val result = db.run(query)
@@ -69,7 +72,12 @@ case class DropInRegistrationDao(db: CentralDatabase) {
     result
   }
 
-  def insertRegistration(email:String, dropInId: Int, registeredAt: Timestamp, emailSentAt: Option[Timestamp]): Future[Int] = {
+  def insertRegistration(
+      email: String,
+      dropInId: Int,
+      registeredAt: Timestamp,
+      emailSentAt: Option[Timestamp]
+  ): Future[Int] = {
     val insertAction = dropInRegistrationTable += DropInRegistrationRow(email, dropInId, registeredAt, emailSentAt)
     db.run(insertAction)
   }

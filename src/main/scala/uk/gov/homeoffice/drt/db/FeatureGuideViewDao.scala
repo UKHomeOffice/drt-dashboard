@@ -1,6 +1,5 @@
 package uk.gov.homeoffice.drt.db
 
-
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 import upickle.default._

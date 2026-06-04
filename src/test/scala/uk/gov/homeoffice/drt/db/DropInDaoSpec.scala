@@ -16,8 +16,10 @@ class DropInDaoSpec extends Specification with BeforeEach {
     Await.ready(
       TestDatabase.run(DBIO.seq(
         TestDatabase.dropInTable.schema.dropIfExists,
-        TestDatabase.dropInTable.schema.createIfNotExists)
-      ), 2.second)
+        TestDatabase.dropInTable.schema.createIfNotExists
+      )),
+      2.second
+    )
   }
 
   "DropInDao" >> {
@@ -27,10 +29,12 @@ class DropInDaoSpec extends Specification with BeforeEach {
 
       val startTime = new Timestamp(Instant.now().minusSeconds(60).toEpochMilli)
       val endTime = new Timestamp(Instant.now().minusSeconds(30).toEpochMilli)
-      dropInDao.insertDropIn(title = "test",
+      dropInDao.insertDropIn(
+        title = "test",
         startTime = startTime,
         endTime = endTime,
-        meetingLink = None)
+        meetingLink = None
+      )
       val dropIns = Await.result(dropInDao.getFutureDropIns, 1.second)
 
       dropIns.size mustEqual 1

@@ -38,7 +38,8 @@ class AccessRequestSpec extends Specification with Specs2RouteTest with AccessRe
       agreeDeclaration = true,
       rccOption = "rccu",
       portOrRegionText = "",
-      staffText = "")
+      staffText = ""
+    )
 
     request === expected
   }

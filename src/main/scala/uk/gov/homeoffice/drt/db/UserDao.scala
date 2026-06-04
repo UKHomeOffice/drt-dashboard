@@ -1,28 +1,29 @@
 package uk.gov.homeoffice.drt.db
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.{TableQuery, Tag}
+import slick.lifted.{ TableQuery, Tag }
 import spray.json.RootJsonFormat
 
 import java.sql.Timestamp
-import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.{ Duration, Instant, LocalDateTime, ZoneOffset }
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait UserRowJsonSupport extends DateTimeJsonSupport {
   implicit val userFormatParser: RootJsonFormat[UserRow] = jsonFormat8(UserRow)
 }
 
 case class UserRow(
-  id: String,
-  username: String,
-  email: String,
-  latest_login: java.sql.Timestamp,
-  inactive_email_sent: Option[java.sql.Timestamp],
-  revoked_access: Option[java.sql.Timestamp],
-  drop_in_notification_at: Option[java.sql.Timestamp],
-  created_at: Option[java.sql.Timestamp])
+    id: String,
+    username: String,
+    email: String,
+    latest_login: java.sql.Timestamp,
+    inactive_email_sent: Option[java.sql.Timestamp],
+    revoked_access: Option[java.sql.Timestamp],
+    drop_in_notification_at: Option[java.sql.Timestamp],
+    created_at: Option[java.sql.Timestamp]
+)
 
 class UserTable(tag: Tag, tableName: String = "user") extends Table[UserRow](tag, tableName) {
 
@@ -42,7 +43,9 @@ class UserTable(tag: Tag, tableName: String = "user") extends Table[UserRow](tag
 
   def created_at = column[Option[java.sql.Timestamp]]("created_at")
 
-  def * = (id, username, email, latest_login, inactive_email_sent, revoked_access, drop_in_notification_at, created_at) <> (UserRow.tupled, UserRow.unapply)
+  def * =
+    (id, username, email, latest_login, inactive_email_sent, revoked_access, drop_in_notification_at, created_at) <>
+      (UserRow.tupled, UserRow.unapply)
 
 }
 
@@ -50,9 +53,13 @@ trait IUserDao {
 
   def upsertUser(user: UserRow, purpose: Option[String])(implicit ec: ExecutionContext): Future[Int]
 
-  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[UserRow]]
+  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit
+      executionContext: ExecutionContext
+  ): Future[Seq[UserRow]]
 
-  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[UserRow]]
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit
+      executionContext: ExecutionContext
+  ): Future[Seq[UserRow]]
 
   def selectAll()(implicit executionContext: ExecutionContext): Future[Seq[UserRow]]
 
@@ -71,23 +78,31 @@ case class UserDao(db: CentralDatabase) extends IUserDao {
     user.inactive_email_sent.isEmpty &&
       user.latest_login < new Timestamp(Instant.now().minusSeconds(numberOfInactivityDays * secondsInADay).toEpochMilli)
 
-  def accessShouldBeRevoked(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int): UserTable => Rep[Boolean] = (user: UserTable) =>
-    user.revoked_access.isEmpty &&
-      user.latest_login < new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays + deactivateAfterWarningDays) * secondsInADay).toEpochMilli) &&
-      user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds((deactivateAfterWarningDays) * secondsInADay).toEpochMilli)).getOrElse(false)
+  def accessShouldBeRevoked(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int): UserTable => Rep[Boolean] =
+    (user: UserTable) =>
+      user.revoked_access.isEmpty &&
+        user.latest_login < new Timestamp(Instant.now().minusSeconds((numberOfInactivityDays +
+          deactivateAfterWarningDays) * secondsInADay).toEpochMilli) &&
+        user.inactive_email_sent.map(_ < new Timestamp(Instant.now().minusSeconds(deactivateAfterWarningDays *
+          secondsInADay).toEpochMilli)).getOrElse(false)
 
   private def insertOrUpdate(userData: UserRow): Future[Int] = {
     db.run(userTable insertOrUpdate userData)
   }
 
-  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[UserRow]] = {
+  def selectInactiveUsers(numberOfInactivityDays: Int)(implicit
+      executionContext: ExecutionContext
+  ): Future[Seq[UserRow]] = {
     val inactiveIdx: UserTable => PostgresProfile.api.Rep[Boolean] = noActivitySinceDays(numberOfInactivityDays)
     db.run(userTable.filter(inactiveIdx).result)
       .mapTo[Seq[UserRow]]
   }
 
-  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit executionContext: ExecutionContext): Future[Seq[UserRow]] = {
-    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] = accessShouldBeRevoked(numberOfInactivityDays, deactivateAfterWarningDays)
+  def selectUsersToRevokeAccess(numberOfInactivityDays: Int, deactivateAfterWarningDays: Int)(implicit
+      executionContext: ExecutionContext
+  ): Future[Seq[UserRow]] = {
+    val revokeIdx: UserTable => PostgresProfile.api.Rep[Boolean] =
+      accessShouldBeRevoked(numberOfInactivityDays, deactivateAfterWarningDays)
     db.run(userTable.filter(revokeIdx).result)
       .mapTo[Seq[UserRow]]
   }
@@ -96,7 +111,9 @@ case class UserDao(db: CentralDatabase) extends IUserDao {
     db.run(userTable.result).mapTo[Seq[UserRow]]
   }
 
-  override def getUsersWithoutDropInNotification()(implicit executionContext: ExecutionContext): Future[Seq[UserRow]] = {
+  override def getUsersWithoutDropInNotification()(implicit
+      executionContext: ExecutionContext
+  ): Future[Seq[UserRow]] = {
     val specificDate = Timestamp.from(LocalDateTime.of(2023, 9, 1, 0, 0).toInstant(ZoneOffset.UTC))
     val fifteenDaysAgo = Timestamp.from(Instant.now.minus(Duration.ofDays(15)))
 
@@ -131,15 +148,15 @@ case class UserDao(db: CentralDatabase) extends IUserDao {
           .update(user.inactive_email_sent, user.revoked_access)
       case Some(p) if p == "revoked" =>
         userTable.filter(_.email === user.email)
-          .map(f => (f.revoked_access))
+          .map(f => f.revoked_access)
           .update(user.revoked_access)
       case Some(p) if p == "dropInNotification" =>
         userTable.filter(_.email === user.email)
-          .map(f => (f.drop_in_notification_at))
+          .map(f => f.drop_in_notification_at)
           .update(user.drop_in_notification_at)
       case Some(p) if p == "Approved" =>
         userTable.filter(_.email === user.email)
-          .map(f => (f.created_at))
+          .map(f => f.created_at)
           .update(user.created_at)
       case _ => userTable.insertOrUpdate(user)
     }

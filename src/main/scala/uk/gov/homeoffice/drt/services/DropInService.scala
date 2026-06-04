@@ -1,13 +1,19 @@
 package uk.gov.homeoffice.drt.services
 
 import org.joda.time.DateTime
-import uk.gov.homeoffice.drt.db.{DropInDao, DropInRegistrationDao, DropInRegistrationRow}
+import uk.gov.homeoffice.drt.db.{ DropInDao, DropInRegistrationDao, DropInRegistrationRow }
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
 
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-class DropInService(dropInDao: DropInDao, dropInRegistrationDao: DropInRegistrationDao, userService: UserService, userRequestService: UserRequestService, teamEmail: String) {
+class DropInService(
+    dropInDao: DropInDao,
+    dropInRegistrationDao: DropInRegistrationDao,
+    userService: UserService,
+    userRequestService: UserRequestService,
+    teamEmail: String
+) {
 
   def sendSeminarReminders(notifications: EmailNotifications)(implicit ec: ExecutionContext): Future[Unit] = {
     val notifyDate: Long = DateTime.now().withTimeAtStartOfDay.plusDays(7).getMillis
@@ -25,15 +31,19 @@ class DropInService(dropInDao: DropInDao, dropInRegistrationDao: DropInRegistrat
     }
   }
 
-
-  def sendDropInNotificationToNewUsers(notifications: EmailNotifications, rootDomain: String)(implicit ec: ExecutionContext) = {
+  def sendDropInNotificationToNewUsers(notifications: EmailNotifications, rootDomain: String)(implicit
+      ec: ExecutionContext
+  ) = {
     userService.getUsersWithoutDropInNotification.flatMap { users =>
       Future.sequence(users.map { user =>
         dropInRegistrationDao.findRegistrationsByEmail(user.email).flatMap {
           case list if list.isEmpty =>
             userRequestService.getUserRequestByEmail(user.email).map(_.headOption).map { userAccessRequest =>
               notifications.sendDropInNotification(userAccessRequest, rootDomain, teamEmail)
-              userService.upsertUser(user.copy(drop_in_notification_at = Option(new Timestamp(new DateTime().getMillis))), Some("dropInNotification"))
+              userService.upsertUser(
+                user.copy(drop_in_notification_at = Option(new Timestamp(new DateTime().getMillis))),
+                Some("dropInNotification")
+              )
             }
 
           case _ =>

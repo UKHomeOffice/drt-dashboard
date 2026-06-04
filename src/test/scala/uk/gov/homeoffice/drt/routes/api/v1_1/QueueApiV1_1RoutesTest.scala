@@ -8,13 +8,13 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.testkit.TestProbe
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.homeoffice.drt.ports.Terminals.{T2, T3, Terminal}
-import uk.gov.homeoffice.drt.ports.{PortCode, Queues}
-import uk.gov.homeoffice.drt.routes.api.v1_1.QueueApiV1_1Routes.{QueueJsonResponseV1_1, QueueJsonV1_1, SlotJsonV1_1}
+import uk.gov.homeoffice.drt.ports.Terminals.{ T2, T3, Terminal }
+import uk.gov.homeoffice.drt.ports.{ PortCode, Queues }
+import uk.gov.homeoffice.drt.routes.api.v1_1.QueueApiV1_1Routes.{ QueueJsonResponseV1_1, QueueJsonV1_1, SlotJsonV1_1 }
 import uk.gov.homeoffice.drt.services.api.v1_1.serialiser.QueueApiV1_1JsonFormats
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 class QueueApiV1_1RoutesTest extends AnyWordSpec with Matchers with ScalatestRouteTest with QueueApiV1_1JsonFormats {
   implicit val typedSystem: ActorSystem[Nothing] = ActorSystem.wrap(system)
@@ -32,83 +32,108 @@ class QueueApiV1_1RoutesTest extends AnyWordSpec with Matchers with ScalatestRou
     val routes = QueueApiV1_1Routes(
       enabledPorts = Seq(PortCode("LHR"), PortCode("LGW")),
       dateRangeJsonForPortsAndSlotSize = (_, _) =>
-        (_, _) => Future.successful(QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3)))),
+        (_, _) =>
+          Future.successful(QueueJsonResponseV1_1(
+            start,
+            end,
+            defaultSlotSizeMinutes,
+            Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3))
+          ))
     )
     Get("/queues?start=" + start.toISOString + "&end=" + end.toISOString) ~>
-      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access")         ~>
+      RawHeader("X-Forwarded-Email", "my@email.com")                      ~>
+      routes                                                              ~> check {
 
-      val expected = QueueApiV1_1Routes.QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3)))
+        val expected = QueueApiV1_1Routes.QueueJsonResponseV1_1(
+          start,
+          end,
+          defaultSlotSizeMinutes,
+          Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3))
+        )
 
-      responseAs[String] shouldEqual expected.toJson.compactPrint
-    }
+        responseAs[String] shouldEqual expected.toJson.compactPrint
+      }
   }
 
   "Given a request without the optional slot-size-minutes parameter, the default slot size should be 15 minutes" in {
     val probe = TestProbe("queueApiV1_1Routes")
     val routes = QueueApiV1_1Routes(
       enabledPorts = Seq(PortCode("LHR"), PortCode("LGW")),
-      dateRangeJsonForPortsAndSlotSize = (_, slotSize) => (_, _) => {
-        probe.ref ! slotSize
-        Future.successful(QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3))))
-      },
+      dateRangeJsonForPortsAndSlotSize = (_, slotSize) =>
+        (_, _) => {
+          probe.ref ! slotSize
+          Future.successful(QueueJsonResponseV1_1(
+            start,
+            end,
+            defaultSlotSizeMinutes,
+            Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3))
+          ))
+        }
     )
 
     Get("/queues?start=" + start.toISOString + "&end=" + end.toISOString) ~>
-      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
-      probe.expectMsg(defaultSlotSizeMinutes)
-    }
+      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access")         ~>
+      RawHeader("X-Forwarded-Email", "my@email.com")                      ~>
+      routes                                                              ~> check {
+        probe.expectMsg(defaultSlotSizeMinutes)
+      }
   }
 
   "Given a failed response from a port the response status should be 500" in {
     val routes = QueueApiV1_1Routes(
       enabledPorts = Seq(PortCode("LHR"), PortCode("LGW")),
-      dateRangeJsonForPortsAndSlotSize = (_, _) => (_, _) => Future.failed(new Exception("Failed to get flights")),
+      dateRangeJsonForPortsAndSlotSize = (_, _) => (_, _) => Future.failed(new Exception("Failed to get flights"))
     )
 
     Get("/queues?start=" + start.toISOString + "&end=" + end.toISOString) ~>
-      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      RawHeader("X-Forwarded-Groups", "LHR,LGW,api-queue-access")         ~>
+      RawHeader("X-Forwarded-Email", "my@email.com")                      ~>
+      routes                                                              ~> check {
 
-      response.status.intValue() shouldEqual 500
-    }
+        response.status.intValue() shouldEqual 500
+      }
   }
 
   "Given a request from a user with access to some ports that are not enabled, only the enabled ports should be passed to the source function" in {
     val probe = TestProbe("queueApiV1_1Routes")
     val routes = QueueApiV1_1Routes(
       enabledPorts = Seq(PortCode("LHR")),
-      dateRangeJsonForPortsAndSlotSize = (portCodes, _) => (_, _) => {
-        probe.ref ! portCodes
-        Future.successful(QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq.empty))
-      },
+      dateRangeJsonForPortsAndSlotSize = (portCodes, _) =>
+        (_, _) => {
+          probe.ref ! portCodes
+          Future.successful(QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq.empty))
+        }
     )
 
     Get("/queues?start=" + start.toISOString + "&end=" + end.toISOString) ~>
-      RawHeader("X-Forwarded-Groups", "LHR,LGW,STN,api-queue-access") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
-      probe.expectMsg(Seq(PortCode("LHR")))
-    }
+      RawHeader("X-Forwarded-Groups", "LHR,LGW,STN,api-queue-access")     ~>
+      RawHeader("X-Forwarded-Email", "my@email.com")                      ~>
+      routes                                                              ~> check {
+        probe.expectMsg(Seq(PortCode("LHR")))
+      }
   }
 
   "Given a request from a user without access to the queue api, the response should be 403" in {
     val routes = QueueApiV1_1Routes(
       enabledPorts = Seq(PortCode("LHR")),
       dateRangeJsonForPortsAndSlotSize =
-        (_, _) => (_, _) => Future.successful(QueueJsonResponseV1_1(start, end, defaultSlotSizeMinutes, Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3)))),
+        (_, _) =>
+          (_, _) =>
+            Future.successful(QueueJsonResponseV1_1(
+              start,
+              end,
+              defaultSlotSizeMinutes,
+              Seq(periodJson(PortCode("LHR"), T2), periodJson(PortCode("LHR"), T3))
+            ))
     )
 
     Get("/queues?start=" + start.toISOString + "&end=" + end.toISOString) ~>
-      RawHeader("X-Forwarded-Groups", "LHR") ~>
-      RawHeader("X-Forwarded-Email", "my@email.com") ~>
-      routes ~> check {
+      RawHeader("X-Forwarded-Groups", "LHR")                              ~>
+      RawHeader("X-Forwarded-Email", "my@email.com")                      ~>
+      routes                                                              ~> check {
 
-      rejection.isInstanceOf[AuthorizationFailedRejection] shouldBe true
-    }
+        rejection.isInstanceOf[AuthorizationFailedRejection] shouldBe true
+      }
   }
 }

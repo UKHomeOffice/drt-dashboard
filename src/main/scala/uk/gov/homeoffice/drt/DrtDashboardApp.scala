@@ -2,10 +2,10 @@ package uk.gov.homeoffice.drt
 
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko.actor.typed.ActorSystem
-import uk.gov.homeoffice.drt.notifications.{EmailClientImpl, EmailNotifications}
+import uk.gov.homeoffice.drt.notifications.{ EmailClientImpl, EmailNotifications }
 import uk.gov.homeoffice.drt.ports.config.AirportConfigs
-import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
-import uk.gov.homeoffice.drt.schedule.{DropInNotification, DropInReminder, UserTracking}
+import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
+import uk.gov.homeoffice.drt.schedule.{ DropInNotification, DropInReminder, UserTracking }
 import uk.gov.homeoffice.drt.time.LocalDate
 import uk.gov.service.notify.NotificationClient
 
@@ -15,11 +15,12 @@ object DrtDashboardApp extends App {
   val config = ConfigFactory.load()
 
   private val enabledPorts: Seq[PortCode] = config.getString("enabled-ports") match {
-    case "" => PortRegion.regions.flatMap(_.ports).toSeq
+    case ""       => PortRegion.regions.flatMap(_.ports).toSeq
     case portList => portList.toUpperCase.split(",").map(PortCode(_)).toSeq
   }
 
-  private val portTerminals = (date: LocalDate) => AirportConfigs.confByPort.view.filterKeys(enabledPorts.contains).mapValues(_.terminalsForDate(date).toSeq).toMap
+  private val portTerminals = (date: LocalDate) =>
+    AirportConfigs.confByPort.view.filterKeys(enabledPorts.contains).mapValues(_.terminalsForDate(date).toSeq).toMap
 
   val serverConfig = ServerConfig(
     host = config.getString("server.host"),
@@ -52,7 +53,7 @@ object DrtDashboardApp extends App {
     healthCheckFrequencyMinutes = config.getInt("health-checks.frequency-minutes"),
     enabledPorts = enabledPorts,
     slackUrl = config.getString("health-checks.slack.webhook-url")
-    )
+  )
 
   private val govNotifyClient = new NotificationClient(serverConfig.notifyServiceApiKey)
 

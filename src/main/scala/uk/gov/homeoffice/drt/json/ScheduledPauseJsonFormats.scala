@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import spray.json.{ DefaultJsonProtocol, RootJsonFormat }
 import uk.gov.homeoffice.drt.healthchecks.ScheduledPause
 import uk.gov.homeoffice.drt.ports.PortCode
 

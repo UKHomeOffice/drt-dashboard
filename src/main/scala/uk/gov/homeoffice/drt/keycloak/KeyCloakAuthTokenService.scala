@@ -1,16 +1,16 @@
 package uk.gov.homeoffice.drt.keycloak
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
-import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.{ ActorContext, Behaviors }
+import org.apache.pekko.actor.typed.{ ActorRef, Behavior }
 import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
+import org.apache.pekko.http.scaladsl.model.{ HttpRequest, HttpResponse }
 import org.apache.pekko.stream.Materializer
 import org.slf4j.LoggerFactory
 import uk.gov.homeoffice.drt.KeyCloakConfig
 
 import java.time.Instant
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 case class TokenData(username: String, creationTime: Long, keyCloakAuthToken: KeyCloakAuthToken)
 
@@ -23,13 +23,20 @@ object KeyCloakAuthTokenService {
 
   private var manageUserToken: Option[TokenData] = None
 
-  def getKeyClockClient(url: String, keyCloakAuthToken: KeyCloakAuthToken)
-                       (implicit system: ActorSystem, ec: ExecutionContext): KeyCloakClient = {
-    val requestToEventualResponse: HttpRequest => Future[HttpResponse] = request => Http()(system).singleRequest(request)
+  def getKeyClockClient(url: String, keyCloakAuthToken: KeyCloakAuthToken)(implicit
+      system: ActorSystem,
+      ec: ExecutionContext
+  ): KeyCloakClient = {
+    val requestToEventualResponse: HttpRequest => Future[HttpResponse] =
+      request => Http()(system).singleRequest(request)
     KeyCloakClient(keyCloakAuthToken.accessToken, url, requestToEventualResponse)
   }
 
-  def getTokenBehavior(keyCloakConfig: KeyCloakConfig, manageUsername: String, managePassword: String): Behavior[Token] = {
+  def getTokenBehavior(
+      keyCloakConfig: KeyCloakConfig,
+      manageUsername: String,
+      managePassword: String
+  ): Behavior[Token] = {
 
     Behaviors.setup { context: ActorContext[Token] =>
       implicit val system = context.system.classicSystem
@@ -40,7 +47,7 @@ object KeyCloakAuthTokenService {
         keyCloakConfig.tokenUrl,
         keyCloakConfig.clientId,
         keyCloakConfig.clientSecret,
-        sendHttpRequest,
+        sendHttpRequest
       )
 
       Behaviors.receiveMessage {
@@ -65,13 +72,13 @@ object KeyCloakAuthTokenService {
     Instant.now().getEpochSecond - (tokenData.creationTime + tokenData.keyCloakAuthToken.expiresIn) > 0
   }
 
-  def getUserToken(username: String,
-                   password: String,
-                   getToken: (String, String) => Future[KeyCloakAuthResponse],
-                  ): Future[KeyCloakAuthResponse] =
+  def getUserToken(
+      username: String,
+      password: String,
+      getToken: (String, String) => Future[KeyCloakAuthResponse]
+  ): Future[KeyCloakAuthResponse] =
     manageUserToken match {
       case Some(tokenData) if !isTokenExpired(tokenData) => Future.successful(tokenData.keyCloakAuthToken)
-      case _ => getToken(username, password)
+      case _                                             => getToken(username, password)
     }
 }
-

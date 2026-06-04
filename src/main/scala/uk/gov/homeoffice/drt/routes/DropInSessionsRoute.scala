@@ -5,13 +5,13 @@ import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.joda.time.DateTime
-import org.slf4j.{Logger, LoggerFactory}
-import spray.json.{RootJsonFormat, enrichAny}
-import uk.gov.homeoffice.drt.db.{DropIn, DropInDao, DropInRow}
+import org.slf4j.{ Logger, LoggerFactory }
+import spray.json.{ enrichAny, RootJsonFormat }
+import uk.gov.homeoffice.drt.db.{ DropIn, DropInDao, DropInRow }
 import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
 
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 case class DropInPublished(published: Boolean)
 
@@ -31,17 +31,35 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
     new Timestamp(timeString)
   }
 
-
   private def dropsInsWithTimeStamp(dropIn: DropInRow): DropIn = {
-    DropIn(dropIn.id, dropIn.title, dropIn.startTime.getTime, dropIn.endTime.getTime, dropIn.isPublished, dropIn.meetingLink, dropIn.lastUpdatedAt.getTime)
+    DropIn(
+      dropIn.id,
+      dropIn.title,
+      dropIn.startTime.getTime,
+      dropIn.endTime.getTime,
+      dropIn.isPublished,
+      dropIn.meetingLink,
+      dropIn.lastUpdatedAt.getTime
+    )
   }
 
   def updateDropIn(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     put {
       entity(as[DropInData]) { dropIn =>
-        val updatedDropInResult = dropInDao.updateDropIn(DropInRow(Some(id.toInt), dropIn.title, longToTimestamp(dropIn.startTime), longToTimestamp(dropIn.endTime), false, Option(dropIn.meetingLink), new Timestamp(new DateTime().getMillis)))
-        routeResponse(updatedDropInResult
-                        .map(_ => complete(StatusCodes.OK, s"Drop-In with Id $id is updated successfully")), "Editing Drop-In")
+        val updatedDropInResult = dropInDao.updateDropIn(DropInRow(
+          Some(id.toInt),
+          dropIn.title,
+          longToTimestamp(dropIn.startTime),
+          longToTimestamp(dropIn.endTime),
+          false,
+          Option(dropIn.meetingLink),
+          new Timestamp(new DateTime().getMillis)
+        ))
+        routeResponse(
+          updatedDropInResult
+            .map(_ => complete(StatusCodes.OK, s"Drop-In with Id $id is updated successfully")),
+          "Editing Drop-In"
+        )
       }
     }
 
@@ -58,12 +76,16 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
   def deleteSession(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     delete {
       val deletedSeminarResult = dropInDao.deleteDropIn(id)
-      routeResponse(deletedSeminarResult.map(_ => complete(StatusCodes.OK, s"Drop-In $id is deleted successfully")), "Deleting Drop-In")
+      routeResponse(
+        deletedSeminarResult.map(_ => complete(StatusCodes.OK, s"Drop-In $id is deleted successfully")),
+        "Deleting Drop-In"
+      )
     }
 
   def getSession(dropInDao: DropInDao, id: String)(implicit ec: ExecutionContext): Route =
     get {
-      val getDropInResult = dropInDao.getDropIn(id).map(dropsInsWithTimeStamp).map(dropIn => complete(StatusCodes.OK, dropIn.toJson))
+      val getDropInResult =
+        dropInDao.getDropIn(id).map(dropsInsWithTimeStamp).map(dropIn => complete(StatusCodes.OK, dropIn.toJson))
       routeResponse(getDropInResult, "Getting drop-in")
     }
 
@@ -84,9 +106,16 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
     post {
       entity(as[DropInData]) { dropIn =>
         val saveDropInResult = dropInDao
-          .insertDropIn(dropIn.title, longToTimestamp(dropIn.startTime), longToTimestamp(dropIn.endTime), Option(dropIn.meetingLink))
+          .insertDropIn(
+            dropIn.title,
+            longToTimestamp(dropIn.startTime),
+            longToTimestamp(dropIn.endTime),
+            Option(dropIn.meetingLink)
+          )
         routeResponse(
-          saveDropInResult.map(_ => complete(StatusCodes.OK, s"Drop_in ${dropIn.title} is saved successfully")), "Saving drop_in")
+          saveDropInResult.map(_ => complete(StatusCodes.OK, s"Drop_in ${dropIn.title} is saved successfully")),
+          "Saving drop_in"
+        )
       }
     }
 
@@ -97,16 +126,16 @@ object DropInSessionsRoute extends BaseRoute with DropInJsonFormats {
           concat(
             getSessions(dropInDao),
             saveSession(dropInDao)
-            )
-          ),
+          )
+        ),
         path(Segment) { id =>
           concat(
             getSession(dropInDao, id),
             updateDropIn(dropInDao, id),
-            deleteSession(dropInDao, id),
-            )
+            deleteSession(dropInDao, id)
+          )
         },
         path("update-published" / Segment)(id => publishDropIn(dropInDao, id))
-        )
+      )
     }
 }

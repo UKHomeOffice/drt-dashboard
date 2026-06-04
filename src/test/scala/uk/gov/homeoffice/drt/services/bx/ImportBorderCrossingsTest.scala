@@ -10,14 +10,13 @@ import slick.jdbc.H2Profile.api._
 import uk.gov.homeoffice.drt.db.TestDatabase
 import uk.gov.homeoffice.drt.db.dao.BorderCrossingDao
 import uk.gov.homeoffice.drt.db.serialisers.BorderCrossingSerialiser
-import uk.gov.homeoffice.drt.db.tables.{BorderCrossing, GateType}
+import uk.gov.homeoffice.drt.db.tables.{ BorderCrossing, GateType }
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate }
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
-
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ImportBorderCrossingsTest extends AnyWordSpec with Matchers with BeforeAndAfter {
   val system: ActorSystem = ActorSystem("BxImporterTest")
@@ -34,7 +33,11 @@ class ImportBorderCrossingsTest extends AnyWordSpec with Matchers with BeforeAnd
       val replaceHoursForPortTerminal: (PortCode, Terminal, GateType, Iterable[BorderCrossing]) => Future[Int] = {
         (portCode, terminal, gateType, rows) =>
           val insert = BorderCrossingDao.replaceHours(portCode)
-          TestDatabase.run(insert(terminal, gateType, rows.map(BorderCrossingSerialiser.toRow(_, SDate.now().millisSinceEpoch))))
+          TestDatabase.run(insert(
+            terminal,
+            gateType,
+            rows.map(BorderCrossingSerialiser.toRow(_, SDate.now().millisSinceEpoch))
+          ))
       }
 
       val importFile = ImportBorderCrossings(replaceHoursForPortTerminal)

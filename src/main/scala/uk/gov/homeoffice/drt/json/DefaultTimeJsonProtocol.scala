@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat, deserializationError}
+import spray.json.{ deserializationError, DefaultJsonProtocol, JsString, JsValue, JsonFormat, RootJsonFormat }
 import uk.gov.homeoffice.drt.db.FeatureGuideRow
 import uk.gov.homeoffice.drt.routes.FeaturePublished
 
@@ -12,16 +12,16 @@ trait DefaultTimeJsonProtocol extends DefaultJsonProtocol {
 
     override def read(json: JsValue): Timestamp = json match {
       case JsString(rawDate) => {
-        try {
-          Timestamp.valueOf(rawDate)
-        } catch {
-          case iae: IllegalArgumentException => deserializationError("Invalid date format")
-          case _: Exception => None
+          try {
+            Timestamp.valueOf(rawDate)
+          } catch {
+            case iae: IllegalArgumentException => deserializationError("Invalid date format")
+            case _: Exception                  => None
+          }
+        } match {
+          case dateTime: Timestamp => dateTime
+          case None                => deserializationError(s"Couldn't parse date time, got $rawDate")
         }
-      } match {
-        case dateTime: Timestamp => dateTime
-        case None => deserializationError(s"Couldn't parse date time, got $rawDate")
-      }
     }
   }
 

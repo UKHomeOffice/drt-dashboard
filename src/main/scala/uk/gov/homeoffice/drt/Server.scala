@@ -2,13 +2,13 @@ package uk.gov.homeoffice.drt
 
 import org.apache.pekko.NotUsed
 import org.apache.pekko.actor.Cancellable
-import org.apache.pekko.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
-import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
-import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior, PostStop}
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.{ schedulerFromActorSystem, Askable }
+import org.apache.pekko.actor.typed.scaladsl.{ ActorContext, Behaviors }
+import org.apache.pekko.actor.typed.{ ActorRef, ActorSystem, Behavior, PostStop }
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.Http.ServerBinding
 import org.apache.pekko.http.scaladsl.model.HttpRequest
-import org.apache.pekko.http.scaladsl.server.Directives.{concat, getFromResource, pathPrefix}
+import org.apache.pekko.http.scaladsl.server.Directives.{ concat, getFromResource, pathPrefix }
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.http.scaladsl.settings.ConnectionPoolSettings
 import org.apache.pekko.stream.Materializer
@@ -19,67 +19,72 @@ import uk.gov.homeoffice.drt.arrivals.ApiFlightWithSplits
 import uk.gov.homeoffice.drt.db._
 import uk.gov.homeoffice.drt.db.dao._
 import uk.gov.homeoffice.drt.db.serialisers.BorderCrossingSerialiser
-import uk.gov.homeoffice.drt.db.tables.{BorderCrossing, GateType}
+import uk.gov.homeoffice.drt.db.tables.{ BorderCrossing, GateType }
 import uk.gov.homeoffice.drt.healthchecks._
 import uk.gov.homeoffice.drt.keycloak.KeyCloakAuth
 import uk.gov.homeoffice.drt.models.CrunchMinute
 import uk.gov.homeoffice.drt.notifications._
-import uk.gov.homeoffice.drt.persistence.{ExportPersistenceImpl, ScheduledHealthCheckPausePersistenceImpl}
+import uk.gov.homeoffice.drt.persistence.{ ExportPersistenceImpl, ScheduledHealthCheckPausePersistenceImpl }
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
 import uk.gov.homeoffice.drt.ports._
 import uk.gov.homeoffice.drt.ports.config.AirportConfigs
 import uk.gov.homeoffice.drt.routes._
-import uk.gov.homeoffice.drt.routes.api.v1.{AuthApiV1Routes, FlightApiV1Routes, QueueApiV1Routes}
-import uk.gov.homeoffice.drt.routes.api.v1_1.{AuthApiV1_1Routes, FlightApiV1_1Routes, QueueApiV1_1Routes}
-import uk.gov.homeoffice.drt.services.api.v1.{FlightExportV1, QueueExportV1}
-import uk.gov.homeoffice.drt.services.api.v1_1.{FlightExportV1_1, QueueExportV1_1}
+import uk.gov.homeoffice.drt.routes.api.v1.{ AuthApiV1Routes, FlightApiV1Routes, QueueApiV1Routes }
+import uk.gov.homeoffice.drt.routes.api.v1_1.{ AuthApiV1_1Routes, FlightApiV1_1Routes, QueueApiV1_1Routes }
+import uk.gov.homeoffice.drt.services.api.v1.{ FlightExportV1, QueueExportV1 }
+import uk.gov.homeoffice.drt.services.api.v1_1.{ FlightExportV1_1, QueueExportV1_1 }
 import uk.gov.homeoffice.drt.services.s3.S3Service
-import uk.gov.homeoffice.drt.services.{PassengerSummaryStreams, UserRequestService, UserService}
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate, UtcDate}
+import uk.gov.homeoffice.drt.services.{ PassengerSummaryStreams, UserRequestService, UserService }
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate, UtcDate }
 import uk.gov.homeoffice.drt.uploadTraining.FeatureGuideService
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
+import scala.util.{ Failure, Success }
 
-case class KeyCloakConfig(url: String,
-                          tokenUrl: String,
-                          clientId: String,
-                          clientSecret: String)
+case class KeyCloakConfig(
+    url: String,
+    tokenUrl: String,
+    clientId: String,
+    clientSecret: String
+)
 
-case class ServerConfig(host: String,
-                        port: Int,
-                        teamEmail: String,
-                        portRegions: Iterable[PortRegion],
-                        ciriumDataUri: String,
-                        rootDomain: String,
-                        useHttps: Boolean,
-                        notifyServiceApiKey: String,
-                        accessRequestEmails: List[String],
-                        keycloakUrl: String,
-                        keycloakTokenUrl: String,
-                        keycloakClientId: String,
-                        keycloakClientSecret: String,
-                        keycloakUsername: String,
-                        keycloakPassword: String,
-                        dormantUsersCheckFrequency: Int,
-                        dropInRemindersCheckFrequency: Int,
-                        dropInNotificationFrequency: Int,
-                        inactivityDays: Int,
-                        deactivateAfterWarningDays: Int,
-                        userTrackingFeatureFlag: Boolean,
-                        s3AccessKey: String,
-                        s3SecretAccessKey: String,
-                        drtS3BucketName: String,
-                        exportsFolderPrefix: String,
-                        featureFolderPrefix: String,
-                        portTerminals: LocalDate => Map[PortCode, Seq[Terminal]],
-                        healthCheckFrequencyMinutes: Int,
-                        enabledPorts: Seq[PortCode],
-                        slackUrl: String
-                       ) {
-  val clientConfig: ClientConfig = ClientConfig(portRegions, () => portTerminals(SDate.now().toLocalDate), rootDomain, teamEmail)
-  val keyClockConfig: KeyCloakConfig = KeyCloakConfig(keycloakUrl, keycloakTokenUrl, keycloakClientId, keycloakClientSecret)
+case class ServerConfig(
+    host: String,
+    port: Int,
+    teamEmail: String,
+    portRegions: Iterable[PortRegion],
+    ciriumDataUri: String,
+    rootDomain: String,
+    useHttps: Boolean,
+    notifyServiceApiKey: String,
+    accessRequestEmails: List[String],
+    keycloakUrl: String,
+    keycloakTokenUrl: String,
+    keycloakClientId: String,
+    keycloakClientSecret: String,
+    keycloakUsername: String,
+    keycloakPassword: String,
+    dormantUsersCheckFrequency: Int,
+    dropInRemindersCheckFrequency: Int,
+    dropInNotificationFrequency: Int,
+    inactivityDays: Int,
+    deactivateAfterWarningDays: Int,
+    userTrackingFeatureFlag: Boolean,
+    s3AccessKey: String,
+    s3SecretAccessKey: String,
+    drtS3BucketName: String,
+    exportsFolderPrefix: String,
+    featureFolderPrefix: String,
+    portTerminals: LocalDate => Map[PortCode, Seq[Terminal]],
+    healthCheckFrequencyMinutes: Int,
+    enabledPorts: Seq[PortCode],
+    slackUrl: String
+) {
+  val clientConfig: ClientConfig =
+    ClientConfig(portRegions, () => portTerminals(SDate.now().toLocalDate), rootDomain, teamEmail)
+  val keyClockConfig: KeyCloakConfig =
+    KeyCloakConfig(keycloakUrl, keycloakTokenUrl, keycloakClientId, keycloakClientSecret)
 }
 
 object Server {
@@ -95,40 +100,49 @@ object Server {
 
   val portHealthChecks: Seq[HealthCheck[_]] = Seq(
     ApiHealthCheck(hoursBeforeNow = 2, hoursAfterNow = 1, minimumFlights = 4, passThresholdPercentage = 50, SDate.now),
-    ArrivalLandingTimesHealthCheck(windowLength = 2.hours, buffer = 20, minimumFlights = 3, passThresholdPercentage = 50, SDate.now),
+    ArrivalLandingTimesHealthCheck(
+      windowLength = 2.hours,
+      buffer = 20,
+      minimumFlights = 3,
+      passThresholdPercentage = 50,
+      SDate.now
+    )
   )
   def dashboardHealthChecks(ports: Iterable[PortCode]): Seq[HealthCheck[_]] = Seq(
     QueueApiV1HealthCheck(SDate.now, ports),
     FlightApiV1HealthCheck(SDate.now, ports),
 
     QueueApiV1_1HealthCheck(SDate.now, ports),
-    FlightApiV1_1HealthCheck(SDate.now, ports),
+    FlightApiV1_1HealthCheck(SDate.now, ports)
   )
 
   private val nonMlPaxPorts = Set("ABZ", "EXT", "HUY", "INV", "LHR", "MME", "NQY", "NWI", "PIK", "SEN")
 
   val paxFeedSourceOrder: PortCode => List[FeedSource] =
-    portCode => if (!nonMlPaxPorts.contains(portCode.iata)) List(
-      ScenarioSimulationSource,
-      LiveFeedSource,
-      ApiFeedSource,
-      MlFeedSource,
-      ForecastFeedSource,
-      HistoricApiFeedSource,
-      AclFeedSource,
-    ) else List(
-      ScenarioSimulationSource,
-      LiveFeedSource,
-      ApiFeedSource,
-      ForecastFeedSource,
-      HistoricApiFeedSource,
-      AclFeedSource,
-    )
+    portCode =>
+      if (!nonMlPaxPorts.contains(portCode.iata)) List(
+        ScenarioSimulationSource,
+        LiveFeedSource,
+        ApiFeedSource,
+        MlFeedSource,
+        ForecastFeedSource,
+        HistoricApiFeedSource,
+        AclFeedSource
+      )
+      else List(
+        ScenarioSimulationSource,
+        LiveFeedSource,
+        ApiFeedSource,
+        ForecastFeedSource,
+        HistoricApiFeedSource,
+        AclFeedSource
+      )
 
-  def apply(config: ServerConfig,
-            notifications: EmailNotifications,
-            emailClient: EmailClient,
-           ): Behavior[Message] =
+  def apply(
+      config: ServerConfig,
+      notifications: EmailNotifications,
+      emailClient: EmailClient
+  ): Behavior[Message] =
     Behaviors.setup { ctx: ActorContext[Message] =>
       implicit val system: ActorSystem[Nothing] = ctx.system
       val systemClassic = system.classicSystem
@@ -148,7 +162,8 @@ object Server {
       val featureGuideService = FeatureGuideService(FeatureGuideDao(ProdDatabase), FeatureGuideViewDao(ProdDatabase))
 
       val (exportUploader, exportDownloader) = S3Service.s3FileUploaderAndDownloader(config, config.exportsFolderPrefix)
-      val (featureUploader, featureDownloader) = S3Service.s3FileUploaderAndDownloader(config, config.featureFolderPrefix)
+      val (featureUploader, featureDownloader) =
+        S3Service.s3FileUploaderAndDownloader(config, config.featureFolderPrefix)
 
       implicit val db: AppDatabase = ProdDatabase
 
@@ -162,9 +177,11 @@ object Server {
         else NoopSlackClient
 
       val healthChecksActor = startHealthChecksActor(slackClient, urls)
-      val getAlarmStatuses: () => Future[Map[PortCode, Map[String, Boolean]]] = () => healthChecksActor.ask(replyTo => HealthChecksActor.GetAlarmStatuses(replyTo))
+      val getAlarmStatuses: () => Future[Map[PortCode, Map[String, Boolean]]] =
+        () => healthChecksActor.ask(replyTo => HealthChecksActor.GetAlarmStatuses(replyTo))
 
-      val keyCloakAuth = KeyCloakAuth(config.keycloakTokenUrl, config.keycloakClientId, config.keycloakClientSecret, sendHttpRequest)
+      val keyCloakAuth =
+        KeyCloakAuth(config.keycloakTokenUrl, config.keycloakClientId, config.keycloakClientSecret, sendHttpRequest)
 
       val queuesForPortAndDatesAndSlotSize: (PortCode, Terminal, UtcDate, UtcDate) => Source[CrunchMinute, NotUsed] = {
         (port, terminal, start, end) =>
@@ -176,7 +193,8 @@ object Server {
 
       val uniqueFlightsStreamByDate = FlightDao().uniqueFlightsForDatesAndTerminals(db.run)
 
-      val uniqueFlightsStream: (PortCode, List[FeedSource], LocalDate, LocalDate, Seq[Terminal]) => Source[ApiFlightWithSplits, NotUsed] =
+      val uniqueFlightsStream
+          : (PortCode, List[FeedSource], LocalDate, LocalDate, Seq[Terminal]) => Source[ApiFlightWithSplits, NotUsed] =
         (portCode, sourceOrder, start, end, terminals) =>
           uniqueFlightsStreamByDate(portCode, sourceOrder, start, end, terminals)
 
@@ -188,7 +206,8 @@ object Server {
 
       val flightsProvider: (PortCode, LocalDate, LocalDate) => Source[(UtcDate, Seq[ApiFlightWithSplits]), NotUsed] =
         (portCode, start, end) => {
-          val terminals = AirportConfigs.confByPort.get(portCode).map(_.terminalsForDateRange(start, end)).getOrElse(Seq.empty).toSeq
+          val terminals =
+            AirportConfigs.confByPort.get(portCode).map(_.terminalsForDateRange(start, end)).getOrElse(Seq.empty).toSeq
           FlightDao().flightsForPcpDateRange(portCode, paxFeedSourceOrder(portCode), db.run)(start, end, terminals)
         }
 
@@ -212,14 +231,14 @@ object Server {
               concat(
                 QueueApiV1Routes(config.enabledPorts, QueueExportV1.queues(queuesForPortAndDatesAndSlotSize)),
                 FlightApiV1Routes(config.enabledPorts, FlightExportV1.flights(uniqueFlightsStream)),
-                AuthApiV1Routes(keyCloakAuth.getToken),
+                AuthApiV1Routes(keyCloakAuth.getToken)
               )
             },
             pathPrefix("v1.1") {
               concat(
                 QueueApiV1_1Routes(config.enabledPorts, QueueExportV1_1.queues(queuesForPortAndDatesAndSlotSize)),
                 FlightApiV1_1Routes(config.enabledPorts, FlightExportV1_1.flights(uniqueFlightsStream)),
-                AuthApiV1_1Routes(keyCloakAuth.getToken),
+                AuthApiV1_1Routes(keyCloakAuth.getToken)
               )
             },
             PassengerRoutes(PassengerSummaryStreams(db).streamForGranularity),
@@ -238,14 +257,14 @@ object Server {
             BorderCrossingRoutes(insertBx)
           )
         },
-        indexRoutes,
+        indexRoutes
       )
 
       val serverBinding = Http().newServerAt(config.host, config.port).bind(routes)
 
       ctx.pipeToSelf(serverBinding) {
         case Success(binding) => Started(binding)
-        case Failure(ex) => StartFailed(ex)
+        case Failure(ex)      => StartFailed(ex)
       }
 
       def running(binding: ServerBinding, monitor: Cancellable): Behavior[Message] =
@@ -254,7 +273,8 @@ object Server {
             ctx.log.info(
               "Stopping server http://{}:{}/",
               binding.localAddress.getHostString,
-              binding.localAddress.getPort)
+              binding.localAddress.getPort
+            )
             Behaviors.stopped
         }.receiveSignal {
           case (_, PostStop) =>
@@ -271,7 +291,8 @@ object Server {
             ctx.log.info(
               "Server online at http://{}:{}/",
               binding.localAddress.getHostString,
-              binding.localAddress.getPort)
+              binding.localAddress.getPort
+            )
 
             if (wasStopped) ctx.self ! Stop
 
@@ -288,11 +309,16 @@ object Server {
       starting(wasStopped = false)
     }
 
-  private def startHealthChecksActor(slackClient: SlackClient,
-                                     urls: Urls,
-                                    )
-                                    (implicit system: ActorSystem[Nothing], ec: ExecutionContext): ActorRef[HealthChecksActor.Command] = {
-    def sendSlackNotification(portCode: PortCode, checkName: String, priority: IncidentPriority, status: String): Unit = {
+  private def startHealthChecksActor(
+      slackClient: SlackClient,
+      urls: Urls
+  )(implicit system: ActorSystem[Nothing], ec: ExecutionContext): ActorRef[HealthChecksActor.Command] = {
+    def sendSlackNotification(
+        portCode: PortCode,
+        checkName: String,
+        priority: IncidentPriority,
+        status: String
+    ): Unit = {
       val port = portCode.toString.toUpperCase
       val link = urls.urlForPort(port)
       val message = s"$port ${priority.name} $status $checkName - $link"
@@ -312,19 +338,26 @@ object Server {
     val alarmTriggerConsecutiveFailures = 3
     val retainMaxResponses = 5
 
-    val behaviour = HealthChecksActor(soundAlarm, silenceAlarm, () => SDate.now().millisSinceEpoch, alarmTriggerConsecutiveFailures, retainMaxResponses, Map.empty)
+    val behaviour = HealthChecksActor(
+      soundAlarm,
+      silenceAlarm,
+      () => SDate.now().millisSinceEpoch,
+      alarmTriggerConsecutiveFailures,
+      retainMaxResponses,
+      Map.empty
+    )
     system.systemActorOf(behaviour, "health-checks")
   }
 
-  private def startHealthCheckMonitor(serverConfig: ServerConfig,
-                                      db: AppDatabase,
-                                      healthChecksActor: ActorRef[HealthChecksActor.Command],
-                                     )
-                                     (implicit
-                                      system: ActorSystem[Nothing],
-                                      ec: ExecutionContext,
-                                      mat: Materializer,
-                                     ): Cancellable = {
+  private def startHealthCheckMonitor(
+      serverConfig: ServerConfig,
+      db: AppDatabase,
+      healthChecksActor: ActorRef[HealthChecksActor.Command]
+  )(implicit
+      system: ActorSystem[Nothing],
+      ec: ExecutionContext,
+      mat: Materializer
+  ): Cancellable = {
     implicit val timeout: Timeout = new Timeout(1.second)
 
     val poolSettings = ConnectionPoolSettings(system)
@@ -339,8 +372,10 @@ object Server {
     val portCodes = serverConfig.enabledPorts
     log.info(s"Starting health check monitor for ports ${portCodes.mkString(", ")}")
     val performPortHealthChecks = HealthChecksRunner(makeRequest, recordPortResponse, portHealthChecks)
-    val performDashboardHealthChecks = HealthChecksRunner(makeRequest, recordPortResponse, dashboardHealthChecks(serverConfig.enabledPorts))
-    val pausesProvider = CheckScheduledPauses.pausesProvider(ScheduledHealthCheckPausePersistenceImpl(db, () => SDate.now()))
+    val performDashboardHealthChecks =
+      HealthChecksRunner(makeRequest, recordPortResponse, dashboardHealthChecks(serverConfig.enabledPorts))
+    val pausesProvider =
+      CheckScheduledPauses.pausesProvider(ScheduledHealthCheckPausePersistenceImpl(db, () => SDate.now()))
     val pauseIsActive = CheckScheduledPauses.activePauseChecker(pausesProvider)
     object Check extends Runnable {
       override def run(): Unit = {

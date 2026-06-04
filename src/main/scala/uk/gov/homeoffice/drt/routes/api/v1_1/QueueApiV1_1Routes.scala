@@ -13,11 +13,10 @@ import uk.gov.homeoffice.drt.ports.Queues.Queue
 import uk.gov.homeoffice.drt.ports.Terminals.Terminal
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
 import uk.gov.homeoffice.drt.services.api.v1_1.serialiser.QueueApiV1_1JsonFormats
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
-
+import scala.util.{ Failure, Success }
 
 object QueueApiV1_1Routes extends DefaultJsonProtocol with QueueApiV1_1JsonFormats {
   private val log = LoggerFactory.getLogger(getClass)
@@ -28,12 +27,24 @@ object QueueApiV1_1Routes extends DefaultJsonProtocol with QueueApiV1_1JsonForma
     def apply(cm: CrunchMinute): QueueJsonV1_1 = QueueJsonV1_1(cm.queue, cm.paxLoad.toInt, cm.waitTime)
   }
 
-  case class SlotJsonV1_1(slotStartTime: SDateLike, portCode: PortCode, terminal: Terminal, queues: Iterable[QueueJsonV1_1])
+  case class SlotJsonV1_1(
+      slotStartTime: SDateLike,
+      portCode: PortCode,
+      terminal: Terminal,
+      queues: Iterable[QueueJsonV1_1]
+  )
 
-  case class QueueJsonResponseV1_1(periodStart: SDateLike, periodEnd: SDateLike, slotSizeMinutes: Int, slots: Seq[SlotJsonV1_1])
+  case class QueueJsonResponseV1_1(
+      periodStart: SDateLike,
+      periodEnd: SDateLike,
+      slotSizeMinutes: Int,
+      slots: Seq[SlotJsonV1_1]
+  )
 
-  def apply(enabledPorts: Iterable[PortCode],
-            dateRangeJsonForPortsAndSlotSize: (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1_1]): Route =
+  def apply(
+      enabledPorts: Iterable[PortCode],
+      dateRangeJsonForPortsAndSlotSize: (Seq[PortCode], Int) => (SDateLike, SDateLike) => Future[QueueJsonResponseV1_1]
+  ): Route =
     AuthByRole(ApiQueueAccess) {
       (get & path("queues")) {
         pathEnd(
@@ -51,7 +62,7 @@ object QueueApiV1_1Routes extends DefaultJsonProtocol with QueueApiV1_1JsonForma
 
                 onComplete(dateRangeJson(start, end)) {
                   case Success(value) => complete(value.toJson.compactPrint)
-                  case Failure(t) =>
+                  case Failure(t)     =>
                     log.error(s"Failed to get export: ${t.getMessage}", t)
                     complete(InternalServerError)
                 }

@@ -1,12 +1,12 @@
 package uk.gov.homeoffice.drt.uploadTraining
 
-import uk.gov.homeoffice.drt.db.{FeatureGuideDao, FeatureGuideRow, FeatureGuideViewDao}
+import uk.gov.homeoffice.drt.db.{ FeatureGuideDao, FeatureGuideRow, FeatureGuideViewDao }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-
-case class FeatureGuideService(featureGuideDao: FeatureGuideDao, featureGuideViewDao: FeatureGuideViewDao)
-                              (implicit ec: ExecutionContext) {
+case class FeatureGuideService(featureGuideDao: FeatureGuideDao, featureGuideViewDao: FeatureGuideViewDao)(implicit
+    ec: ExecutionContext
+) {
   def updatePublishFeatureGuide(featureId: String, publish: Boolean): Future[Int] = {
     featureGuideDao.updatePublishFeatureGuide(featureId, publish)
   }

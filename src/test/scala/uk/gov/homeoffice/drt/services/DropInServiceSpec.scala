@@ -10,10 +10,10 @@ import org.mockito.Mockito._
 import org.specs2.mutable.SpecificationLike
 import org.specs2.specification.BeforeEach
 import slick.jdbc.PostgresProfile.api._
-import uk.gov.homeoffice.drt.authentication.{AccessRequest, ClientUserRequestedAccessData}
+import uk.gov.homeoffice.drt.authentication.{ AccessRequest, ClientUserRequestedAccessData }
 import uk.gov.homeoffice.drt.db._
 import uk.gov.homeoffice.drt.notifications.EmailNotifications
-import uk.gov.service.notify.{NotificationClientApi, SendEmailResponse}
+import uk.gov.service.notify.{ NotificationClientApi, SendEmailResponse }
 
 import java.sql.Timestamp
 import java.util.UUID
@@ -40,19 +40,22 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
         TestDatabase.dropInTable.schema.dropIfExists,
         TestDatabase.dropInTable.schema.createIfNotExists,
         TestDatabase.dropInRegistrationTable.schema.dropIfExists,
-        TestDatabase.dropInRegistrationTable.schema.createIfNotExists)
-      ), 2.second)
+        TestDatabase.dropInRegistrationTable.schema.createIfNotExists
+      )),
+      2.second
+    )
   }
 
   def response(
-                notificationId: String = "",
-                reference: String = "",
-                templateId: String = "templateId",
-                templateVersion: String = "2",
-                templateUri: String = "uri",
-                body: String = "body",
-                subject: String = "subject",
-                fromEmail: String = "") = {
+      notificationId: String = "",
+      reference: String = "",
+      templateId: String = "templateId",
+      templateVersion: String = "2",
+      templateUri: String = "uri",
+      body: String = "body",
+      subject: String = "subject",
+      fromEmail: String = ""
+  ) = {
     s"""{"id":"${UUID.randomUUID()}",
        | "notificationId":"$notificationId",
        | "reference":"$reference",
@@ -70,18 +73,22 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
   }
 
   def getUser(createdAt: String) = {
-    UserRow(id = "test",
+    UserRow(
+      id = "test",
       username = "test",
       email = "test@test.com",
       latest_login = new Timestamp(1693609200000L),
       inactive_email_sent = None,
       revoked_access = None,
       drop_in_notification_at = None,
-      created_at = Some(new Timestamp(DateTime.parse(createdAt, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).getMillis)))
+      created_at =
+        Some(new Timestamp(DateTime.parse(createdAt, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).getMillis))
+    )
   }
 
   def getAccessRequest = {
-    AccessRequest(agreeDeclaration = true,
+    AccessRequest(
+      agreeDeclaration = true,
       allPorts = false,
       lineManager = "lineManager",
       portOrRegionText = "port",
@@ -89,11 +96,13 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
       rccOption = "",
       regionsRequested = Set(),
       staffing = false,
-      staffText = "")
+      staffText = ""
+    )
   }
 
   def clientUserRequestedAccessData(accessRequest: AccessRequest, requestTime: String) = {
-    ClientUserRequestedAccessData(agreeDeclaration = true,
+    ClientUserRequestedAccessData(
+      agreeDeclaration = true,
       allPorts = false,
       email = "test@test.com",
       lineManager = accessRequest.lineManager,
@@ -104,11 +113,15 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
       requestTime = requestTime,
       staffText = accessRequest.staffText,
       staffEditing = accessRequest.staffing,
-      status = "Requested")
+      status = "Requested"
+    )
   }
 
   def firstSeptember2023 = {
-    new Timestamp(DateTime.parse("2023-09-01 00:00:00.000", DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).getMillis)
+    new Timestamp(DateTime.parse(
+      "2023-09-01 00:00:00.000",
+      DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")
+    ).getMillis)
   }
 
   def runScenario(createdAt: String, registeredForDropIn: Boolean, resendCheck: Boolean) = {
@@ -116,18 +129,28 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
     val dropInRegistrationDao = DropInRegistrationDao(TestDatabase)
     val userService = UserService(UserDao(TestDatabase))
     val userRequestService = UserRequestService(UserAccessRequestDao(TestDatabase))
-    val dropInService: DropInService = new DropInService(dropInDao,
+    val dropInService: DropInService = new DropInService(
+      dropInDao,
       dropInRegistrationDao,
       userService,
-      userRequestService, teamEmail)
+      userRequestService,
+      teamEmail
+    )
     val emailClient = Mockito.mock(classOf[NotificationClientApi])
-    when(emailClient.sendEmail(any(), any(), any(), any())).thenReturn(new SendEmailResponse(response(templateId = UUID.randomUUID().toString)))
+    when(emailClient.sendEmail(any(), any(), any(), any())).thenReturn(new SendEmailResponse(response(templateId =
+      UUID.randomUUID().toString
+    )))
     val emailNotifications = EmailNotifications(List("test@test.com"), emailClient)
 
-    val isCreatedAtBefore = DateTime.parse(createdAt, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")).isBefore(new DateTime(firstSeptember2023.getTime))
+    val isCreatedAtBefore = DateTime.parse(
+      createdAt,
+      DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")
+    ).isBefore(new DateTime(firstSeptember2023.getTime))
     val accessRequest = getAccessRequest
     userRequestService.updateUserRequest(
-      clientUserRequestedAccessData(accessRequest, createdAt), "Approved")
+      clientUserRequestedAccessData(accessRequest, createdAt),
+      "Approved"
+    )
 
     Await.result(userService.upsertUser(getUser(createdAt), Some("Approved")), 1.second)
 
@@ -152,7 +175,7 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
     (isCreatedAtBefore, registeredForDropIn, resendCheck) match {
       case (true, _, _) =>
         sendNotificationAndUserExistCheck()
-        //Notification should not be sent when user is created before 1st September 2023
+        // Notification should not be sent when user is created before 1st September 2023
         Mockito.verify(emailClient, Mockito.times(0)).sendEmail(any, any(), any(), any())
 
         val afterDropInNotification: Seq[UserRow] = Await.result(userService.getUsers(), 1.second)
@@ -161,19 +184,26 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
 
       case (false, _, _) =>
         sendNotificationAndUserDropInNotificationIsEmptyCheck()
-        //Notification should be sent when user is created after 1st September 2023
+        // Notification should be sent when user is created after 1st September 2023
         Mockito.verify(emailClient, Mockito.times(1)).sendEmail(any, any(), any(), any())
         val afterDropInNotification: Seq[UserRow] = Await.result(userService.getUsers(), 1.second)
         afterDropInNotification.head.drop_in_notification_at.isDefined === true
         afterDropInNotification.size === 1
 
       case (false, true, _) =>
-        dropInDao.insertDropIn("test",
+        dropInDao.insertDropIn(
+          "test",
           new Timestamp(DateTime.now().minusSeconds(60).getMillis),
           new Timestamp(DateTime.now().minusSeconds(30).getMillis),
-          None)
+          None
+        )
 
-        dropInRegistrationDao.insertRegistration("test@test.com", 1, new Timestamp(DateTime.now().minusSeconds(30).getMillis), None)
+        dropInRegistrationDao.insertRegistration(
+          "test@test.com",
+          1,
+          new Timestamp(DateTime.now().minusSeconds(30).getMillis),
+          None
+        )
         sendNotificationAndUserDropInNotificationIsEmptyCheck()
         // Notification is not sent as user is already registered for drop in
         Mockito.verify(emailClient, Mockito.times(0)).sendEmail(any, any(), any(), any())
@@ -189,14 +219,13 @@ class DropInServiceSpec extends SpecificationLike with BeforeEach {
         afterDropInNotification.head.drop_in_notification_at.isDefined === true
         afterDropInNotification.size === 1
         Await.result(dropInService.sendDropInNotificationToNewUsers(emailNotifications, rootDomain), 1.second)
-        //After resending the DropIn notification and sendEmail is not called again which mean once notification is sent it will not be sent again
+        // After resending the DropIn notification and sendEmail is not called again which mean once notification is sent it will not be sent again
         Mockito.verify(emailClient, Mockito.times(1)).sendEmail(any, any(), any(), any())
         val replayDropInNotification: Seq[UserRow] = Await.result(userService.getUsers(), 1.second)
         replayDropInNotification.head.drop_in_notification_at.isDefined === true
         replayDropInNotification.size === 1
         replayDropInNotification.head.drop_in_notification_at === afterDropInNotification.head.drop_in_notification_at
     }
-
 
   }
 

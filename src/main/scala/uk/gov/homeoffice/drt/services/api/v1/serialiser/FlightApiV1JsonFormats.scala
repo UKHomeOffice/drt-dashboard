@@ -1,8 +1,8 @@
 package uk.gov.homeoffice.drt.services.api.v1.serialiser
 
-import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat, enrichAny}
-import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{FlightJsonResponseV1, FlightJsonV1}
-import uk.gov.homeoffice.drt.time.{SDate, SDateLike}
+import spray.json.{ enrichAny, DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat }
+import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{ FlightJsonResponseV1, FlightJsonV1 }
+import uk.gov.homeoffice.drt.time.{ SDate, SDateLike }
 
 trait FlightApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV1 {
   implicit object FlightJsonJsonFormat extends RootJsonFormat[FlightJsonV1] {
@@ -38,16 +38,17 @@ trait FlightApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV
           maybeSinceUnixEpochFromString(fields.get("estimatedPcpStartTime")),
           maybeSinceUnixEpochFromString(fields.get("estimatedPcpEndTime")),
           fields.get("estimatedPcpPaxCount").map(_.convertTo[Int]),
-          fields.get("status").map(_.convertTo[String]).getOrElse(""),
+          fields.get("status").map(_.convertTo[String]).getOrElse("")
         )
-      case unexpected => throw new Exception(s"Failed to parse FlightJson. Expected JsString. Got ${unexpected.getClass}")
+      case unexpected =>
+        throw new Exception(s"Failed to parse FlightJson. Expected JsString. Got ${unexpected.getClass}")
     }
   }
 
   private def maybeSinceUnixEpochFromString(maybeValue: Option[JsValue]) = {
     maybeValue match {
       case Some(JsString(s)) if s.nonEmpty => Some(SDate(s).millisSinceEpoch)
-      case _ => None
+      case _                               => None
     }
   }
 
@@ -58,7 +59,7 @@ trait FlightApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV
     override def write(obj: FlightJsonResponseV1): JsValue = JsObject(Map(
       "periodStart" -> obj.periodStart.toJson,
       "periodEnd" -> obj.periodEnd.toJson,
-      "flights" -> obj.flights.toJson,
+      "flights" -> obj.flights.toJson
     ))
 
     override def read(json: JsValue): FlightJsonResponseV1 = json match {
@@ -66,9 +67,10 @@ trait FlightApiV1JsonFormats extends DefaultJsonProtocol with CommonJsonFormatsV
         FlightJsonResponseV1(
           periodStart = fields("periodStart").convertTo[SDateLike],
           periodEnd = fields("periodEnd").convertTo[SDateLike],
-          flights = fields("flights").convertTo[Seq[FlightJsonV1]],
+          flights = fields("flights").convertTo[Seq[FlightJsonV1]]
         )
-      case unexpected => throw new Exception(s"Failed to parse FlightJsonResponse. Expected JsObject. Got ${unexpected.getClass}")
+      case unexpected =>
+        throw new Exception(s"Failed to parse FlightJsonResponse. Expected JsObject. Got ${unexpected.getClass}")
     }
   }
 }

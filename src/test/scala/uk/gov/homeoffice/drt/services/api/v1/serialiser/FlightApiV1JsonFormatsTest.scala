@@ -2,12 +2,17 @@ package uk.gov.homeoffice.drt.services.api.v1.serialiser
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{FlightJsonV1, FlightJsonResponseV1}
+import uk.gov.homeoffice.drt.routes.api.v1.FlightApiV1Routes.{ FlightJsonResponseV1, FlightJsonV1 }
 import uk.gov.homeoffice.drt.time.SDate
 
 class FlightApiV1JsonFormatsTest extends AnyWordSpec with Matchers with QueueApiV1JsonFormats {
   "FlightJsonFormat should serialise and deserialise correctly" in {
-    val queue = FlightJsonV1("LHR", "T2", "BA123", "JFK", "John F. Kennedy International Airport",
+    val queue = FlightJsonV1(
+      "LHR",
+      "T2",
+      "BA123",
+      "JFK",
+      "John F. Kennedy International Airport",
       SDate("2024-10-20T10:00").millisSinceEpoch,
       Some(SDate("2024-10-20T10:05").millisSinceEpoch),
       None,

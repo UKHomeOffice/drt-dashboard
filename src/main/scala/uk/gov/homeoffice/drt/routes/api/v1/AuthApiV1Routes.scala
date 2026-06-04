@@ -3,13 +3,13 @@ package uk.gov.homeoffice.drt.routes.api.v1
 import org.apache.pekko.http.scaladsl.model.StatusCodes.InternalServerError
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import spray.json.RootJsonFormat
 import uk.gov.homeoffice.drt.db
 import uk.gov.homeoffice.drt.keycloak._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.util.{ Failure, Success }
 
 object AuthApiV1Routes extends db.UserAccessRequestJsonSupport with KeyCloakAuthTokenParserProtocol {
   val log: Logger = LoggerFactory.getLogger(getClass)
@@ -18,8 +18,9 @@ object AuthApiV1Routes extends db.UserAccessRequestJsonSupport with KeyCloakAuth
 
   implicit val credentialsJsonFormat: RootJsonFormat[Credentials] = jsonFormat2(Credentials)
 
-  def apply(getKeyCloakToken: (String, String) => Future[KeyCloakAuthResponse])
-           (implicit ec: ExecutionContextExecutor): Route = {
+  def apply(getKeyCloakToken: (String, String) => Future[KeyCloakAuthResponse])(implicit
+      ec: ExecutionContextExecutor
+  ): Route = {
     (post & path("auth" / "token")) {
 
       entity(as[Credentials]) { case Credentials(username, password) =>
@@ -33,7 +34,7 @@ object AuthApiV1Routes extends db.UserAccessRequestJsonSupport with KeyCloakAuth
 
         onComplete(eventualToken) {
           case Success(token) => complete(token)
-          case Failure(t) =>
+          case Failure(t)     =>
             log.error(t.getMessage)
             complete(InternalServerError)
         }
@@ -41,4 +42,3 @@ object AuthApiV1Routes extends db.UserAccessRequestJsonSupport with KeyCloakAuth
     }
   }
 }
-

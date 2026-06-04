@@ -12,7 +12,7 @@ import uk.gov.homeoffice.drt.keycloak.KeyCloakAuthToken
 import uk.gov.homeoffice.drt.routes.UserRoutes.tokenFormat
 import uk.gov.homeoffice.drt.routes.api.v1.AuthApiV1Routes.Credentials
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 class AuthApiV1RoutesTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
   implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global

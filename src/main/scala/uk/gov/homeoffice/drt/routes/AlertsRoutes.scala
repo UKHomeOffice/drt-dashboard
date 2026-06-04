@@ -1,33 +1,32 @@
 package uk.gov.homeoffice.drt.routes
 
 import org.apache.pekko.actor.typed.ActorSystem
-import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, StatusCodes }
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.http.scaladsl.server.directives.MethodDirectives.get
 import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import spray.json._
 import uk.gov.homeoffice.drt._
-import uk.gov.homeoffice.drt.alerts.{Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport}
+import uk.gov.homeoffice.drt.alerts.{ Alert, MultiPortAlert, MultiPortAlertClient, MultiPortAlertJsonSupport }
 import uk.gov.homeoffice.drt.auth.Roles._
 import uk.gov.homeoffice.drt.authentication._
-import uk.gov.homeoffice.drt.ports.{PortCode, PortRegion}
+import uk.gov.homeoffice.drt.ports.{ PortCode, PortRegion }
 import uk.gov.homeoffice.drt.routes.services.AuthByRole
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 case class PortAlerts(portCode: String, alerts: List[Alert])
 
 object AlertsRoutes extends MultiPortAlertJsonSupport
-  with UserJsonSupport
-  with ClientConfigJsonFormats
-  with ClientUserAccessDataJsonSupport {
+    with UserJsonSupport
+    with ClientConfigJsonFormats
+    with ClientUserAccessDataJsonSupport {
 
   val log: Logger = LoggerFactory.getLogger(getClass)
 
-  def apply()
-           (implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
+  def apply()(implicit ec: ExecutionContextExecutor, system: ActorSystem[Nothing]): Route =
     concat(
       (post & path("alerts")) {
         AuthByRole(CreateAlerts) {
@@ -64,7 +63,10 @@ object AlertsRoutes extends MultiPortAlertJsonSupport
                     }
                     .recover {
                       case t =>
-                        log.error(s"Failed to retrieve alerts for $portCode at ${Dashboard.drtInternalUriForPortCode(portCode)}/alerts/0", t)
+                        log.error(
+                          s"Failed to retrieve alerts for $portCode at ${Dashboard.drtInternalUriForPortCode(portCode)}/alerts/0",
+                          t
+                        )
                         PortAlerts(portCode.iata, List())
                     }
                 }

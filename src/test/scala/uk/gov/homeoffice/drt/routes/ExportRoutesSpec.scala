@@ -1,14 +1,14 @@
 package uk.gov.homeoffice.drt.routes
 
 import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
-import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
-import org.apache.pekko.http.scaladsl.common.{CsvEntityStreamingSupport, EntityStreamingSupport}
+import org.apache.pekko.actor.typed.{ ActorRef, ActorSystem }
+import org.apache.pekko.http.scaladsl.common.{ CsvEntityStreamingSupport, EntityStreamingSupport }
 import org.apache.pekko.http.scaladsl.model.headers.RawHeader
 import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import org.apache.pekko.{Done, NotUsed}
+import org.apache.pekko.{ Done, NotUsed }
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -16,17 +16,16 @@ import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile.api._
 import uk.gov.homeoffice.drt.MockHttpClient
 import uk.gov.homeoffice.drt.arrivals.ArrivalExportHeadings
-import uk.gov.homeoffice.drt.db.{AppDatabase, TestDatabase}
-import uk.gov.homeoffice.drt.exports.{Arrivals, ExportPort}
+import uk.gov.homeoffice.drt.db.{ AppDatabase, TestDatabase }
+import uk.gov.homeoffice.drt.exports.{ Arrivals, ExportPort }
 import uk.gov.homeoffice.drt.json.ExportJsonFormats.exportRequestJsonFormat
 import uk.gov.homeoffice.drt.models.Export
 import uk.gov.homeoffice.drt.notifications.EmailClient
 import uk.gov.homeoffice.drt.persistence.ExportPersistence
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate, SDateLike}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate, SDateLike }
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 
 case class MockEmailClient(probeRef: ActorRef[(String, String, Map[String, Any])]) extends EmailClient {
   override def send(templateId: String, emailAddress: String, personalisation: Map[String, Any]): Boolean = {
@@ -72,12 +71,13 @@ class ExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest
   val emailProbe: TestProbe[(String, String, Map[String, Any])] = TestProbe[(String, String, Map[String, Any])]()
   val uploadProbe: TestProbe[(String, String)] = TestProbe[(String, String)]()
   val downloadProbe: TestProbe[String] = TestProbe[String]()
-  val mockUploader: (String, Source[ByteString, Any]) => Future[Done.type] = (objectKey: String, data: Source[ByteString, Any]) =>
-    data
-      .runReduce[ByteString](_ ++ _).map { bytes =>
-      uploadProbe.ref ! (objectKey, bytes.utf8String)
-      Done
-    }
+  val mockUploader: (String, Source[ByteString, Any]) => Future[Done.type] =
+    (objectKey: String, data: Source[ByteString, Any]) =>
+      data
+        .runReduce[ByteString](_ ++ _).map { bytes =>
+          uploadProbe.ref ! (objectKey, bytes.utf8String)
+          Done
+        }
   val mockDownloader: String => Future[Source[ByteString, NotUsed]] = (objectKey: String) => {
     downloadProbe.ref ! objectKey
     Future.successful(Source(Seq(ByteString("1"), ByteString("2"), ByteString("3"))))
@@ -94,13 +94,34 @@ class ExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest
     "collate all requested terminal arrivals" in {
       val exportPorts = Seq(ExportPort("lhr", Seq("t2", "t5")))
       val request = ExportRoutes.ExportRequest(Arrivals, exportPorts, LocalDate(2022, 8, 2), LocalDate(2022, 8, 3))
-      Post("/export", request) ~>
+      Post("/export", request)                                  ~>
         RawHeader("X-Forwarded-Email", "someone@somewhere.com") ~>
-        ExportRoutes(mockHttpClient(arrivalsResponse), mockUploader, mockDownloader, MockExportPersistence(None), nowProvider, MockEmailClient(emailProbe.ref), "https://test.com", "team-email@zyx.com", _ => Future.successful(None), (_, _, _) => Source.empty, _ => List.empty) ~>
+        ExportRoutes(
+          mockHttpClient(arrivalsResponse),
+          mockUploader,
+          mockDownloader,
+          MockExportPersistence(None),
+          nowProvider,
+          MockEmailClient(emailProbe.ref),
+          "https://test.com",
+          "team-email@zyx.com",
+          _ => Future.successful(None),
+          (_, _, _) => Source.empty,
+          _ => List.empty
+        ) ~>
         check {
-          uploadProbe.expectMessage((s"$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv", heathrowRegionPortTerminalData))
-          emailProbe.expectMessage(("620271a3-888f-4d60-9f2a-dc3702699ae2", "someone@somewhere.com", Map("download_link" -> s"https://test.com/api/export/${now.millisSinceEpoch}")))
-          responseAs[String] should ===(s"""{"status": "preparing", "createdAt": ${now.millisSinceEpoch}, "downloadLink": "https://test.com/api/export/${now.millisSinceEpoch}"}""")
+          uploadProbe.expectMessage((
+            s"$nowYYYYMMDDHHmmss-2022-08-02-to-2022-08-03.csv",
+            heathrowRegionPortTerminalData
+          ))
+          emailProbe.expectMessage((
+            "620271a3-888f-4d60-9f2a-dc3702699ae2",
+            "someone@somewhere.com",
+            Map("download_link" -> s"https://test.com/api/export/${now.millisSinceEpoch}")
+          ))
+          responseAs[String] should ===(
+            s"""{"status": "preparing", "createdAt": ${now.millisSinceEpoch}, "downloadLink": "https://test.com/api/export/${now.millisSinceEpoch}"}"""
+          )
         }
     }
   }
@@ -110,8 +131,20 @@ class ExportRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest
       val createdAt = SDate("2020-06-01T00:00")
       val export = Export("email", "", LocalDate(2020, 6, 6), LocalDate(2020, 7, 6), "complete", createdAt)
       Get(s"/export/status/${export.createdAt.millisSinceEpoch}") ~>
-        RawHeader("X-Forwarded-Email", "someone@somewhere.com") ~>
-        ExportRoutes(mockHttpClient(arrivalsResponse), mockUploader, mockDownloader, MockExportPersistence(Option(export)), nowProvider, MockEmailClient(emailProbe.ref), "https://test.com", "team-email@zyx.com", _ => Future.successful(None), (_, _, _) => Source.empty, _ => List.empty) ~>
+        RawHeader("X-Forwarded-Email", "someone@somewhere.com")   ~>
+        ExportRoutes(
+          mockHttpClient(arrivalsResponse),
+          mockUploader,
+          mockDownloader,
+          MockExportPersistence(Option(export)),
+          nowProvider,
+          MockEmailClient(emailProbe.ref),
+          "https://test.com",
+          "team-email@zyx.com",
+          _ => Future.successful(None),
+          (_, _, _) => Source.empty,
+          _ => List.empty
+        ) ~>
         check {
           responseAs[String] should ===(s"""{"status": "${export.status}"}""")
         }

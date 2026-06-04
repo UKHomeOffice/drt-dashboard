@@ -5,10 +5,10 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.wordspec.AnyWordSpec
 import slick.jdbc.H2Profile.api._
 import uk.gov.homeoffice.drt.models.RegionExport
-import uk.gov.homeoffice.drt.time.{LocalDate, SDate}
+import uk.gov.homeoffice.drt.time.{ LocalDate, SDate }
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.{ Await, ExecutionContextExecutor }
 
 class RegionExportTableTest extends AnyWordSpec with BeforeAndAfter {
   implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
@@ -18,14 +18,39 @@ class RegionExportTableTest extends AnyWordSpec with BeforeAndAfter {
     Await.ready(TestDatabase.run(DBIO.seq(schema.dropIfExists, schema.create)), 1.second)
   }
 
-  val regionExportUser1North = RegionExport("user1-email@somewhere.com", "North", LocalDate(2020, 1, 1), LocalDate(2020, 1, 2), "pending", SDate(1L))
-  val regionExportUser1South = RegionExport("user1-email@somewhere.com", "South", LocalDate(2020, 1, 1), LocalDate(2020, 1, 2), "pending", SDate(2L))
-  val regionExportUser2North = RegionExport("user2-email@somewhere.com", "North", LocalDate(2020, 1, 1), LocalDate(2020, 1, 2), "pending", SDate(3L))
+  val regionExportUser1North = RegionExport(
+    "user1-email@somewhere.com",
+    "North",
+    LocalDate(2020, 1, 1),
+    LocalDate(2020, 1, 2),
+    "pending",
+    SDate(1L)
+  )
+  val regionExportUser1South = RegionExport(
+    "user1-email@somewhere.com",
+    "South",
+    LocalDate(2020, 1, 1),
+    LocalDate(2020, 1, 2),
+    "pending",
+    SDate(2L)
+  )
+  val regionExportUser2North = RegionExport(
+    "user2-email@somewhere.com",
+    "North",
+    LocalDate(2020, 1, 1),
+    LocalDate(2020, 1, 2),
+    "pending",
+    SDate(3L)
+  )
 
   "RegionExportTable" should {
     "insert records and return them" in {
       val insert = RegionExportQueries.insert(regionExportUser1North)
-      val get = RegionExportQueries.get(regionExportUser1North.email, regionExportUser1North.region, regionExportUser1North.createdAt.millisSinceEpoch)
+      val get = RegionExportQueries.get(
+        regionExportUser1North.email,
+        regionExportUser1North.region,
+        regionExportUser1North.createdAt.millisSinceEpoch
+      )
       val getAll = RegionExportQueries.getAll(regionExportUser1North.email, regionExportUser1North.region)
 
       val result = TestDatabase.run(for {
@@ -40,7 +65,11 @@ class RegionExportTableTest extends AnyWordSpec with BeforeAndAfter {
       val insert1 = RegionExportQueries.insert(regionExportUser1North)
       val insert2 = RegionExportQueries.insert(regionExportUser1South)
       val insert3 = RegionExportQueries.insert(regionExportUser2North)
-      val get = RegionExportQueries.get(regionExportUser1North.email, regionExportUser1North.region, regionExportUser1North.createdAt.millisSinceEpoch)
+      val get = RegionExportQueries.get(
+        regionExportUser1North.email,
+        regionExportUser1North.region,
+        regionExportUser1North.createdAt.millisSinceEpoch
+      )
       val getAll = RegionExportQueries.getAll(regionExportUser1North.email, regionExportUser1North.region)
 
       val result = TestDatabase.run(for {

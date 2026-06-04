@@ -1,8 +1,8 @@
 package uk.gov.homeoffice.drt.routes
 
-import org.apache.commons.csv.{CSVFormat, CSVParser}
+import org.apache.commons.csv.{ CSVFormat, CSVParser }
 import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.model.headers.{ContentDispositionTypes, `Content-Disposition`}
+import org.apache.pekko.http.scaladsl.model.headers.{ `Content-Disposition`, ContentDispositionTypes }
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
@@ -19,8 +19,10 @@ import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 object ExportConfigRoutes {
-  private def getMergePortConfig(httpClient: HttpClient, enabledPorts: Seq[PortCode])
-                                (implicit ec: ExecutionContext, mat: Materializer): Route = get {
+  private def getMergePortConfig(httpClient: HttpClient, enabledPorts: Seq[PortCode])(implicit
+      ec: ExecutionContext,
+      mat: Materializer
+  ): Route = get {
     val endpoints = enabledPorts.map { portCode =>
       (portCode.iata, s"http://${portCode.iata.toLowerCase}:9000/export/port-config")
     }
@@ -69,9 +71,12 @@ object ExportConfigRoutes {
       })
     }
 
-    val excelContentType = ContentType.parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").getOrElse(ContentTypes.`application/octet-stream`)
+    val excelContentType = ContentType.parse(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ).getOrElse(ContentTypes.`application/octet-stream`)
 
-    val contentDispositionHeader = `Content-Disposition`(ContentDispositionTypes.attachment, Map("filename" -> s"port-config-${SDate.now()}.xlsx"))
+    val contentDispositionHeader =
+      `Content-Disposition`(ContentDispositionTypes.attachment, Map("filename" -> s"port-config-${SDate.now()}.xlsx"))
 
     complete(HttpResponse(
       status = StatusCodes.OK,
@@ -80,7 +85,10 @@ object ExportConfigRoutes {
     ))
   }
 
-  def apply(httpClient: HttpClient, enabledPorts: Seq[PortCode])(implicit ec: ExecutionContext, mat: Materializer): Route =
+  def apply(httpClient: HttpClient, enabledPorts: Seq[PortCode])(implicit
+      ec: ExecutionContext,
+      mat: Materializer
+  ): Route =
     pathPrefix("export-config") {
       concat(
         getMergePortConfig(httpClient, enabledPorts)

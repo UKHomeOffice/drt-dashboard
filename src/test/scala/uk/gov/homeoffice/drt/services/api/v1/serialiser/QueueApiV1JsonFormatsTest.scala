@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.homeoffice.drt.ports.PortCode
 import uk.gov.homeoffice.drt.ports.Queues.EeaDesk
 import uk.gov.homeoffice.drt.ports.Terminals.T2
-import uk.gov.homeoffice.drt.routes.api.v1.QueueApiV1Routes.{QueueJsonV1, QueueJsonResponseV1, SlotJsonV1}
+import uk.gov.homeoffice.drt.routes.api.v1.QueueApiV1Routes.{ QueueJsonResponseV1, QueueJsonV1, SlotJsonV1 }
 import uk.gov.homeoffice.drt.time.SDate
 
 class QueueApiV1JsonFormatsTest extends AnyWordSpec with Matchers with QueueApiV1JsonFormats {

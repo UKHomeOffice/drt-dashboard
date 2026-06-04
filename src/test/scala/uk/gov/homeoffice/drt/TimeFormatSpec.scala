@@ -77,7 +77,7 @@ class TimeFormatSpec extends Specification {
     }
 
     "Given 1 day and 1 hour the the result should be 1 day" >> {
-      val oneHourAndOneSecond = (oneHourMillis * 25)
+      val oneHourAndOneSecond = oneHourMillis * 25
       val result = timeAgoInWords(oneHourAndOneSecond, baseDateFunc)
       val expected = "1 day"
 

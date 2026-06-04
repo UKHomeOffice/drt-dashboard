@@ -3,12 +3,12 @@ package uk.gov.homeoffice.drt.routes
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import org.apache.pekko.http.scaladsl.model.headers.ContentDispositionTypes.attachment
 import org.apache.pekko.http.scaladsl.model.headers.`Content-Disposition`
-import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpResponse, StatusCodes }
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import spray.json.{RootJsonFormat, enrichAny}
+import spray.json.{ enrichAny, RootJsonFormat }
 import uk.gov.homeoffice.drt.db.dao.UserFeedbackDao
 import uk.gov.homeoffice.drt.db.tables.UserFeedbackRow
 import uk.gov.homeoffice.drt.json.DefaultTimeJsonProtocol
@@ -18,7 +18,15 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 
-case class FeedbackData(feedbackType: String, aORbTest: String, question_1: String, question_2: String, question_3: String, question_4: String, question_5: String)
+case class FeedbackData(
+    feedbackType: String,
+    aORbTest: String,
+    question_1: String,
+    question_2: String,
+    question_3: String,
+    question_4: String,
+    question_5: String
+)
 
 trait FeedbackJsonFormats extends DefaultTimeJsonProtocol {
 
@@ -33,7 +41,8 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
 
   def exportFeedback(feedbackDao: UserFeedbackDao): Route = path("export") {
     get {
-      val csvHeader: String = "Email,Created at,Feedback type,Bf role,Drt quality,Drt likes,Drt improvements,Participation interest,AB version"
+      val csvHeader: String =
+        "Email,Created at,Feedback type,Bf role,Drt quality,Drt likes,Drt improvements,Participation interest,AB version"
 
       val fetchDataStream = feedbackDao.selectAllAsStream()
 
@@ -55,8 +64,12 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
         .concat(fetchDataStream.map(toCsvString).map(str => ByteString(str + "\n")))
 
       complete(HttpResponse(
-        headers = List(`Content-Disposition`(attachment, Map("filename" -> s"feedback-export-${Instant.now().toEpochMilli}.csv"))),
-        entity = HttpEntity(ContentTypes.`text/csv(UTF-8)`, csvDataStream)))
+        headers = List(`Content-Disposition`(
+          attachment,
+          Map("filename" -> s"feedback-export-${Instant.now().toEpochMilli}.csv")
+        )),
+        entity = HttpEntity(ContentTypes.`text/csv(UTF-8)`, csvDataStream)
+      ))
 
     }
   }
@@ -66,7 +79,6 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
       feedbackDao.selectAll().map(forms => complete(StatusCodes.OK, forms.toJson))
     routeResponse(getFeedbacksResult, "Getting feedbacks")
   }
-
 
   def saveFeedback(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext): Route =
     post {
@@ -84,18 +96,21 @@ object FeedbackRoutes extends FeedbackJsonFormats with BaseRoute {
               drtImprovements = Option(feedbackData.question_4),
               participationInterest = feedbackData.question_5.equals("Yes"),
               abVersion = Option(feedbackData.aORbTest)
-            ))
+            )
+          )
           routeResponse(
-            saveFeedbackResult.map(_ => complete(StatusCodes.OK, s"Feedback from user $userEmail is saved successfully")), "Saving feedback")
+            saveFeedbackResult.map(_ =>
+              complete(StatusCodes.OK, s"Feedback from user $userEmail is saved successfully")
+            ),
+            "Saving feedback"
+          )
         }
       }
     }
-
 
   def apply(feedbackDao: UserFeedbackDao)(implicit ec: ExecutionContext): Route =
     pathPrefix("feedback") {
       concat(exportFeedback(feedbackDao), saveFeedback(feedbackDao), getFeedbacks(feedbackDao))
     }
-
 
 }

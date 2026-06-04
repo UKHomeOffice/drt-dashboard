@@ -1,6 +1,6 @@
 package uk.gov.homeoffice.drt.json
 
-import spray.json.{DefaultJsonProtocol, JsString, JsValue, RootJsonFormat}
+import spray.json.{ DefaultJsonProtocol, JsString, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.exports._
 import uk.gov.homeoffice.drt.json.LocalDateJsonFormats.LocalDateJsonFormat
 import uk.gov.homeoffice.drt.json.SDateLikeJsonFormats.SDateLikeTimestampJsonFormat
@@ -15,10 +15,10 @@ object ExportJsonFormats extends DefaultJsonProtocol {
     }
 
     override def write(obj: ExportType): JsValue = obj match {
-      case Arrivals => JsString("arrivals")
-      case PortPassengers => JsString("passengers-port")
-      case TerminalPassengers => JsString("passengers-terminal")
-      case PortPassengersDaily => JsString("passengers-port-daily")
+      case Arrivals                => JsString("arrivals")
+      case PortPassengers          => JsString("passengers-port")
+      case TerminalPassengers      => JsString("passengers-terminal")
+      case PortPassengersDaily     => JsString("passengers-port-daily")
       case TerminalPassengersDaily => JsString("passengers-terminal-daily")
     }
   }
