@@ -7,8 +7,8 @@ object AppDependencies {
   private val logbackJsonVersion = "0.1.5"
   private val scalaTestVersion = "3.2.20"
 
-  private val ciriumVersion = "v410"
-  private val drtLibVersion = "v1410"
+  private val ciriumVersion = "v416"
+  private val drtLibVersion = "v1415"
 
   val compileDependencies: Seq[ModuleID] = Seq(
     "org.apache.pekko"           %% "pekko-actor-typed"         % pekkoVersion,
