@@ -83,7 +83,25 @@ const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHourlyPaxB
     <Box sx={{ backgroundColor: '#E6E9F1', p: 2 }}>
       <Grid container spacing={2} justifyItems={'stretch'} alignContent={'center'}>
         <Grid>
-          <IconButton component={Link} to="/national-pressure" size='small' sx={{ margin: '16px 10px 0 16px' }}><ArrowBack /></IconButton>
+          <IconButton
+              component={Link}
+              to="/national-pressure"
+              size='small'
+              aria-label="Back to national pressure"
+              sx={{
+                margin: '16px 10px 0 16px',
+                borderRadius: 0,
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-visible, &:active': {
+                  backgroundColor: '#ffdd00',
+                  color: '#0b0c0c',
+                  boxShadow: 'inset 0 -4px 0 #0b0c0c',
+                },
+              }}>
+            <ArrowBack />
+          </IconButton>
         </Grid>
         <Grid>
           <h2 style={{ textTransform: 'capitalize' }}>{ title }</h2>
