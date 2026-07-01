@@ -1,0 +1,42 @@
+.access-requests-tabs-container {
+  width: 100%;
+  background-color: #ffffff;
+}
+
+.access-requests-tabs {
+  background-color: #ffffff;
+  border-bottom: 1px solid #b1b4b6;
+}
+
+.access-requests-tabs .MuiTabs-indicator {
+  background-color: #0b0c0c;
+  height: 3px;
+}
+
+.access-requests-tab {
+  color: #505a5f;
+  text-transform: none;
+  font-weight: 500;
+  min-height: 48px;
+}
+
+.access-requests-tab:hover {
+  background-color: #f3f2f1;
+  color: #0b0c0c;
+}
+
+.access-requests-tab.Mui-selected {
+  color: #0b0c0c;
+  background-color: #ffffff;
+  font-weight: 700;
+}
+
+.access-requests-tab.Mui-focusVisible {
+  outline: 3px solid #ffdd00;
+  outline-offset: -3px;
+}
+
+.access-requests-list-container {
+  background-color: #ffffff;
+}
+
