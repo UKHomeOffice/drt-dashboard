@@ -15,6 +15,7 @@ import {GridRowSelectionModel} from "@mui/x-data-grid/models/gridRowSelectionMod
 import { Helmet } from 'react-helmet';
 import {adminPageTitleSuffix} from "../../utils/common";
 import PageContentWrapper from '../PageContentWrapper';
+import './AccessRequests.css';
 
 export default function AccessRequests() {
   const [accessRequestListRequested, setAccessRequestListRequested] = React.useState(false);
@@ -243,18 +244,20 @@ export default function AccessRequests() {
         </Link>
         <Typography color="text.primary">Access requests</Typography>
       </Breadcrumbs>
-      <Box sx={{width: '100%'}}>
+      <Box className="access-requests-tabs-container">
         <Tabs
-          value={statusFilterValue}
-          onChange={handleChange}
-          textColor="secondary"
-          indicatorColor="secondary"
-          aria-label="secondary tabs example">
-          <Tab value="Requested" label="Requested Access"/>
-          <Tab value="Approved" label="Approved Access"/>
-          <Tab value="Dismissed" label="Dismissed Access"/>
+            className="access-requests-tabs"
+            value={statusFilterValue}
+            onChange={handleChange}
+            textColor="inherit"
+            indicatorColor="secondary"
+            aria-label="Access request status tabs"
+        >
+          <Tab className="access-requests-tab" value="Requested" label="Requested Access" disableRipple/>
+          <Tab className="access-requests-tab" value="Approved" label="Approved Access" disableRipple/>
+          <Tab className="access-requests-tab" value="Dismissed" label="Dismissed Access" disableRipple/>
         </Tabs>
-        <div> {accessRequestOrApprovedList()} </div>
+        <Box className="access-requests-list-container">{accessRequestOrApprovedList()}</Box>
       </Box>
     </Stack>
   </PageContentWrapper>
