@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import {RootState} from '../../store/redux';
-import {drtTheme} from 'drt-react';
+import {drtTheme} from '@drt/drt-react';
 import {
   Chart as ChartJS,
   RadialLinearScale,

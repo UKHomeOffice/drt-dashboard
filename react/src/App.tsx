@@ -27,7 +27,7 @@ import {ExportConfig} from "./components/ExportConfig"
 import {HealthChecks} from "./components/healthchecks/HealthChecks"
 import RegionalDashboard from './components/regionalpressure/RegionalDashboard'
 import NationalDashboard from "./components/regionalpressure/NationalDashboard"
-import {Header, BottomBar, AccessibilityStatement} from 'drt-react';
+import {Header, BottomBar, AccessibilityStatement} from '@drt/drt-react';
 import {adminMenuItems} from './components/Navigation';
 import {AirportNameIndex, getAirportByCode} from './airports';
 import BorderCrossingImport from "./components/BorderCrossingImport";
