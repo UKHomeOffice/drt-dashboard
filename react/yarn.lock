@@ -2976,7 +2976,7 @@
 
 "@types/lodash@^4.17.24":
   version "4.17.24"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/@types/lodash/-/lodash-4.17.24.tgz"
+  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.24.tgz"
   integrity sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==
 
 "@types/mdast@^3.0.0":
@@ -3735,7 +3735,7 @@ ansi-regex@^6.0.1:
 
 ansi-regex@^6.2.2:
   version "6.2.2"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/ansi-regex/-/ansi-regex-6.2.2.tgz"
+  resolved "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.2.2.tgz"
   integrity sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg==
 
 ansi-styles@^3.2.1:
@@ -8621,7 +8621,7 @@ lodash.uniq@^4.5.0:
 
 lodash@^4.17.20, lodash@^4.17.21, lodash@^4.7.0, lodash@4.18.1:
   version "4.18.1"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/lodash/-/lodash-4.18.1.tgz"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz"
   integrity sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==
 
 loose-envify@^1.1.0, loose-envify@^1.4.0:
@@ -9182,7 +9182,7 @@ mz@^2.7.0:
 
 nanoid@^3.3.16, nanoid@^3.3.7:
   version "3.3.16"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/nanoid/-/nanoid-3.3.16.tgz"
+  resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.3.16.tgz"
   integrity sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==
 
 natural-compare-lite@^1.4.0:
@@ -10273,7 +10273,7 @@ postcss-value-parser@^4.0.0, postcss-value-parser@^4.0.2, postcss-value-parser@^
 
 "postcss@^7.0.0 || ^8.0.1", postcss@^8, postcss@^8.0.0, postcss@^8.0.3, postcss@^8.0.9, postcss@^8.1.0, postcss@^8.1.4, postcss@^8.2, postcss@^8.2.14, postcss@^8.2.15, postcss@^8.2.2, postcss@^8.3, postcss@^8.3.5, postcss@^8.4, postcss@^8.4.21, postcss@^8.4.33, postcss@^8.4.38, postcss@^8.4.4, postcss@^8.4.47, postcss@^8.4.6, "postcss@>= 8", postcss@>=8, postcss@>=8.0.9:
   version "8.5.24"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/postcss/-/postcss-8.5.24.tgz"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-8.5.24.tgz"
   integrity sha512-8RyVklq0owXUTa4xlpzu4l9AaVKIdQvAcOHZWaMh98HgySsUtxRVf/chRe3dsSLqb6i40BzGRzEUddRaI+9TSw==
   dependencies:
     nanoid "^3.3.16"
@@ -11758,7 +11758,7 @@ strip-ansi@^7.0.1:
 
 strip-ansi@^7.1.0:
   version "7.2.0"
-  resolved "https://artifactory.digital.homeoffice.gov.uk/artifactory/api/npm/npm-registry-remote/strip-ansi/-/strip-ansi-7.2.0.tgz"
+  resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.2.0.tgz"
   integrity sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==
   dependencies:
     ansi-regex "^6.2.2"
