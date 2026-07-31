@@ -23,7 +23,7 @@ import {
 import {Link} from 'react-router-dom';
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import {drtTheme} from 'drt-react';
+import {drtTheme} from '@drt/drt-react';
 import {Chart} from 'react-chartjs-2';
 import {Chart as ChartJS, registerables,} from 'chart.js';
 import 'chartjs-adapter-moment';
