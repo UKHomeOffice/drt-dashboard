@@ -56,7 +56,7 @@ class HealthCheckLoggingSpec extends AnyWordSpec with Matchers {
         Some(portCode),
         "http://lhr:9000/health-check/received-landing-times",
         850,
-        "parse_failure",
+        ParseFailure,
         new RuntimeException("Bad response body")
       )
 
@@ -156,7 +156,7 @@ class HealthCheckLoggingSpec extends AnyWordSpec with Matchers {
       HealthCheckLogging.logMonitorFailure(
         logger,
         Seq(portCode),
-        "scheduler_run_failure",
+        SchedulerRunFailure,
         new RuntimeException("pause lookup failed")
       )
 

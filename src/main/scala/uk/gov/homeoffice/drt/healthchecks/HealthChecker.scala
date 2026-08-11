@@ -52,7 +52,7 @@ object HealthChecker {
                 maybePort,
                 uri,
                 timeTaken,
-                s"http_${status.intValue()}",
+                HttpStatusFailure(status.intValue()),
                 new Exception(s"Unexpected status: $status")
               )
               HealthCheckLogging.logResult(log, check, failure, maybePort, uri)
@@ -63,7 +63,7 @@ object HealthChecker {
             case t: Throwable =>
               val timeTaken = System.currentTimeMillis() - startTime
               val failure = check.failure
-              HealthCheckLogging.logRequestFailed(log, check, maybePort, uri, timeTaken, "exception", t)
+              HealthCheckLogging.logRequestFailed(log, check, maybePort, uri, timeTaken, ExceptionFailure, t)
               HealthCheckLogging.logResult(log, check, failure, maybePort, uri)
               failure
           }

@@ -76,7 +76,7 @@ object HealthCheckLogging {
         "isPass" -> response.maybeIsPass.map(_.toString).getOrElse("unknown")
       ) ++
       response.measuredValue.map(v => "measuredValue" -> v) ++
-      response.failureType.map(v => "failureType" -> v)
+      response.failureType.map(v => "failureType" -> v.logValue)
 
     val message = toMessage(ResultEvent, fields)
 
@@ -92,11 +92,11 @@ object HealthCheckLogging {
       maybePort: Option[PortCode],
       requestUri: String,
       durationMs: Long,
-      failureType: String,
+      failureType: FailureType,
       exception: Throwable
   ): Unit = {
     val fields = baseFields(check, maybePort, requestUri) ++ Map(
-      "failureType" -> failureType,
+      "failureType" -> failureType.logValue,
       "durationMs" -> durationMs.toString,
       "exceptionClass" -> exception.getClass.getSimpleName,
       "exceptionMessage" -> Option(exception.getMessage).getOrElse("")
@@ -177,11 +177,11 @@ object HealthCheckLogging {
   def logMonitorFailure(
       logger: Logger,
       monitoredPorts: Iterable[PortCode],
-      failureType: String,
+      failureType: FailureType,
       exception: Throwable
   ): Unit = {
     val fields = monitorFields(monitoredPorts) ++ Map(
-      "failureType" -> failureType,
+      "failureType" -> failureType.logValue,
       "exceptionClass" -> exception.getClass.getSimpleName,
       "exceptionMessage" -> Option(exception.getMessage).getOrElse("")
     )

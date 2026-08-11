@@ -40,7 +40,7 @@ object HealthChecksRunner {
         .runWith(Sink.ignore)
         .recover {
           case t: Throwable =>
-            HealthCheckLogging.logMonitorFailure(log, monitoredPorts, "runner_failure", t)
+            HealthCheckLogging.logMonitorFailure(log, monitoredPorts, RunnerFailure, t)
             Done
         }
     }

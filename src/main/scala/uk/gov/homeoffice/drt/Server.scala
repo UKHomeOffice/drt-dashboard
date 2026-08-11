@@ -408,7 +408,7 @@ object Server {
           }
           .recover {
             case t: Throwable =>
-              HealthCheckLogging.logMonitorFailure(log, portCodes, "scheduler_run_failure", t)
+              HealthCheckLogging.logMonitorFailure(log, portCodes, SchedulerRunFailure, t)
               ()
           }
       }

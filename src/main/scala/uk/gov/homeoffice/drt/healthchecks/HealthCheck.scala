@@ -36,7 +36,7 @@ trait JsonHealthCheck[T] extends HealthCheck[Boolean] {
     str => {
       val trySerialise = Try(serialise(str)).map(_ => true)
       val isPass = trySerialise.getOrElse(false)
-      val failureType = if (trySerialise.isSuccess) None else Option("parse_failure")
+      val failureType = if (trySerialise.isSuccess) None else Option(ParseFailure)
       BooleanHealthCheckResponse(priority, name, Success(Option(isPass)), Option(isPass), failureType)
     }
 
@@ -46,7 +46,7 @@ trait JsonHealthCheck[T] extends HealthCheck[Boolean] {
       name,
       Failure(new Exception("Failed to parse response")),
       None,
-      Option("request_failure")
+      Option(RequestFailure)
     )
 }
 
@@ -60,7 +60,7 @@ trait PercentageHealthCheck extends HealthCheck[Double] {
         case _      => Try(Option(str.toDouble))
       }
       val maybeIsPass = value.toOption.flatten.map(_ >= passThresholdPercentage)
-      val failureType = if (value.isFailure) Option("parse_failure") else None
+      val failureType = if (value.isFailure) Option(ParseFailure) else None
 
       PercentageHealthCheckResponse(priority, name, value, maybeIsPass, failureType)
     }
@@ -71,7 +71,7 @@ trait PercentageHealthCheck extends HealthCheck[Double] {
       name,
       Failure(new Exception("Failed to parse response")),
       None,
-      Option("request_failure")
+      Option(RequestFailure)
     )
 
   override def thresholdPercentage: Option[Int] = Option(passThresholdPercentage)

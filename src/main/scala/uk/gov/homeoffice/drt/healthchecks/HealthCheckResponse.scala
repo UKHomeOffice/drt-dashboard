@@ -7,11 +7,11 @@ trait HealthCheckResponse[A] {
   val name: String
   val value: Try[Option[A]]
   val maybeIsPass: Option[Boolean]
-  val failureType: Option[String]
+  val failureType: Option[FailureType]
 
   def measuredValue: Option[String] = value.toOption.flatten.map(_.toString)
 
-  def resultType: String = failureType.getOrElse(
+  def resultType: String = failureType.map(_.logValue).getOrElse(
     maybeIsPass match {
       case Some(true)              => "success"
       case Some(false)             => "threshold_breach"
@@ -26,7 +26,7 @@ case class PercentageHealthCheckResponse(
     name: String,
     value: Try[Option[Double]],
     maybeIsPass: Option[Boolean],
-    failureType: Option[String] = None
+    failureType: Option[FailureType] = None
 ) extends HealthCheckResponse[Double]
 
 case class BooleanHealthCheckResponse(
@@ -34,5 +34,5 @@ case class BooleanHealthCheckResponse(
     name: String,
     value: Try[Option[Boolean]],
     maybeIsPass: Option[Boolean],
-    failureType: Option[String] = None
+    failureType: Option[FailureType] = None
 ) extends HealthCheckResponse[Boolean]
