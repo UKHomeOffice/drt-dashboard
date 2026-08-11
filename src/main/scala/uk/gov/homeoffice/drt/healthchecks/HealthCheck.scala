@@ -16,10 +16,16 @@ import scala.util.{ Failure, Success, Try }
 trait HealthCheck[A] {
   val priority: IncidentPriority
   val name: String
+  val checkType: String
   def description: String
   def url: String
   val parseResponse: String => HealthCheckResponse[A]
   def httpHeaders: Map[String, String] = Map.empty
+  def thresholdPercentage: Option[Int] = None
+  def minimumFlightsValue: Option[Int] = None
+  def windowStartForLog: Option[String] = None
+  def windowEndForLog: Option[String] = None
+  def extraLogFields: Map[String, String] = Map.empty
 
   def failure: HealthCheckResponse[A]
 }
@@ -30,16 +36,21 @@ trait JsonHealthCheck[T] extends HealthCheck[Boolean] {
     str => {
       val trySerialise = Try(serialise(str)).map(_ => true)
       val isPass = trySerialise.getOrElse(false)
-      BooleanHealthCheckResponse(priority, name, Success(Option(isPass)), Option(isPass))
+      val failureType = if (trySerialise.isSuccess) None else Option("parse_failure")
+      BooleanHealthCheckResponse(priority, name, Success(Option(isPass)), Option(isPass), failureType)
     }
 
   override def failure: HealthCheckResponse[Boolean] =
-    BooleanHealthCheckResponse(priority, name, Failure(new Exception("Failed to parse response")), None)
+    BooleanHealthCheckResponse(
+      priority,
+      name,
+      Failure(new Exception("Failed to parse response")),
+      None,
+      Option("request_failure")
+    )
 }
 
 trait PercentageHealthCheck extends HealthCheck[Double] {
-  private val log = org.slf4j.LoggerFactory.getLogger(getClass)
-
   def passThresholdPercentage: Int
 
   override val parseResponse: String => HealthCheckResponse[Double] =
@@ -49,19 +60,28 @@ trait PercentageHealthCheck extends HealthCheck[Double] {
         case _      => Try(Option(str.toDouble))
       }
       val maybeIsPass = value.toOption.flatten.map(_ >= passThresholdPercentage)
-      log.info(s"HealthCheck '$name' got response: $str, value: $value, maybeIsPass: $maybeIsPass")
+      val failureType = if (value.isFailure) Option("parse_failure") else None
 
-      PercentageHealthCheckResponse(priority, name, value, maybeIsPass)
+      PercentageHealthCheckResponse(priority, name, value, maybeIsPass, failureType)
     }
 
   override def failure: HealthCheckResponse[Double] =
-    PercentageHealthCheckResponse(priority, name, Failure(new Exception("Failed to parse response")), None)
+    PercentageHealthCheckResponse(
+      priority,
+      name,
+      Failure(new Exception("Failed to parse response")),
+      None,
+      Option("request_failure")
+    )
+
+  override def thresholdPercentage: Option[Int] = Option(passThresholdPercentage)
 }
 
 case class QueueApiV1HealthCheck(now: () => SDateLike, portCodes: Iterable[PortCode])
     extends JsonHealthCheck[QueueJsonResponseV1] with QueueApiV1JsonFormats {
   override val priority: IncidentPriority = Priority1
   override val name: String = "Queue API v1"
+  override val checkType: String = "queue_api_v1"
   override def description: String = s"Queue API v1 is reachable and responding with valid json"
 
   private def todayAt(hour: Int): SDateLike = SDate(now().toUtcDate).addHours(hour)
@@ -70,6 +90,8 @@ case class QueueApiV1HealthCheck(now: () => SDateLike, portCodes: Iterable[PortC
   private val start: SDateLike = todayAt(startHour)
   private val end: SDateLike = todayAt(endHour)
   override def url: String = s"/api/v1/queues?start=${start.toISOString}&end=${end.toISOString}"
+  override def windowStartForLog: Option[String] = Option(start.toISOString)
+  override def windowEndForLog: Option[String] = Option(end.toISOString)
 
   override def httpHeaders: Map[String, String] = Map(
     "X-Forwarded-Email" -> "health-check",
@@ -83,6 +105,7 @@ case class QueueApiV1_1HealthCheck(now: () => SDateLike, portCodes: Iterable[Por
     extends JsonHealthCheck[QueueJsonResponseV1_1] with QueueApiV1_1JsonFormats {
   override val priority: IncidentPriority = Priority1
   override val name: String = "Queue API v1.1"
+  override val checkType: String = "queue_api_v1_1"
   override def description: String = s"Queue API v1.1 is reachable and responding with valid json"
 
   private def todayAt(hour: Int): SDateLike = SDate(now().toUtcDate).addHours(hour)
@@ -91,6 +114,8 @@ case class QueueApiV1_1HealthCheck(now: () => SDateLike, portCodes: Iterable[Por
   private val start: SDateLike = todayAt(startHour)
   private val end: SDateLike = todayAt(endHour)
   override def url: String = s"/api/v1.1/queues?start=${start.toISOString}&end=${end.toISOString}"
+  override def windowStartForLog: Option[String] = Option(start.toISOString)
+  override def windowEndForLog: Option[String] = Option(end.toISOString)
 
   override def httpHeaders: Map[String, String] = Map(
     "X-Forwarded-Email" -> "health-check",
@@ -104,6 +129,7 @@ case class FlightApiV1HealthCheck(now: () => SDateLike, portCodes: Iterable[Port
     extends JsonHealthCheck[FlightJsonResponseV1] with FlightApiV1JsonFormats {
   override val priority: IncidentPriority = Priority1
   override val name: String = "Flight API v1"
+  override val checkType: String = "flight_api_v1"
   override def description: String = s"Flight API v1 is reachable and responding with valid json"
 
   private def todayAt(hour: Int): SDateLike = SDate(now().toUtcDate).addHours(hour)
@@ -112,6 +138,8 @@ case class FlightApiV1HealthCheck(now: () => SDateLike, portCodes: Iterable[Port
   private val start: SDateLike = todayAt(startHour)
   private val end: SDateLike = todayAt(endHour)
   override def url: String = s"/api/v1/flights?start=${start.toISOString}&end=${end.toISOString}"
+  override def windowStartForLog: Option[String] = Option(start.toISOString)
+  override def windowEndForLog: Option[String] = Option(end.toISOString)
 
   override def httpHeaders: Map[String, String] = Map(
     "X-Forwarded-Email" -> "health-check",
@@ -125,6 +153,7 @@ case class FlightApiV1_1HealthCheck(now: () => SDateLike, portCodes: Iterable[Po
     extends JsonHealthCheck[FlightJsonResponseV1_1] with FlightApiV1_1JsonFormats {
   override val priority: IncidentPriority = Priority1
   override val name: String = "Flight API v1.1"
+  override val checkType: String = "flight_api_v1_1"
   override def description: String = s"Flight API v1.1 is reachable and responding with valid json"
 
   private def todayAt(hour: Int): SDateLike = SDate(now().toUtcDate).addHours(hour)
@@ -133,6 +162,8 @@ case class FlightApiV1_1HealthCheck(now: () => SDateLike, portCodes: Iterable[Po
   private val start: SDateLike = todayAt(startHour)
   private val end: SDateLike = todayAt(endHour)
   override def url: String = s"/api/v1.1/flights?start=${start.toISOString}&end=${end.toISOString}"
+  override def windowStartForLog: Option[String] = Option(start.toISOString)
+  override def windowEndForLog: Option[String] = Option(end.toISOString)
 
   override def httpHeaders: Map[String, String] = Map(
     "X-Forwarded-Email" -> "health-check",
@@ -153,9 +184,13 @@ case class ApiHealthCheck(
   private val end = () => now().addHours(hoursAfterNow)
   override val priority: IncidentPriority = Priority1
   override val name: String = "API received"
+  override val checkType: String = "api_received"
   override def description: String =
     s"""$passThresholdPercentage% of flights landing between ${start().prettyDateTime} and ${end().prettyDateTime} which have API data, when we have a minimum of $minimumFlights flights"""
   override def url: String = s"/health-check/received-api/${start().toISOString}/${end().toISOString}/$minimumFlights"
+  override def minimumFlightsValue: Option[Int] = Option(this.minimumFlights)
+  override def windowStartForLog: Option[String] = Option(start().toISOString)
+  override def windowEndForLog: Option[String] = Option(end().toISOString)
 }
 
 case class ArrivalLandingTimesHealthCheck(
@@ -169,10 +204,14 @@ case class ArrivalLandingTimesHealthCheck(
   private val end = () => now().addMinutes(-buffer)
   override val priority: IncidentPriority = Priority1
   override val name: String = "Landing Times"
+  override val checkType: String = "arrival_landing_times"
   override def description: String =
     s"$passThresholdPercentage% of flights scheduled to land between ${start().toHoursAndMinutes} and ${end().toHoursAndMinutes} which have an actual landing time, when we have a minimum of $minimumFlights flights"
   override def url: String =
     s"/health-check/received-landing-times/${start().toISOString}/${end().toISOString}/$minimumFlights"
+  override def minimumFlightsValue: Option[Int] = Option(this.minimumFlights)
+  override def windowStartForLog: Option[String] = Option(start().toISOString)
+  override def windowEndForLog: Option[String] = Option(end().toISOString)
 }
 
 case class ArrivalUpdatesHealthCheck(
@@ -187,10 +226,15 @@ case class ArrivalUpdatesHealthCheck(
   private val end = () => now().addMinutes(minutesAfterNow)
   override val priority: IncidentPriority = Priority2
   override val name: String = s"Arrival Updates"
+  override val checkType: String = "arrival_updates"
   override def description: String =
     s"$passThresholdPercentage% of flights expected to land between ${start().toHoursAndMinutes} and ${end().toHoursAndMinutes} that have been updated in the past ${updateThreshold.toMinutes} minutes, when we have a minimum of $minimumFlights flights"
   override def url: String =
     s"/health-check/received-arrival-updates/${start().toISOString}/${end().toISOString}/$minimumFlights/${updateThreshold.toMinutes}"
+  override def minimumFlightsValue: Option[Int] = Option(this.minimumFlights)
+  override def windowStartForLog: Option[String] = Option(start().toISOString)
+  override def windowEndForLog: Option[String] = Option(end().toISOString)
+  override def extraLogFields: Map[String, String] = Map("updateThresholdMinutes" -> updateThreshold.toMinutes.toString)
 }
 
 trait IncidentPriority {

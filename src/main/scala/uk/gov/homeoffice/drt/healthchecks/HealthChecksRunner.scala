@@ -19,24 +19,16 @@ object HealthChecksRunner {
       healthChecks: Seq[HealthCheck[_]]
   )(implicit mat: Materializer, ec: ExecutionContext): Option[Iterable[PortCode]] => Future[Done] =
     maybePorts => {
+      val monitoredPorts = maybePorts.getOrElse(Seq(PortCode("Dashboard")))
       val checks = maybePorts match {
         case Some(ports) if ports.nonEmpty =>
-          log.info("Checking ports")
           Source(ports.toList)
             .mapAsync(1) { port =>
-              log.info("Checking port " + port)
-              HealthChecker(Option(port), makeRequest, healthChecks).map(_.map { r =>
-                log.info(s"HealthCheckMonitor got response for $port: ${r.name} -> ${r.maybeIsPass}")
-                (port, r)
-              })
+              HealthChecker(Option(port), makeRequest, healthChecks).map(_.map(r => (port, r)))
             }
         case _ =>
-          log.info("Checking dashboard")
           Source.future {
-            HealthChecker(None, makeRequest, healthChecks).map(_.map { r =>
-              log.info(s"HealthCheckMonitor got response for dashboard: ${r.name} -> ${r.maybeIsPass}")
-              (PortCode("Dashboard"), r)
-            })
+            HealthChecker(None, makeRequest, healthChecks).map(_.map(r => (PortCode("Dashboard"), r)))
           }
       }
 
@@ -48,7 +40,7 @@ object HealthChecksRunner {
         .runWith(Sink.ignore)
         .recover {
           case t: Throwable =>
-            log.error("HealthCheckMonitor failed: " + t.getMessage)
+            HealthCheckLogging.logMonitorFailure(log, monitoredPorts, "runner_failure", t)
             Done
         }
     }

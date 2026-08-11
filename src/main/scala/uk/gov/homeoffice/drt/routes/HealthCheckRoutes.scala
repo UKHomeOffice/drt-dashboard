@@ -7,7 +7,7 @@ import org.apache.pekko.http.scaladsl.server.Route
 import org.slf4j.LoggerFactory
 import spray.json.{ enrichAny, DefaultJsonProtocol, JsObject, JsValue, RootJsonFormat }
 import uk.gov.homeoffice.drt.auth.Roles.HealthChecksEdit
-import uk.gov.homeoffice.drt.healthchecks.{ HealthCheck, IncidentPriority, ScheduledPause }
+import uk.gov.homeoffice.drt.healthchecks.{ HealthCheck, HealthCheckLogging, IncidentPriority, ScheduledPause }
 import uk.gov.homeoffice.drt.json.HealthCheckAlarmJsonFormats
 import uk.gov.homeoffice.drt.json.ScheduledPauseJsonFormats.scheduledPauseJsonFormat
 import uk.gov.homeoffice.drt.persistence.ScheduledHealthCheckPausePersistence
@@ -66,12 +66,14 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
         concat(
           post {
             AuthByRole(HealthChecksEdit) {
-              entity(as[ScheduledPause]) { scheduledPause =>
-                log.info(s"Received health check pause to save")
-                handleFutureOperation(
-                  scheduledPausePersistence.insert(scheduledPause),
-                  "Failed to save health check pause"
-                )
+              headerValueByName("X-Forwarded-Email") { email =>
+                entity(as[ScheduledPause]) { scheduledPause =>
+                  HealthCheckLogging.logPauseCreated(log, scheduledPause, Option(email))
+                  handleFutureOperation(
+                    scheduledPausePersistence.insert(scheduledPause),
+                    "Failed to save health check pause"
+                  )
+                }
               }
             }
           },
@@ -85,11 +87,13 @@ object HealthCheckRoutes extends HealthCheckAlarmJsonFormats with HealthCheckJso
               val fromMillis = from.toLong
               val toMillis = to.toLong
               AuthByRole(HealthChecksEdit) {
-                log.info(s"Received health check pause to delete")
-                handleFutureOperation(
-                  scheduledPausePersistence.delete(fromMillis, toMillis),
-                  "Failed to delete health check pause"
-                )
+                headerValueByName("X-Forwarded-Email") { email =>
+                  HealthCheckLogging.logPauseDeleted(log, fromMillis, toMillis, Option(email))
+                  handleFutureOperation(
+                    scheduledPausePersistence.delete(fromMillis, toMillis),
+                    "Failed to delete health check pause"
+                  )
+                }
               }
             }
           }
