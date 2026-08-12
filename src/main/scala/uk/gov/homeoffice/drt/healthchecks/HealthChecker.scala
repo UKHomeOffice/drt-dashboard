@@ -29,6 +29,7 @@ object HealthChecker {
         }.toSeq
         val request = HttpRequest(uri = uri, headers = headers)
         val startTime = System.currentTimeMillis()
+        HealthCheckLogging.logExecutionStarted(log, check, maybePort, uri)
         makeRequest(request)
           .flatMap { response =>
             val status = response.status
@@ -37,16 +38,34 @@ object HealthChecker {
                 .map(_.utf8String)
                 .runReduce(_ + _)
                 .map(check.parseResponse)
+                .map { parsedResponse =>
+                  HealthCheckLogging.logResult(log, check, parsedResponse, maybePort, uri)
+                  parsedResponse
+                }
             } else {
               response.entity.discardBytes()
-              Future.successful(check.failure)
+              val failure = check.failure
+              val timeTaken = System.currentTimeMillis() - startTime
+              HealthCheckLogging.logRequestFailed(
+                log,
+                check,
+                maybePort,
+                uri,
+                timeTaken,
+                HttpStatusFailure(status.intValue()),
+                new Exception(s"Unexpected status: $status")
+              )
+              HealthCheckLogging.logResult(log, check, failure, maybePort, uri)
+              Future.successful(failure)
             }
           }
           .recover {
             case t: Throwable =>
               val timeTaken = System.currentTimeMillis() - startTime
-              log.warn(s"${check.name} failed after ${timeTaken / 1000}s: ${t.getMessage}")
-              check.failure
+              val failure = check.failure
+              HealthCheckLogging.logRequestFailed(log, check, maybePort, uri, timeTaken, ExceptionFailure, t)
+              HealthCheckLogging.logResult(log, check, failure, maybePort, uri)
+              failure
           }
       }
       .runWith(Sink.seq)

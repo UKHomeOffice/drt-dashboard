@@ -38,6 +38,7 @@ import uk.gov.homeoffice.drt.services.{ PassengerSummaryStreams, UserRequestServ
 import uk.gov.homeoffice.drt.time.{ LocalDate, SDate, UtcDate }
 import uk.gov.homeoffice.drt.uploadTraining.FeatureGuideService
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
 import scala.util.{ Failure, Success }
@@ -105,6 +106,14 @@ object Server {
       buffer = 20,
       minimumFlights = 3,
       passThresholdPercentage = 50,
+      SDate.now
+    ),
+    ArrivalUpdatesHealthCheck(
+      minutesBeforeNow = 30,
+      minutesAfterNow = 60,
+      updateThreshold = 30.minutes,
+      minimumFlights = 3,
+      passThresholdPercentage = 25,
       SDate.now
     )
   )
@@ -326,12 +335,12 @@ object Server {
     }
 
     val soundAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
-      log.info(s"Sound alarm for $portCode $checkName $priority")
+      HealthCheckLogging.logAlarmTriggered(log, portCode, checkName, priority, slackNotificationAttempted = true)
       sendSlackNotification(portCode, checkName, priority, "triggered")
     }
 
     val silenceAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
-      log.info(s"Silence alarm for $portCode $checkName $priority")
+      HealthCheckLogging.logAlarmResolved(log, portCode, checkName, priority, slackNotificationAttempted = true)
       sendSlackNotification(portCode, checkName, priority, "resolved")
     }
 
@@ -376,18 +385,32 @@ object Server {
       HealthChecksRunner(makeRequest, recordPortResponse, dashboardHealthChecks(serverConfig.enabledPorts))
     val pausesProvider =
       CheckScheduledPauses.pausesProvider(ScheduledHealthCheckPausePersistenceImpl(db, () => SDate.now()))
-    val pauseIsActive = CheckScheduledPauses.activePauseChecker(pausesProvider)
+    val monitorWasPaused = new AtomicBoolean(false)
     object Check extends Runnable {
       override def run(): Unit = {
-        pauseIsActive().foreach { paused =>
-          if (paused)
-            log.info("Health check monitor paused")
-          else {
-            log.info("Health check monitor running")
-            performPortHealthChecks(Option(portCodes))
-            performDashboardHealthChecks(None)
+        pausesProvider()
+          .flatMap { pauses =>
+            val paused = pauses.exists(p =>
+              p.startsAt.getMillis <= SDate.now().millisSinceEpoch && SDate.now().millisSinceEpoch <= p.endsAt.getMillis
+            )
+
+            if (paused) {
+              if (monitorWasPaused.compareAndSet(false, true))
+                HealthCheckLogging.logMonitorPaused(log, pauses, portCodes)
+              Future.unit
+            } else {
+              if (monitorWasPaused.compareAndSet(true, false)) {
+                HealthCheckLogging.logMonitorResumed(log, portCodes)
+              }
+              performPortHealthChecks(Option(portCodes))
+                .flatMap(_ => performDashboardHealthChecks(None))
+            }
           }
-        }
+          .recover {
+            case t: Throwable =>
+              HealthCheckLogging.logMonitorFailure(log, portCodes, SchedulerRunFailure, t)
+              ()
+          }
       }
     }
     system.scheduler.scheduleWithFixedDelay(5.seconds, serverConfig.healthCheckFrequencyMinutes.minutes)(Check)
