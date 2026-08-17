@@ -8,7 +8,7 @@ object AppDependencies {
   private val scalaTestVersion = "3.2.20"
 
   private val ciriumVersion = "v425"
-  private val drtLibVersion = "v1462"
+  private val drtLibVersion = "v1465"
 
   val compileDependencies: Seq[ModuleID] = Seq(
     "org.apache.pekko"           %% "pekko-actor-typed"         % pekkoVersion,
