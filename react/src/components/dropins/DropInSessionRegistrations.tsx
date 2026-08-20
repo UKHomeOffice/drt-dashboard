@@ -13,6 +13,7 @@ import ApiClient from "../../services/ApiClient";
 import Typography from "@mui/material/Typography";
 import {adminPageTitleSuffix} from "../../utils/common";
 import {Helmet} from "react-helmet";
+import NotFoundPage from "../NotFoundPage";
 
 export interface DropInRegisteredUsers {
   email: string;
@@ -54,6 +55,7 @@ export function DropInSessionRegistrations() {
   const [rowDetails, setRowDetails] = React.useState({} as DropInRegisteredUsers | undefined)
   const [dropInSession, setDropInSession] = React.useState<SeminarData | null>(null)
   const [error, setError] = useState(false)
+  const [notFound, setNotFound] = useState(false)
   const [unregister, setUnregister] = useState(false)
 
   const handleRemove = (userData: DropInRegisteredUsers | undefined) => {
@@ -82,16 +84,28 @@ export function DropInSessionRegistrations() {
     axios.get(`${ApiClient.dropInSessionRegistrationsEndpoint}/${dropInId}`)
       .then(response => handleResponse(response))
       .catch(error => {
+        const status = (error as any)?.response?.status
+        if (status === 404 || status === 500) {
+          setNotFound(true)
+          return
+        }
         setError(true);
         console.error(error);
       });
     axios.get(`${ApiClient.getDropInSessionEndpoint}/${dropInId}`)
       .then(response => handleDropInSessionResponse(response))
       .catch(error => {
+        const status = (error as any)?.response?.status
+        if (status === 404 || status === 500) {
+          setNotFound(true)
+          return
+        }
         setError(true);
         console.error(error);
       });
   }, [dropInId, unregister]);
+
+  if (!dropInId || notFound) return <NotFoundPage/>
 
   const removeRegistration = (sessionId: string, email: string) => {
     axios.delete(`${ApiClient.dropInSessionRegistrationDeleteEndpoint}/${sessionId}/${email}`)

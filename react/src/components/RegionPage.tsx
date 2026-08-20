@@ -14,6 +14,7 @@ import {StringUtils} from "../utils/StringUtils";
 import ApiClient from "../services/ApiClient";
 import {customerPageTitleSuffix} from "../utils/common";
 import {Helmet} from "react-helmet";
+import NotFoundPage from "./NotFoundPage";
 
 interface IProps {
   user: UserProfile;
@@ -34,6 +35,9 @@ export const RegionPage = (props: IProps) => {
   const [downloads, setDownloads] = React.useState<Download[] | undefined>(undefined)
 
   const {regionName = ''} = useParams()
+  const matchedRegion = props.config.portsByRegion.find((r) => r.name.toLowerCase() === regionName.toLowerCase())
+
+  if (!matchedRegion) return <NotFoundPage/>
 
   const fetchDownloads = () => {
     axios

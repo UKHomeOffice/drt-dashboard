@@ -33,6 +33,7 @@ import {TerminalDataPoint, totalFromQueues} from './regionalPressureSagas';
 import RegionalPressureDates from './RegionalPressureDates';
 import RegionalPressureForm from './RegionalPressureForm';
 import RegionalPressureExport from './RegionalPressureExport';
+import NotFoundPage from "../NotFoundPage";
 
 ChartJS.register(...registerables);
 
@@ -49,8 +50,12 @@ interface RegionalDashboardProps {
 }
 
 const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHourlyPaxByPort, interval }: RegionalDashboardProps) => {
-  const { region } = useParams() || ''
-  let regionPorts = config.portsByRegion.filter((r) => r.name.toLowerCase() === region!.toLowerCase())[0].ports
+  const { region = '' } = useParams<{ region?: string }>()
+  const matchedRegion = config.portsByRegion.find((r) => r.name.toLowerCase() === region.toLowerCase())
+
+  if (!matchedRegion) return <NotFoundPage/>
+
+  let regionPorts = matchedRegion.ports
   let title = `${region} Region`
   let portLabel = 'Airports:'
   if (region === 'heathrow') {
