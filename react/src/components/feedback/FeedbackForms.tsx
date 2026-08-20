@@ -20,6 +20,7 @@ import ApiClient from "../../services/ApiClient";
 import {drtTheme} from '@drt/drt-react';
 import {customerPageTitleSuffix} from "../../utils/common";
 import {Helmet} from "react-helmet";
+import NotFoundPage from "../NotFoundPage";
 
 interface FeedbackData {
   feedbackType: string;
@@ -35,6 +36,15 @@ export function FeedbackForms() {
 
   const {feedbackType = ''} = useParams<{ feedbackType?: string }>();
   const {abVersion = ''} = useParams<{ abVersion?: string }>();
+  const normalisedFeedbackType = feedbackType.toLowerCase();
+  const normalisedABVersion = abVersion.toUpperCase();
+  const isValidFeedbackType = ['banner', 'email'].includes(normalisedFeedbackType);
+  const isValidABVersion = ['A', 'B'].includes(normalisedABVersion);
+
+  if (!isValidFeedbackType || !isValidABVersion) {
+    return <NotFoundPage/>;
+  }
+
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
   const [error, setError] = React.useState(false);
   const [question1, setQuestion1] = React.useState('');
@@ -326,8 +336,8 @@ export function FeedbackForms() {
           setError(false);
 
           const feedbackData: FeedbackData = {
-            feedbackType: feedbackType,
-            aORbTest: abVersion,
+            feedbackType: normalisedFeedbackType,
+            aORbTest: normalisedABVersion,
             question_1: question1,
             question_2: question2,
             question_3: question3,
@@ -406,7 +416,7 @@ export function FeedbackForms() {
         Thank you for your feedback.
       </Typography>
       <br/>
-      {feedbackType === 'email' ?
+      {normalisedFeedbackType === 'email' ?
         <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
           You may now close this window.
         </Typography> :
