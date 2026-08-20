@@ -1,7 +1,7 @@
 import React from 'react';
 
 const NotFoundPage = () => (
-  <div className="govuk-width-container">
+  <div className="govuk-width-container" data-testid="not-found-page">
     <main
       className="govuk-main-wrapper govuk-main-wrapper--l"
       id="main-content"
