@@ -1,7 +1,11 @@
 import React from 'react';
+import {Helmet} from "react-helmet";
 
 const NotFoundPage = () => (
   <div className="govuk-width-container" data-testid="not-found-page">
+    <Helmet>
+      <title>Page not found - DRT</title>
+    </Helmet>
     <main
       className="govuk-main-wrapper govuk-main-wrapper--l"
       id="main-content"
