@@ -4,7 +4,7 @@ import {Helmet} from "react-helmet";
 const NotFoundPage = () => (
   <div className="govuk-width-container" data-testid="not-found-page">
     <Helmet>
-      <title>Page not found - DRT</title>
+      <title>Page not found - Dynamic Response Tool - Border Force</title>
     </Helmet>
     <main
       className="govuk-main-wrapper govuk-main-wrapper--l"
