@@ -28,7 +28,7 @@ const NotFoundPage = () => (
               style={{ textDecoration: 'underline' }}
             >
               drtpoiseteam@homeoffice.gov.uk
-            </a>
+            </a>.
           </p>
         </div>
       </div>
