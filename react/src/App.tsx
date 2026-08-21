@@ -31,6 +31,7 @@ import {Header, BottomBar, AccessibilityStatement} from '@drt/drt-react';
 import {adminMenuItems} from './components/Navigation';
 import {AirportNameIndex, getAirportByCode} from './airports';
 import BorderCrossingImport from "./components/BorderCrossingImport";
+import NotFoundPage from "./components/NotFoundPage";
 
 const StyledContainer = styled(Container)(() => ({
   textAlign: 'left',
@@ -160,6 +161,7 @@ export const App = () => {
             <Route path={"/feedback/:feedbackType/:abVersion"} element={<FeedbackForms/>}/>
             <Route path={"/user-feedback"} element={<FeedbackList/>}/>
             <Route path={"/users"} element={<UsersList/>}/>
+            <Route path={"*"} element={<NotFoundPage/>}/>
           </Routes>
         </StyledContainer>
       </div>

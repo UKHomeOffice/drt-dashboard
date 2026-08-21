@@ -1,3 +1,3 @@
 
-export const customerPageTitleSuffix = ' - DRT'
-export const adminPageTitleSuffix = ' – Admin - DRT'
+export const customerPageTitleSuffix = ' - Dynamic Response Tool - Border Force'
+export const adminPageTitleSuffix = ' - Admin - Dynamic Response Tool - Border Force'
