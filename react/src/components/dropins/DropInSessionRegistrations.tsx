@@ -85,7 +85,7 @@ export function DropInSessionRegistrations() {
       .then(response => handleResponse(response))
       .catch(error => {
         const status = (error as any)?.response?.status
-        if (status === 404 || status === 500) {
+        if (status === 404) {
           setNotFound(true)
           return
         }
@@ -96,7 +96,7 @@ export function DropInSessionRegistrations() {
       .then(response => handleDropInSessionResponse(response))
       .catch(error => {
         const status = (error as any)?.response?.status
-        if (status === 404 || status === 500) {
+        if (status === 404) {
           setNotFound(true)
           return
         }

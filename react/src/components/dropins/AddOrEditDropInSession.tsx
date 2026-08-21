@@ -52,7 +52,7 @@ export function AddOrEditDropInSession() {
       setStartTime(moment(response.data.startTime))
       setEndTime(moment(response.data.endTime))
       setMeetingLink(response.data.meetingLink)
-    } else if (response.status === 404 || response.status === 500) {
+    } else if (response.status === 404) {
       setNotFound(true)
     } else
       enqueueSnackbar('There was a problem loading the drop-in session. Try refreshing the page.', {variant: 'error'})
@@ -63,7 +63,7 @@ export function AddOrEditDropInSession() {
       .then(response => handleResponse(response))
       .catch(error => {
         const status = (error as any)?.response?.status
-        if (status === 404 || status === 500) {
+        if (status === 404) {
           setNotFound(true)
           return
         }
