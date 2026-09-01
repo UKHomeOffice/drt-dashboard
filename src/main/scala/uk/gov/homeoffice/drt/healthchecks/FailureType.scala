@@ -27,4 +27,3 @@ case object RunnerFailure extends FailureType {
 final case class HttpStatusFailure(statusCode: Int) extends FailureType {
   override def logValue: String = s"http_$statusCode"
 }
-
