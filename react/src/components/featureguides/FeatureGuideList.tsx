@@ -9,7 +9,7 @@ import PreviewIcon from '@mui/icons-material/Preview'
 import DeleteIcon from "@mui/icons-material/Delete"
 import EditIcon from '@mui/icons-material/Edit'
 import {Link, useNavigate} from "react-router-dom"
-import {DialogComponent} from "../DialogComponent"
+import {ConfirmationDialog} from '@drt/drt-react'
 import {deleteFeatureGuide, updatePublishedStatus, useFeatureGuides} from "../../store/featureGuides"
 import Loading from "../Loading"
 import moment from "moment-timezone"
@@ -134,29 +134,51 @@ export const FeatureGuideList = () => {
                                            setRequestedAt(moment().valueOf())
                                          }}
                                          actionsAvailable={true}/>}
-      {publishId && <DialogComponent actionText={'publish'}
-                                     onConfirm={() => {
-                                       publishId && updatePublishedStatus(publishId, true, () => {
-                                         setPublishId(undefined)
-                                         setRequestedAt(moment().valueOf())
-                                       })
-                                     }}
-                                     onCancel={() => setPublishId(undefined)}/>}
-      {unpublishId && <DialogComponent actionText={'unpublish'}
-                                       onConfirm={() => {
-                                         unpublishId && updatePublishedStatus(unpublishId, false, () => {
-                                           setUnpublishId(undefined)
-                                           setRequestedAt(moment().valueOf())
-                                         })
-                                       }}
-                                       onCancel={() => setUnpublishId(undefined)}/>}
-      {deleteId && <DialogComponent actionText={'delete'}
-                                    onConfirm={() => {
-                                      deleteId && deleteFeatureGuide(deleteId)
-                                      setDeleteId(undefined)
-                                      setRequestedAt(moment().valueOf())
-                                    }}
-                                    onCancel={() => setDeleteId(undefined)}/>}
+      <ConfirmationDialog
+        isOpen={Boolean(publishId)}
+        title="Confirm publish feature guide"
+        onConfirm={() => {
+          publishId && updatePublishedStatus(publishId, true, () => {
+            setRequestedAt(moment().valueOf())
+          })
+          setPublishId(undefined)
+        }}
+        onCancel={() => setPublishId(undefined)}
+      >
+        <p>
+        Are you sure you want to publish this feature guide item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={Boolean(unpublishId)}
+        title="Confirm unpublish feature guide"
+        onConfirm={() => {
+          unpublishId && updatePublishedStatus(unpublishId, false, () => {
+            setRequestedAt(moment().valueOf())
+          })
+          setUnpublishId(undefined)
+        }}
+        onCancel={() => setUnpublishId(undefined)}
+      >
+        <p>
+        Are you sure you want to unpublish this feature guide item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={Boolean(deleteId)}
+        title="Confirm delete feature guide"
+        confirmVariant="warning"
+        onConfirm={() => {
+          deleteId && deleteFeatureGuide(deleteId)
+          setDeleteId(undefined)
+          setRequestedAt(moment().valueOf())
+        }}
+        onCancel={() => setDeleteId(undefined)}
+      >
+        <p>
+        Are you sure you want to delete this feature guide item?
+        </p>
+      </ConfirmationDialog>
     </Stack>
   </PageContentWrapper>
 }

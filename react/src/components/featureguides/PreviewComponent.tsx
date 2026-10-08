@@ -6,7 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {useNavigate} from "react-router-dom";
-import {DialogComponent} from "../DialogComponent";
+import {ConfirmationDialog} from '@drt/drt-react';
 import {deleteFeatureGuide} from "../../store/featureGuides";
 import {FeatureGuide} from "./FeatureGuideList";
 import ReactMarkdown from "react-markdown";
@@ -23,12 +23,21 @@ export function PreviewComponent(props: Props) {
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
   return <div>
-    {deleteId && <DialogComponent actionText={'delete'}
-                                  onConfirm={() => {
-                                    deleteFeatureGuide(props.guide.id)
-                                    props.onClose()
-                                  }}
-                                  onCancel={() => setDeleteId(undefined)}/>}
+    <ConfirmationDialog
+      isOpen={Boolean(deleteId)}
+      title="Confirm delete feature guide"
+      confirmVariant="warning"
+      onConfirm={() => {
+        deleteFeatureGuide(props.guide.id)
+        setDeleteId(undefined)
+        props.onClose()
+      }}
+      onCancel={() => setDeleteId(undefined)}
+    >
+      <p>
+      Are you sure you want to delete this feature guide item?
+      </p>
+    </ConfirmationDialog>
     <Dialog open={true} maxWidth="lg" onClose={props.onClose}>
       <Grid container spacing={2}>
         <Grid item xs={10}>

@@ -7,7 +7,8 @@ import Box from "@mui/material/Box";
 import axios, {AxiosResponse} from "axios";
 import {Link, useParams} from "react-router-dom";
 import {SeminarData} from "./DropInSessionsList";
-import {Alert, DialogComponent} from "../DialogComponent";
+import {ConfirmationDialog} from "@drt/drt-react";
+import MuiAlert from '@mui/material/Alert';
 import {enqueueSnackbar} from "notistack";
 import ApiClient from "../../services/ApiClient";
 import Typography from "@mui/material/Typography";
@@ -136,9 +137,9 @@ export function DropInSessionRegistrations() {
         open={error}
         autoHideDuration={6000}
         onClose={() => setError(false)}>
-        <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
+        <MuiAlert elevation={6} variant="filled" onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
           There was a problem booking drop-ins. Please try reloading the page.
-        </Alert>
+        </MuiAlert>
       </Snackbar>
       <Box sx={{height: 400, width: '100%'}}>
         <DataGrid
@@ -148,12 +149,18 @@ export function DropInSessionRegistrations() {
           pageSizeOptions={[5]}
         />
       </Box>
-      {unregister && <DialogComponent actionText='unregister'
-                                      onCancel={() => setUnregister(false)}
-                                      onConfirm={() => {
-                                        removeRegistration(rowDetails?.dropInId as string, rowDetails?.email as string)
-                                      }}
-      />}
+      <ConfirmationDialog
+        isOpen={unregister}
+        title="Confirm unregister"
+        confirmVariant="warning"
+        onCancel={() => setUnregister(false)}
+        onConfirm={() => {
+          removeRegistration(rowDetails?.dropInId as string, rowDetails?.email as string)
+          setUnregister(false)
+        }}
+      >
+        Are you sure you want to unregister this item?
+      </ConfirmationDialog>
     </Stack>
   </>
 }
