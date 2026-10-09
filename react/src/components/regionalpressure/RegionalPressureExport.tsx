@@ -2,7 +2,7 @@ import * as React from 'react';
 import {connect} from 'react-redux'
 import {RootState} from '../../store/redux';
 import {useNavigate} from 'react-router';
-import {Button, ButtonGroup} from '@mui/material';
+import {Button as DrtButton} from '@drt/drt-react';
 import {paxByGateType, TerminalDataPoint} from './regionalPressureSagas';
 import {mkConfig, generateCsv, download} from "export-to-csv";
 import {PortsObject} from './regionalPressureSagas';
@@ -99,20 +99,18 @@ const RegionalPressureExport = ({forecastHourlyPaxByPort, historicHourlyPaxByPor
     download(csvConfig)(csv)
   }
 
-  return <ButtonGroup sx={{width: '100%'}}>
-    <Button
+  return <div style={{display: 'flex', gap: '0.5rem', width: '100%'}}>
+    <DrtButton
       fullWidth
-      startIcon={<ArrowDownward />}
-      variant="outlined"
-      sx={{backgroundColor: '#fff'}}
-      onClick={handleExport}>Export</Button>
-    <Button
+      startIcon={<ArrowDownward sx={{fontSize: 'inherit'}} />}
+      variant="primary"
+      onClick={handleExport}>Export</DrtButton>
+    <DrtButton
       fullWidth
-      startIcon={<BrowserUpdatedIcon />}
-      variant="outlined"
-      sx={{backgroundColor: '#fff'}}
-      onClick={() => navigate('/download')}>Download Manager</Button>
-  </ButtonGroup>
+      startIcon={<BrowserUpdatedIcon sx={{fontSize: 'inherit'}} />}
+      variant="secondary"
+      onClick={() => navigate('/download')}>Download Manager</DrtButton>
+  </div>
 }
 
 
