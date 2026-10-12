@@ -1,6 +1,6 @@
 import React, {useState} from "react"
 import {DataGrid, GridColDef, GridRenderCellParams} from "@mui/x-data-grid"
-import {Box, Typography, Button, Breadcrumbs, Stack} from "@mui/material"
+import {Box, Typography, Breadcrumbs, Stack} from "@mui/material"
 import {PreviewComponent} from "./PreviewComponent"
 import PublishIcon from '@mui/icons-material/Publish'
 import UnpublishedIcon from '@mui/icons-material/Unpublished'
@@ -9,7 +9,7 @@ import PreviewIcon from '@mui/icons-material/Preview'
 import DeleteIcon from "@mui/icons-material/Delete"
 import EditIcon from '@mui/icons-material/Edit'
 import {Link, useNavigate} from "react-router-dom"
-import {ConfirmationDialog} from '@drt/drt-react'
+import {Button as DrtButton, ConfirmationDialog} from '@drt/drt-react'
 import {deleteFeatureGuide, updatePublishedStatus, useFeatureGuides} from "../../store/featureGuides"
 import Loading from "../Loading"
 import moment from "moment-timezone"
@@ -114,7 +114,7 @@ export const FeatureGuideList = () => {
         </Link>
         <Typography color="text.primary">Feature guides</Typography>
       </Breadcrumbs>
-      <Link to={'/feature-guides/edit'}><Button sx={{fontWeight: 'bold'}} variant={'outlined'}>New guide</Button></Link>
+      <Link to={'/feature-guides/edit'}><DrtButton variant="primary">New guide</DrtButton></Link>
       {loading ?
         <Loading/> :
         failed ? <Typography variant={'body1'}>Failed to load features. Try refreshing the page</Typography> :
