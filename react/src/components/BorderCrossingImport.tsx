@@ -1,7 +1,7 @@
 import React from 'react'
 import {Box, FormControl} from "@mui/material"
-import Button from "@mui/material/Button"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import {Button as DrtButton} from "@drt/drt-react";
 import {styled} from "@mui/material/styles";
 import axios from "axios";
 import ApiClient from "../services/ApiClient";
@@ -13,6 +13,7 @@ const BorderCrossingImport = () => {
   const [uploading, setUploading] = React.useState(false)
   const [finished, setFinished] = React.useState(false)
   const [insertCount, setInsertCount] = React.useState(0)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const uploadFile = (file: File) => {
     setUploading(true)
@@ -47,23 +48,22 @@ const BorderCrossingImport = () => {
         <p>Upload an excel file here. The spreadsheet must contain a sheet named 'Data Response', and be in an expected
           format</p>
         <FormControl>
-          <Button
-            component="label"
-            role={undefined}
-            variant="contained"
-            tabIndex={-1}
+          <DrtButton
+            variant="primary"
             startIcon={<CloudUploadIcon/>}
             disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
           >
             Upload file
-            <VisuallyHiddenInput
-              type="file"
-              onChange={event => {
-                event.target.files && uploadFile(event.target.files[0])
-                event.target.value = ''
-              }}
-            />
-          </Button>
+          </DrtButton>
+          <VisuallyHiddenInput
+            ref={fileInputRef}
+            type="file"
+            onChange={event => {
+              event.target.files && uploadFile(event.target.files[0])
+              event.target.value = ''
+            }}
+          />
           {uploading && <p>Uploading & processing data. Please be patient as this may take a minute.</p>}
           {finished && <p>File uploaded. {insertCount} records found</p>}
         </FormControl>
