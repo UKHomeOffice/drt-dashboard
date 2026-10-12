@@ -2,7 +2,7 @@
 module.exports = {
   webpack: (config) => {
     const addExclude = (rule) => {
-      const drtReact = /node_modules[\\/]drt-react[\\/]/;
+      const drtReact = /node_modules[\\/]@drt[\\/]drt-react[\\/]/;
 
       if (!rule.exclude) {
         rule.exclude = [drtReact];
