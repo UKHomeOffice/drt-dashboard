@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Breadcrumbs} from "@mui/material"
-import {Cancel, Delete, Save} from "@mui/icons-material"
+import {Box, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Breadcrumbs} from "@mui/material"
+import {Button as DrtButton, ConfirmationDialog} from "@drt/drt-react"
 import {ScheduledHealthCheckPause} from "./model"
 import moment from "moment-timezone"
 import Loading from "../Loading"
@@ -61,14 +61,17 @@ export const HealthCheckEditor = () => {
       field: 'delete',
       headerName: '',
       width: 200,
+      align: 'center' as const,
       renderCell: (params: any) =>
-        <Button color="primary" variant="outlined"
-                size="medium"
-                onClick={() => setConfirm({
-                  kind: 'open',
-                  message: 'Are you sure you want to remove this health check pause?',
-                  onConfirm: confirmDeletePause(params.row.startsAt, params.row.endsAt),
-                })}><Delete/></Button>
+        <Box sx={{display: 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center'}}>
+          <DrtButton className="health-check-pause-remove-button" variant="secondary" onClick={() => setConfirm({
+            kind: 'open',
+            message: 'Are you sure you want to remove this health check pause?',
+            onConfirm: confirmDeletePause(params.row.startsAt, params.row.endsAt),
+          })}>
+            Remove
+          </DrtButton>
+        </Box>
     },
   ]
 
@@ -161,12 +164,7 @@ export const HealthCheckEditor = () => {
           </Link>
           <Typography color="text.primary">Health check pauses</Typography>
         </Breadcrumbs>
-        <>
-          <Link to={''} onClick={e => {
-            e.preventDefault()
-            addNewPause()
-          }}><Button color="primary" variant="outlined" size="medium">Add a new pause</Button></Link>
-        </>
+        <DrtButton className="health-check-pause-add-button" variant="primary" onClick={addNewPause}>Add a new pause</DrtButton>
         <>
           {newPause &&
             <Dialog open={true} maxWidth="xs">
@@ -189,32 +187,37 @@ export const HealthCheckEditor = () => {
                   />
                 </Stack>
               </DialogContent>
-              <DialogActions>
-                <Button color="primary" variant="outlined" size="medium"
-                        onClick={() => setNewPause(null)}>
-                  <Cancel/> Cancel
-                </Button>
-                <Button color="primary" variant="outlined" size="medium"
-                        onClick={() => newPause && saveNewPause(newPause)}
-                        disabled={!newPauseIsValid}>
-                  <Save/> Save
-                </Button>
+              <DialogActions sx={{justifyContent: 'center', m: 0, p: 0}}>
+                <Box sx={{
+                  display: 'flex',
+                  width: 'calc(100% - 48px)',
+                  boxSizing: 'border-box',
+                  justifyContent: 'flex-end',
+                  gap: 1,
+                  m: 0,
+                  p: 0,
+                }}>
+                  <DrtButton variant="primary"
+                          onClick={() => newPause && saveNewPause(newPause)}
+                          disabled={!newPauseIsValid}>
+                    Save
+                  </DrtButton>
+                  <DrtButton variant="secondary" onClick={() => setNewPause(null)}>
+                    Cancel
+                  </DrtButton>
+                </Box>
               </DialogActions>
             </Dialog>}
           {confirm.kind === 'open' &&
-            <Dialog open={true} maxWidth="xs">
-              <DialogTitle>{confirm.message}</DialogTitle>
-              <DialogActions>
-                <Button color="primary" variant="outlined" size="medium"
-                        onClick={() => setConfirm({kind: 'closed'})}
-                        key="no">
-                  No
-                </Button>
-                <Button color="primary" variant="outlined" size="medium" onClick={confirm.onConfirm} key="yes">
-                  Yes
-                </Button>
-              </DialogActions>
-            </Dialog>}
+            <ConfirmationDialog
+              isOpen={true}
+              title="Confirm remove health check pause"
+              confirmVariant="warning"
+              onCancel={() => setConfirm({kind: 'closed'})}
+              onConfirm={confirm.onConfirm}
+            >
+              <p>{confirm.message}</p>
+            </ConfirmationDialog>}
           {loading ?
             <Loading/> :
             failed ?
