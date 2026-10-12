@@ -5,16 +5,15 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Button,
   Stack,
   useTheme,
   Box,
 } from "@mui/material";
-import { Link } from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import { CheckCircle } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import {RootState} from '../../store/redux';
-import {drtTheme} from '@drt/drt-react';
+import {Button as DrtButton, drtTheme} from '@drt/drt-react';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -54,6 +53,7 @@ const doesExceed = (forecast: number): boolean => {
 
 const RegionalPressureChart = ({regionName, portCodes, forecastTotalPaxByPort, historicTotalPaxByPort}: RegionalPressureChartProps) => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const forecasts = [...portCodes].map((portCode) => {
     return (forecastTotalPaxByPort[portCode] - historicTotalPaxByPort[portCode]) / (historicTotalPaxByPort[portCode]) * 100
@@ -187,9 +187,11 @@ const RegionalPressureChart = ({regionName, portCodes, forecastTotalPaxByPort, h
                   Pax number does not exceed previous year at any airport
                 </Alert>
             }
-            <Button component={Link} to={`${regionName.toLowerCase()}`} fullWidth variant='contained' sx={{mt:2}}>
-              {regionName !== 'Heathrow' ? `View ${regionName} region` : `View ${regionName}`}
-            </Button>
+            <Box sx={{mt: 2}}>
+              <DrtButton fullWidth variant="primary" onClick={() => navigate(regionName.toLowerCase())}>
+                {regionName !== 'Heathrow' ? `View ${regionName} region` : `View ${regionName}`}
+              </DrtButton>
+            </Box>
           </Box>
         </Stack>
       </CardContent>
