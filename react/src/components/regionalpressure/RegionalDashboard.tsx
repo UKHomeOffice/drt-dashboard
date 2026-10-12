@@ -5,7 +5,6 @@ import pattern from 'patternomaly'
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -16,7 +15,7 @@ import {
 import {Link} from 'react-router-dom';
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import {Checkboxes, drtTheme} from '@drt/drt-react';
+import {Button as DrtButton, Checkboxes, drtTheme} from '@drt/drt-react';
 import {Chart} from 'react-chartjs-2';
 import {Chart as ChartJS, registerables,} from 'chart.js';
 import 'chartjs-adapter-moment';
@@ -61,6 +60,7 @@ export const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHou
   const [visiblePorts, setVisiblePorts] = React.useState<string[]>([...regionPorts])
   const availablePorts = config.ports.map(port => port.iata)
   const timeUnits = interval
+  const domain = config.domain || 'drt-preprod'
 
   return (
       <Box sx={{ backgroundColor: '#E6E9F1', p: 2 }}>
@@ -120,13 +120,13 @@ export const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHou
           {regionPorts && regionPorts.map((port: string) => {
             const linkPort = port.includes("LHR") ? 'lhr' : port
             const portName = port.replace("-", ' ')
-            return visiblePorts.includes(port) && forecastHourlyPaxByPort[port] && (
+            return visiblePorts.includes(port) && forecastHourlyPaxByPort[port] && historicHourlyPaxByPort[port] && (
                 <Grid key={port} item xs={6}>
                   <Card>
                     <CardHeader
                         title={portName}
                         action={
-                          <Button variant="contained" href={`http://${linkPort}.drt.homeoffice.gov.uk`}>View {portName} arrivals</Button>
+                          <DrtButton variant="primary" href={`https://${linkPort}.${domain}`}>View {portName} arrivals</DrtButton>
                         }
                     />
                     <CardContent>
