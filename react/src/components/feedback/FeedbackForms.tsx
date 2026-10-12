@@ -1,7 +1,6 @@
 import React from 'react';
 import {Field, Form, Formik} from 'formik';
 import {
-  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -18,6 +17,7 @@ import axios, {AxiosResponse} from "axios";
 import {useParams} from "react-router-dom";
 import ApiClient from "../../services/ApiClient";
 import {drtTheme} from '@drt/drt-react';
+import {Button as DrtButton} from '@drt/drt-react';
 import {customerPageTitleSuffix} from "../../utils/common";
 import {Helmet} from "react-helmet";
 import NotFoundPage from "../NotFoundPage";
@@ -80,14 +80,14 @@ export function FeedbackForms() {
         }
         label="I confirm I am aware my feedback submission will not be anonymous to the DRT team"
       />
-      <Button
-        variant="outlined"
+      <DrtButton
+        className="feedback-action-button"
+        variant="primary"
         disabled={!isConfirmed}
         onClick={handleConfirmation}
-        sx={{maxWidth: '200px', marginTop: '10px' , backgroundColor: drtTheme.palette.success.main, color: '#ffffff', '&:hover': {backgroundColor: drtTheme.palette.success.dark}}}
       >
         Confirm and continue
-      </Button>
+      </DrtButton>
     </Stack>
   );
 
@@ -151,7 +151,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button sx={{maxWidth: "120px"}} type="submit" variant="outlined">Continue</Button>
+            <DrtButton className="feedback-action-button" type="submit" variant="primary">Continue</DrtButton>
           </FormControl>
         </Form>
       )}
@@ -208,7 +208,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button sx={{maxWidth: "120px"}} type="submit" variant="outlined">Continue</Button>
+            <DrtButton className="feedback-action-button" type="submit" variant="primary">Continue</DrtButton>
           </FormControl>
         </Form>
       )}
@@ -256,7 +256,7 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <Button type="submit" variant="outlined">Continue</Button>
+                <DrtButton className="feedback-action-button" type="submit" variant="primary">Continue</DrtButton>
               </Grid>
               <Grid xs={9}>
                 <div style={{padding: '10px 30px'}}>
@@ -310,7 +310,7 @@ export function FeedbackForms() {
             <br/>
             <Grid container>
               <Grid xs={3}>
-                <Button type="submit" variant="outlined">Continue</Button>
+                <DrtButton className="feedback-action-button" type="submit" variant="primary">Continue</DrtButton>
               </Grid>
               <Grid xs={9}>
                 <div style={{padding: '10px 15px'}}>
@@ -396,7 +396,7 @@ export function FeedbackForms() {
               </Field>
             </Stack>
             <br/>
-            <Button type="submit" sx={{maxWidth: '180px'}} variant="outlined">Submit feedback</Button>
+            <DrtButton className="feedback-action-button" type="submit" variant="primary">Submit feedback</DrtButton>
           </FormControl>
           <Typography sx={{fontWeight: 'bold', color: '#DB0F24'}}>
             {errorText ? "Error while sending feedback . Please try again in sometime" : ""}
@@ -420,8 +420,7 @@ export function FeedbackForms() {
         <Typography variant="h5" sx={{float: "centre", fontWeight: 'bold', color: '#111224'}}>
           You may now close this window.
         </Typography> :
-        <Button variant="outlined" sx={{maxWidth: '150px'}}
-                onClick={() => window.close()}>Exit Feedback</Button>
+        <DrtButton className="feedback-action-button" variant="primary" onClick={() => window.close()}>Exit Feedback</DrtButton>
       }
 
     </Stack>

@@ -170,3 +170,8 @@ html {
 .health-check-pause-add-button {
   align-self: flex-start;
 }
+
+.feedback-action-button.govuk-button {
+  align-self: flex-start;
+  width: fit-content;
+}
