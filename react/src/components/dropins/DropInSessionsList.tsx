@@ -11,11 +11,11 @@ import {ViewDropInSession} from "./ViewDropInSession";
 import {CalendarViewMonth} from "@mui/icons-material";
 import moment from 'moment-timezone';
 import {Link} from "react-router-dom";
-import {Typography, Button, Checkbox, Breadcrumbs, Stack, FormControlLabel, Box} from "@mui/material";
+import {Typography, Checkbox, Breadcrumbs, Stack, FormControlLabel, Box} from "@mui/material";
 import {enqueueSnackbar} from "notistack";
 import Loading from "../Loading";
 import {useDropInSessions} from "../../store/dropInSessions";
-import {ConfirmationDialog} from "@drt/drt-react";
+import {Button as DrtButton, ConfirmationDialog} from "@drt/drt-react";
 import ApiClient from "../../services/ApiClient";
 import {adminPageTitleSuffix} from "../../utils/common";
 import {Helmet} from "react-helmet";
@@ -196,8 +196,7 @@ export function DropInSessionsList() {
         <Typography color="text.primary">Drop-in sessions</Typography>
       </Breadcrumbs>
       <Stack direction={'row'} justifyContent={'space-between'}>
-        <Link to={'/drop-in-sessions/edit'}><Button sx={{fontWeight: 'bold', maxWidth: '250px'}} variant={'outlined'}>New
-          drop in session</Button></Link>
+        <Link to={'/drop-in-sessions/edit'}><DrtButton variant="primary">New drop in session</DrtButton></Link>
         <FormControlLabel
           label={'Show all'}
           control={<Checkbox checked={showAll} onChange={() => setShowAll(!showAll)} color="primary"/>}

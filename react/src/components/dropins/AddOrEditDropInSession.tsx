@@ -3,7 +3,7 @@ import axios, {AxiosResponse} from "axios";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker';
 import TextField from '@mui/material/TextField';
-import Button from "@mui/material/Button";
+import {Button as DrtButton} from "@drt/drt-react";
 import Grid from "@mui/material/Grid";
 import moment from 'moment-timezone';
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
@@ -188,8 +188,8 @@ export function AddOrEditDropInSession() {
           </Grid>
           <Grid item xs={12}>
             <Stack gap={1} direction={'row'}>
-              <Button variant={"outlined"} onClick={() => navigate('/drop-in-sessions')}>Cancel</Button>
-              <Button variant={"outlined"} type={"submit"}>{sessionId ? 'Save changes' : 'Save'}</Button>
+              <DrtButton variant="primary" type="submit">{sessionId ? 'Save changes' : 'Save'}</DrtButton>
+              <DrtButton variant="secondary" onClick={() => navigate('/drop-in-sessions')}>Cancel</DrtButton>
             </Stack>
           </Grid>
         </Grid>
