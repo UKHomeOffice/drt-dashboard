@@ -26,7 +26,6 @@ KEY_CLOAK_USERNAME= \
 KEY_CLOAK_PASSWORD= \
 NO_JSON_LOGGING= \
 ENABLED_PORTS=stn,lcy,ltn,nwi,sen,bhx,ema,lhr \
-SLACK_WEBHOOK_URL= \
 sbt run
 ``` 
 

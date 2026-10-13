@@ -76,15 +76,13 @@ class HealthCheckLoggingSpec extends AnyWordSpec with Matchers {
         logger,
         portCode,
         "Landing Times",
-        Priority1,
-        slackNotificationAttempted = true
+        Priority1
       )
       HealthCheckLogging.logAlarmResolved(
         logger,
         portCode,
         "Landing Times",
-        Priority1,
-        slackNotificationAttempted = true
+        Priority1
       )
 
       appender.list.get(0).getLevel should ===(Level.WARN)

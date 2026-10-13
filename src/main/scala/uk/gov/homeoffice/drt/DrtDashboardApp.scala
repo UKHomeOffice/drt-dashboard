@@ -51,8 +51,7 @@ object DrtDashboardApp extends App {
     featureFolderPrefix = config.getString("feature-guides.s3-folder-prefix"),
     portTerminals = portTerminals,
     healthCheckFrequencyMinutes = config.getInt("health-checks.frequency-minutes"),
-    enabledPorts = enabledPorts,
-    slackUrl = config.getString("health-checks.slack.webhook-url")
+    enabledPorts = enabledPorts
   )
 
   private val govNotifyClient = new NotificationClient(serverConfig.notifyServiceApiKey)

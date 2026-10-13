@@ -79,8 +79,7 @@ case class ServerConfig(
     featureFolderPrefix: String,
     portTerminals: LocalDate => Map[PortCode, Seq[Terminal]],
     healthCheckFrequencyMinutes: Int,
-    enabledPorts: Seq[PortCode],
-    slackUrl: String
+    enabledPorts: Seq[PortCode]
 ) {
   val clientConfig: ClientConfig =
     ClientConfig(portRegions, () => portTerminals(SDate.now().toLocalDate), rootDomain, teamEmail)
@@ -181,11 +180,7 @@ object Server {
       val sendHttpRequest = (request: HttpRequest) => Http()(mat.system).singleRequest(request)
       val httpClient = ProdHttpClient(sendHttpRequest)
 
-      val slackClient =
-        if (config.slackUrl.nonEmpty) SlackClientImpl(httpClient, config.slackUrl)
-        else NoopSlackClient
-
-      val healthChecksActor = startHealthChecksActor(slackClient, urls)
+      val healthChecksActor = startHealthChecksActor()
       val getAlarmStatuses: () => Future[Map[PortCode, Map[String, Boolean]]] =
         () => healthChecksActor.ask(replyTo => HealthChecksActor.GetAlarmStatuses(replyTo))
 
@@ -318,30 +313,14 @@ object Server {
       starting(wasStopped = false)
     }
 
-  private def startHealthChecksActor(
-      slackClient: SlackClient,
-      urls: Urls
-  )(implicit system: ActorSystem[Nothing], ec: ExecutionContext): ActorRef[HealthChecksActor.Command] = {
-    def sendSlackNotification(
-        portCode: PortCode,
-        checkName: String,
-        priority: IncidentPriority,
-        status: String
-    ): Unit = {
-      val port = portCode.toString.toUpperCase
-      val link = urls.urlForPort(port)
-      val message = s"$port ${priority.name} $status $checkName - $link"
-      slackClient.notify(message)
-    }
+  private def startHealthChecksActor()(implicit system: ActorSystem[Nothing]): ActorRef[HealthChecksActor.Command] = {
 
     val soundAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
-      HealthCheckLogging.logAlarmTriggered(log, portCode, checkName, priority, slackNotificationAttempted = true)
-      sendSlackNotification(portCode, checkName, priority, "triggered")
+      HealthCheckLogging.logAlarmTriggered(log, portCode, checkName, priority)
     }
 
     val silenceAlarm = (portCode: PortCode, checkName: String, priority: IncidentPriority) => {
-      HealthCheckLogging.logAlarmResolved(log, portCode, checkName, priority, slackNotificationAttempted = true)
-      sendSlackNotification(portCode, checkName, priority, "resolved")
+      HealthCheckLogging.logAlarmResolved(log, portCode, checkName, priority)
     }
 
     val alarmTriggerConsecutiveFailures = 3
