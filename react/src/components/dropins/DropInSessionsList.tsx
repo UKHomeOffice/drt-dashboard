@@ -11,11 +11,11 @@ import {ViewDropInSession} from "./ViewDropInSession";
 import {CalendarViewMonth} from "@mui/icons-material";
 import moment from 'moment-timezone';
 import {Link} from "react-router-dom";
-import {Typography, Button, Checkbox, Breadcrumbs, Stack, FormControlLabel, Box} from "@mui/material";
+import {Typography, Checkbox, Breadcrumbs, Stack, FormControlLabel, Box} from "@mui/material";
 import {enqueueSnackbar} from "notistack";
 import Loading from "../Loading";
 import {useDropInSessions} from "../../store/dropInSessions";
-import {DialogComponent} from "../DialogComponent";
+import {Button as DrtButton, ConfirmationDialog} from "@drt/drt-react";
 import ApiClient from "../../services/ApiClient";
 import {adminPageTitleSuffix} from "../../utils/common";
 import {Helmet} from "react-helmet";
@@ -196,8 +196,7 @@ export function DropInSessionsList() {
         <Typography color="text.primary">Drop-in sessions</Typography>
       </Breadcrumbs>
       <Stack direction={'row'} justifyContent={'space-between'}>
-        <Link to={'/drop-in-sessions/edit'}><Button sx={{fontWeight: 'bold', maxWidth: '250px'}} variant={'outlined'}>New
-          drop in session</Button></Link>
+        <Link to={'/drop-in-sessions/edit'}><DrtButton variant="primary">New drop in session</DrtButton></Link>
         <FormControlLabel
           label={'Show all'}
           control={<Checkbox checked={showAll} onChange={() => setShowAll(!showAll)} color="primary"/>}
@@ -225,27 +224,45 @@ export function DropInSessionsList() {
                          meetingLink={rowDetails?.meetingLink}
                          view={view}
                          setView={setView}/>
-      {showDelete && <DialogComponent
-        actionText='remove drop-in'
+      <ConfirmationDialog
+        isOpen={showDelete}
+        title="Confirm remove drop-in"
+        confirmVariant='warning'
         onCancel={() => setShowDelete(false)}
         onConfirm={() => {
           deleteSession(rowDetails?.id as string)
           setShowDelete(false)
-        }}/>}
-      {publish && <DialogComponent
-        actionText="publish"
-        onCancel={() => setShowDelete(false)}
+        }}>
+        <p className="govuk-body">
+          Are you sure you want to remove this drop-in item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={publish}
+        title="Confirm publish drop-in"
+        onCancel={() => setPublish(false)}
         onConfirm={() => {
           updatePublished(rowDetails?.id as string, true)
           setPublish(false)
-        }}/>}
-      {unPublish && <DialogComponent
-        actionText="unPublish"
-        onCancel={() => setShowDelete(false)}
+        }}
+      >
+        <p className="govuk-body">
+        Are you sure you want to publish this drop-in item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={unPublish}
+        title="Confirm unPublish drop-in"
+        onCancel={() => setUnPublish(false)}
         onConfirm={() => {
           updatePublished(rowDetails?.id as string, false)
           setUnPublish(false)
-        }}/>}
+        }}
+      >
+        <p className="govuk-body">
+        Are you sure you want to unPublish this drop-in item?
+        </p>
+      </ConfirmationDialog>
     </Stack>
   </PageContentWrapper>
 }

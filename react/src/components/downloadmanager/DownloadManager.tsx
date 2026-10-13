@@ -4,7 +4,6 @@ import {
   Alert,
   AlertTitle,
   Box,
-  Button,
   FormControl,
   FormControlLabel,
   Radio,
@@ -12,7 +11,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material"
 
-import {DatePicker, IsoDate} from '@drt/drt-react'
+import {Button as DrtButton, DatePicker, IsoDate} from '@drt/drt-react'
 import moment from 'moment'
 import DownloadPorts from './DownloadPorts'
 import DownloadModal from './DownloadModal'
@@ -231,7 +230,7 @@ export const DownloadManager = ({
 
 
         <Box sx={{marginTop: '1em'}}>
-          <Button onClick={() => handleSubmit()} color='primary' variant='contained'>Create Report</Button>
+          <DrtButton variant="primary" onClick={handleSubmit}>Create Report</DrtButton>
         </Box>
 
         <DownloadModal status={status} downloadUrl={downloadUrl} isModalOpen={modalOpen}

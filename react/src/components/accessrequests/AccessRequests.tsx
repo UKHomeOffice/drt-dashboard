@@ -6,8 +6,9 @@ import axios, {AxiosResponse} from "axios";
 import AccessRequestDetails, {UserRequestedAccessData} from "./AccessRequestDetails";
 import ConfirmAccessRequest from "./ConfirmAccessRequest";
 import AccessRequestStatusList from "./AccessRequestStatusList";
-import {Button, Stack, Typography, Breadcrumbs} from "@mui/material";
+import {Stack, Typography, Breadcrumbs} from "@mui/material";
 import { Link } from 'react-router-dom';
+import {Button as DrtButton} from "@drt/drt-react";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import {columns, KeyCloakUser} from "./AccessRequestCommon";
@@ -158,10 +159,10 @@ export default function AccessRequests() {
       }
 
       <Stack gap={1} direction={'row'} sx={{my: 2}}>
-        <Button variant="outlined" disabled={selectedRowIds.length === 0}
-                onClick={approveSelectedUserRequests}>Approve</Button>
-        <Button variant="outlined" disabled={selectedRowIds.length === 0}
-                onClick={dismissSelectedAccessRequests}>Dismiss</Button>
+        <DrtButton variant="primary" disabled={selectedRowIds.length === 0}
+                onClick={approveSelectedUserRequests}>Approve</DrtButton>
+        <DrtButton variant="secondary" disabled={selectedRowIds.length === 0}
+                onClick={dismissSelectedAccessRequests}>Dismiss</DrtButton>
       </Stack>
     </Box>
   }

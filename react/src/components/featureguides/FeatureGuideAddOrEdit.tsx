@@ -3,6 +3,7 @@ import {MarkdownEditor} from './MarkdownEditor'
 import axios from "axios"
 import {PreviewComponent} from "./PreviewComponent"
 import Button from "@mui/material/Button"
+import {Button as DrtButton} from "@drt/drt-react"
 import {Breadcrumbs, Stack} from "@mui/material"
 import {Link, useNavigate, useParams} from "react-router-dom"
 import Typography from "@mui/material/Typography"
@@ -112,8 +113,8 @@ export const FeatureGuideAddOrEdit = () => {
           />
         </div>
         <Stack gap={1} direction={'row'}>
-          <Button variant={"outlined"} onClick={() => navigate('/feature-guides')}>Cancel</Button>
-          <Button variant={"outlined"} color={"primary"} type={"submit"}>{guideId ? 'Save changes' : 'Save'}</Button>
+          <DrtButton variant="primary" type="submit">{guideId ? 'Save changes' : 'Save'}</DrtButton>
+          <DrtButton variant="secondary" onClick={() => navigate('/feature-guides')}>Cancel</DrtButton>
         </Stack>
       </form>
       {markdownContent.length > 0 ?

@@ -3,13 +3,13 @@ import axios, {AxiosResponse} from "axios";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker';
 import TextField from '@mui/material/TextField';
-import Button from "@mui/material/Button";
+import {Button as DrtButton} from "@drt/drt-react";
 import Grid from "@mui/material/Grid";
 import moment from 'moment-timezone';
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {Moment} from "moment";
 import {Breadcrumbs, Stack} from "@mui/material";
-import {Alert} from "../DialogComponent";
+import MuiAlert from '@mui/material/Alert';
 import {Link, useNavigate, useParams} from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import {enqueueSnackbar} from "notistack";
@@ -128,7 +128,7 @@ export function AddOrEditDropInSession() {
         </Link>
         <Typography color="text.primary">{sessionId ? 'Edit' : 'Add'} session</Typography>
       </Breadcrumbs>
-      {errorText && <Alert severity="warning">{errorText}</Alert>}
+      {errorText && <MuiAlert elevation={6} variant="filled" severity="warning">{errorText}</MuiAlert>}
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12}>
@@ -188,8 +188,8 @@ export function AddOrEditDropInSession() {
           </Grid>
           <Grid item xs={12}>
             <Stack gap={1} direction={'row'}>
-              <Button variant={"outlined"} onClick={() => navigate('/drop-in-sessions')}>Cancel</Button>
-              <Button variant={"outlined"} type={"submit"}>{sessionId ? 'Save changes' : 'Save'}</Button>
+              <DrtButton variant="primary" type="submit">{sessionId ? 'Save changes' : 'Save'}</DrtButton>
+              <DrtButton variant="secondary" onClick={() => navigate('/drop-in-sessions')}>Cancel</DrtButton>
             </Stack>
           </Grid>
         </Grid>

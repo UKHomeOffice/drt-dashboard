@@ -1,6 +1,6 @@
 import React, {useState} from "react"
 import {DataGrid, GridColDef, GridRenderCellParams} from "@mui/x-data-grid"
-import {Box, Typography, Button, Breadcrumbs, Stack} from "@mui/material"
+import {Box, Typography, Breadcrumbs, Stack} from "@mui/material"
 import {PreviewComponent} from "./PreviewComponent"
 import PublishIcon from '@mui/icons-material/Publish'
 import UnpublishedIcon from '@mui/icons-material/Unpublished'
@@ -9,7 +9,7 @@ import PreviewIcon from '@mui/icons-material/Preview'
 import DeleteIcon from "@mui/icons-material/Delete"
 import EditIcon from '@mui/icons-material/Edit'
 import {Link, useNavigate} from "react-router-dom"
-import {DialogComponent} from "../DialogComponent"
+import {Button as DrtButton, ConfirmationDialog} from '@drt/drt-react'
 import {deleteFeatureGuide, updatePublishedStatus, useFeatureGuides} from "../../store/featureGuides"
 import Loading from "../Loading"
 import moment from "moment-timezone"
@@ -114,7 +114,7 @@ export const FeatureGuideList = () => {
         </Link>
         <Typography color="text.primary">Feature guides</Typography>
       </Breadcrumbs>
-      <Link to={'/feature-guides/edit'}><Button sx={{fontWeight: 'bold'}} variant={'outlined'}>New guide</Button></Link>
+      <Link to={'/feature-guides/edit'}><DrtButton variant="primary">New guide</DrtButton></Link>
       {loading ?
         <Loading/> :
         failed ? <Typography variant={'body1'}>Failed to load features. Try refreshing the page</Typography> :
@@ -134,29 +134,51 @@ export const FeatureGuideList = () => {
                                            setRequestedAt(moment().valueOf())
                                          }}
                                          actionsAvailable={true}/>}
-      {publishId && <DialogComponent actionText={'publish'}
-                                     onConfirm={() => {
-                                       publishId && updatePublishedStatus(publishId, true, () => {
-                                         setPublishId(undefined)
-                                         setRequestedAt(moment().valueOf())
-                                       })
-                                     }}
-                                     onCancel={() => setPublishId(undefined)}/>}
-      {unpublishId && <DialogComponent actionText={'unpublish'}
-                                       onConfirm={() => {
-                                         unpublishId && updatePublishedStatus(unpublishId, false, () => {
-                                           setUnpublishId(undefined)
-                                           setRequestedAt(moment().valueOf())
-                                         })
-                                       }}
-                                       onCancel={() => setUnpublishId(undefined)}/>}
-      {deleteId && <DialogComponent actionText={'delete'}
-                                    onConfirm={() => {
-                                      deleteId && deleteFeatureGuide(deleteId)
-                                      setDeleteId(undefined)
-                                      setRequestedAt(moment().valueOf())
-                                    }}
-                                    onCancel={() => setDeleteId(undefined)}/>}
+      <ConfirmationDialog
+        isOpen={Boolean(publishId)}
+        title="Confirm publish feature guide"
+        onConfirm={() => {
+          publishId && updatePublishedStatus(publishId, true, () => {
+            setRequestedAt(moment().valueOf())
+          })
+          setPublishId(undefined)
+        }}
+        onCancel={() => setPublishId(undefined)}
+      >
+        <p>
+        Are you sure you want to publish this feature guide item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={Boolean(unpublishId)}
+        title="Confirm unpublish feature guide"
+        onConfirm={() => {
+          unpublishId && updatePublishedStatus(unpublishId, false, () => {
+            setRequestedAt(moment().valueOf())
+          })
+          setUnpublishId(undefined)
+        }}
+        onCancel={() => setUnpublishId(undefined)}
+      >
+        <p>
+        Are you sure you want to unpublish this feature guide item?
+        </p>
+      </ConfirmationDialog>
+      <ConfirmationDialog
+        isOpen={Boolean(deleteId)}
+        title="Confirm delete feature guide"
+        confirmVariant="warning"
+        onConfirm={() => {
+          deleteId && deleteFeatureGuide(deleteId)
+          setDeleteId(undefined)
+          setRequestedAt(moment().valueOf())
+        }}
+        onCancel={() => setDeleteId(undefined)}
+      >
+        <p>
+        Are you sure you want to delete this feature guide item?
+        </p>
+      </ConfirmationDialog>
     </Stack>
   </PageContentWrapper>
 }

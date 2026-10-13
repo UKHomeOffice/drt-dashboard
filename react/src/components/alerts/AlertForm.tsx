@@ -4,7 +4,6 @@ import moment from "moment-timezone";
 import axios from "axios";
 import {
     Box,
-    Button,
     FormControl,
     FormGroup,
     InputLabel,
@@ -12,6 +11,7 @@ import {
     Select,
     TextField
 } from "@mui/material";
+import {Button as DrtButton} from "@drt/drt-react";
 import {Alert} from "./ViewAlerts"
 import {UserProfile} from "../../model/User";
 import ApiClient from "../../services/ApiClient";
@@ -24,7 +24,7 @@ const StyledFormControl = styled(FormControl)(({theme}) => ({
     margin: theme.spacing(1),
 }));
 
-const SaveButton = styled(Button)(() => ({
+const SaveButton = styled(DrtButton)(() => ({
     marginTop: 10
 }));
 
@@ -114,7 +114,7 @@ export default function AlertForm(props: IProps) {
                 />
             </FormGroup>
             <FormGroup>
-                <SaveButton variant="contained" color="primary" onClick={save}>Save</SaveButton>
+                <SaveButton variant="primary" onClick={save}>Save</SaveButton>
             </FormGroup>
 
             <Box m={2}><Alert alertClass={alertClass} title={title} message={message}
