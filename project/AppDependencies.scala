@@ -7,8 +7,8 @@ object AppDependencies {
   private val logbackJsonVersion = "0.1.5"
   private val scalaTestVersion = "3.2.20"
 
-  private val ciriumVersion = "v425"
-  private val drtLibVersion = "v1489"
+  private val ciriumVersion = "v431"
+  private val drtLibVersion = "v1492"
 
   val compileDependencies: Seq[ModuleID] = Seq(
     "org.apache.pekko"           %% "pekko-actor-typed"         % pekkoVersion,
@@ -17,7 +17,7 @@ object AppDependencies {
     "org.apache.pekko"           %% "pekko-stream"              % pekkoVersion,
     "org.apache.pekko"           %% "pekko-pki"                 % pekkoVersion,
     "org.apache.pekko"           %% "pekko-http-spray-json"     % pekkoHttpVersion,
-    "joda-time"                   % "joda-time"                 % "2.14.3",
+    "joda-time"                   % "joda-time"                 % "2.14.4",
     "com.typesafe.scala-logging" %% "scala-logging"             % "3.9.6",
     "ch.qos.logback"              % "logback-classic"           % "1.5.38" % Runtime,
     "com.lihaoyi"                %% "scalatags"                 % "0.13.1",
@@ -34,17 +34,17 @@ object AppDependencies {
     "info.folone"                %% "poi-scala"                 % "2.1.1",
     "com.typesafe.slick"         %% "slick"                     % slickVersion,
     "com.typesafe.slick"         %% "slick-hikaricp"            % slickVersion,
-    "org.postgresql"              % "postgresql"                % "42.7.13"
+    "org.postgresql"              % "postgresql"                % "42.7.14"
   )
 
   val testDependencies: Seq[ModuleID] = Seq(
-    "com.h2database"    % "h2"                        % "2.4.240"        % Test,
+    "com.h2database"    % "h2"                        % "2.5.252"        % Test,
     "org.apache.pekko" %% "pekko-http-testkit"        % pekkoHttpVersion % Test,
     "org.apache.pekko" %% "pekko-stream-testkit"      % pekkoVersion     % Test,
     "org.apache.pekko" %% "pekko-actor-testkit-typed" % pekkoVersion     % Test,
     "org.scalatest"    %% "scalatest"                 % scalaTestVersion % Test,
     "org.specs2"       %% "specs2-core"               % "4.23.0"         % Test,
-    "org.mockito"       % "mockito-core"              % "5.23.0"         % Test
+    "org.mockito"       % "mockito-core"              % "5.24.0"         % Test
   )
 
   val all: Seq[ModuleID] = compileDependencies ++ testDependencies

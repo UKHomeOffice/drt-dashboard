@@ -109,8 +109,7 @@ object HealthCheckLogging {
       logger: Logger,
       portCode: PortCode,
       checkName: String,
-      priority: IncidentPriority,
-      slackNotificationAttempted: Boolean
+      priority: IncidentPriority
   ): Unit = {
     val fields = Map(
       "eventCategory" -> EventCategory,
@@ -118,8 +117,7 @@ object HealthCheckLogging {
       "portCode" -> portCode.iata,
       "checkName" -> checkName,
       "priority" -> priority.name,
-      "alarmState" -> "active",
-      "slackNotificationAttempted" -> slackNotificationAttempted.toString
+      "alarmState" -> "active"
     )
 
     logger.warn(toMessage(AlarmTriggeredEvent, fields))
@@ -129,8 +127,7 @@ object HealthCheckLogging {
       logger: Logger,
       portCode: PortCode,
       checkName: String,
-      priority: IncidentPriority,
-      slackNotificationAttempted: Boolean
+      priority: IncidentPriority
   ): Unit = {
     val fields = Map(
       "eventCategory" -> EventCategory,
@@ -138,8 +135,7 @@ object HealthCheckLogging {
       "portCode" -> portCode.iata,
       "checkName" -> checkName,
       "priority" -> priority.name,
-      "alarmState" -> "inactive",
-      "slackNotificationAttempted" -> slackNotificationAttempted.toString
+      "alarmState" -> "inactive"
     )
 
     logger.info(toMessage(AlarmResolvedEvent, fields))
