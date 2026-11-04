@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"-@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.npmjs.org/-/-/--0.0.1.tgz"
-  integrity sha512-3HfneK3DGAm05fpyj20sT3apkNcvPpCuccOThOPdzz8sY7GgQGe0l93XH9bt+YzibcTIgUAIMoyVJI740RtgyQ==
-
 "@adobe/css-tools@^4.4.0":
   version "4.4.2"
   resolved "https://registry.npmjs.org/@adobe/css-tools/-/css-tools-4.4.2.tgz"
@@ -1229,11 +1224,10 @@
   dependencies:
     "@date-io/core" "^2.17.0"
 
-"@drt/drt-react@github:UKHomeOffice/drt-react#v2.13.0":
-  version "2.13.0"
-  resolved "git+ssh://git@github.com/UKHomeOffice/drt-react.git#0d8795eda84b9c71ebe5141da7a18dc695a7a3fb"
+"@drt/drt-react@github:UKHomeOffice/drt-react#v2.14.0":
+  version "2.14.0"
+  resolved "git+ssh://git@github.com/UKHomeOffice/drt-react.git#ed29264c8e9dee26445a7e771de7ab4992f8bfc8"
   dependencies:
-    "-" "^0.0.1"
     "@emotion/react" "^11.11.4"
     "@emotion/styled" "^11.11.5"
     "@fontsource/material-icons" "^5.0.18"
