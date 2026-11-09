@@ -5,9 +5,6 @@ import pattern from 'patternomaly'
 import {
   Alert,
   Box,
-  Card,
-  CardContent,
-  CardHeader,
   Grid,
   IconButton,
   Stack
@@ -15,7 +12,7 @@ import {
 import {Link} from 'react-router-dom';
 import {ConfigValues} from "../../model/Config";
 import {RootState} from '../../store/redux';
-import {Button as DrtButton, Checkboxes, drtTheme} from '@drt/drt-react';
+import {Button as DrtButton, Card, Checkboxes, drtTheme} from '@drt/drt-react';
 import {Chart} from 'react-chartjs-2';
 import {Chart as ChartJS, registerables,} from 'chart.js';
 import 'chartjs-adapter-moment';
@@ -121,19 +118,24 @@ export const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHou
             const linkPort = port.includes("LHR") ? 'lhr' : port
             const portName = port.replace("-", ' ')
             return visiblePorts.includes(port) && forecastHourlyPaxByPort[port] && historicHourlyPaxByPort[port] && (
-                <Grid key={port} item xs={6}>
-                  <Card>
-                    <CardHeader
-                        title={portName}
-                        action={
-                          <DrtButton variant="primary" href={`https://${linkPort}.${domain}`}>View {portName} arrivals</DrtButton>
-                        }
-                    />
-                    <CardContent>
+                <Grid key={port} item xs={12} sm={6}>
+                  <Card
+                    heading={portName}
+                    headingLevel={3}
+                    className="pressure-card"
+                    role="group"
+                    aria-label={`${portName} arrivals`}
+                    tabIndex={0}
+                    action={
+                      <DrtButton variant="primary" href={`https://${linkPort}.${domain}`}>View {portName} arrivals</DrtButton>
+                    }
+                  >
                       <Alert severity="warning">Pax exceed previous year at highlighted times</Alert>
                       <Chart
                           type='line'
                           id={port}
+                          role="img"
+                          aria-label={`${portName} forecast and historical arrivals chart`}
                           options={{
                             layout: {
                               padding: {
@@ -317,8 +319,6 @@ export const RegionalDashboard = ({ config, forecastHourlyPaxByPort, historicHou
                             ]
                           }}
                       />
-
-                    </CardContent>
                   </Card>
                 </Grid>
             )

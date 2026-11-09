@@ -22,3 +22,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.pressure-card:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
