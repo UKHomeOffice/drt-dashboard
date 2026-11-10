@@ -5,6 +5,7 @@ import {MemoryRouter, Route, Routes} from 'react-router-dom';
 import {RegionalDashboard} from '../../components/regionalpressure/RegionalDashboard';
 
 jest.mock('@drt/drt-react', () => ({
+  ...jest.requireActual('@drt/drt-react'),
   Checkboxes: () => null,
   drtTheme: {palette: {grey: {800: '#505a5f'}}},
 }));
@@ -104,11 +105,12 @@ describe('RegionalDashboard', () => {
     await user.tab();
     expect(testingScreen.getByRole('button', {name: 'Download Manager'})).toHaveFocus();
     await user.tab();
+    expect(testingScreen.getByRole('group', {name: 'MAN arrivals'})).toHaveFocus();
+    await user.tab();
     expect(arrivalsLink).toHaveFocus();
   });
 
 });
-
 
 
 
