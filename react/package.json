@@ -15,7 +15,7 @@
     "isready": "npm run format && npm run lint && npm run test:coverage && npm run build"
   },
   "dependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@date-io/moment": "^2.11.0",
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
