@@ -2,9 +2,6 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {
   Alert,
-  Card,
-  CardContent,
-  CardHeader,
   Stack,
   useTheme,
   Box,
@@ -13,7 +10,7 @@ import {useNavigate} from 'react-router';
 import { CheckCircle } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import {RootState} from '../../store/redux';
-import {Button as DrtButton, drtTheme} from '@drt/drt-react';
+import {Button as DrtButton, Card, drtTheme} from '@drt/drt-react';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -54,6 +51,7 @@ const doesExceed = (forecast: number): boolean => {
 const RegionalPressureChart = ({regionName, portCodes, forecastTotalPaxByPort, historicTotalPaxByPort}: RegionalPressureChartProps) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const heading = regionName !== 'Heathrow' ? `${regionName} Region` : regionName;
 
   const forecasts = [...portCodes].map((portCode) => {
     return (forecastTotalPaxByPort[portCode] - historicTotalPaxByPort[portCode]) / (historicTotalPaxByPort[portCode]) * 100
@@ -172,29 +170,37 @@ const RegionalPressureChart = ({regionName, portCodes, forecastTotalPaxByPort, h
   }
 
   return (
-    <Card variant='outlined'>
-      <CardHeader component='h3' sx={{m: 0, textAlign: 'center'}} title={regionName !== 'Heathrow' ? `${regionName} Region` : regionName} />
-      <CardContent sx={{px: 0}}>
-        <Stack sx={{ width: '100%' }} spacing={2}>
-          <Radar data={chartData} options={chartOptions} />
-          <Box sx={{px: 2}}>
-            { exceededCount > 0 ?
-                <Alert icon={<ErrorIcon fontSize="inherit" />} severity="info">
-                  {`Pax number exceeds previous year at ${exceededCount} airports`}
-                </Alert>
-              :
-                <Alert icon={<CheckCircle fontSize="inherit" />} severity="success">
-                  Pax number does not exceed previous year at any airport
-                </Alert>
-            }
-            <Box sx={{mt: 2}}>
-              <DrtButton fullWidth variant="primary" onClick={() => navigate(regionName.toLowerCase())}>
-                {regionName !== 'Heathrow' ? `View ${regionName} region` : `View ${regionName}`}
-              </DrtButton>
-            </Box>
+    <Card
+      heading={heading}
+      headingLevel={3}
+      className="pressure-card"
+      role="group"
+      aria-label={heading}
+      tabIndex={0}
+    >
+      <Stack sx={{ width: '100%' }} spacing={2}>
+        <Radar
+          data={chartData}
+          options={chartOptions}
+          aria-label={`${heading} forecast arrivals compared with historical arrivals`}
+        />
+        <Box>
+          { exceededCount > 0 ?
+              <Alert icon={<ErrorIcon fontSize="inherit" />} severity="info">
+                {`Pax number exceeds previous year at ${exceededCount} airports`}
+              </Alert>
+            :
+              <Alert icon={<CheckCircle fontSize="inherit" />} severity="success">
+                Pax number does not exceed previous year at any airport
+              </Alert>
+          }
+          <Box sx={{mt: 2}}>
+            <DrtButton fullWidth variant="primary" onClick={() => navigate(regionName.toLowerCase())}>
+              {regionName !== 'Heathrow' ? `View ${regionName} region` : `View ${regionName}`}
+            </DrtButton>
           </Box>
-        </Stack>
-      </CardContent>
+        </Box>
+      </Stack>
     </Card>
   )
 
