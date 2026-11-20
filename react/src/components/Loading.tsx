@@ -1,6 +1,7 @@
 import React from "react";
 import { styled } from '@mui/material/styles';
-import {CircularProgress, Grid} from "@mui/material";
+import {Grid} from "@mui/material";
+import {LoadingSpinner} from "@drt/drt-react";
 
 const PREFIX = 'Loading';
 
@@ -28,9 +29,8 @@ export default () => {
       alignItems="center"
       justifyContent="center"
     >
-      <CircularProgress/>
+      <LoadingSpinner/>
     </StyledGrid>
   );
 }
-
 
