@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {Button, CircularProgress, Dialog, DialogContent, DialogTitle, Typography, IconButton} from "@mui/material";
+import {Button, Dialog, DialogContent, DialogTitle, Typography, IconButton} from "@mui/material";
+import {LoadingSpinner} from "@drt/drt-react";
 import CloseIcon from '@mui/icons-material/Close';
 import Link from "@mui/material/Link";
 
@@ -49,7 +50,7 @@ const DownloadModal = ({status, downloadUrl, isModalOpen, handleModalClose}: Dow
               <CloseIcon />
             </IconButton>
             <DialogContent sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', textAlign: 'center'}}>
-              { status === 'preparing' && <CircularProgress sx={{margin: '0 auto 1em'}} /> }
+              { status === 'preparing' && <LoadingSpinner>Creating your report...</LoadingSpinner> }
               <Typography>{ paragraphText }</Typography>
               { status !== 'failed' && <Button 
                                         sx={{margin: '1em auto'}} 

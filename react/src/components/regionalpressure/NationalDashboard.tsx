@@ -3,9 +3,9 @@ import {connect} from 'react-redux';
 import {
   Box,
   Grid,
-  CircularProgress,
   Typography
 } from "@mui/material";
+import {LoadingSpinner} from "@drt/drt-react";
 import {UserProfile} from "../../model/User";
 import {ConfigValues, PortRegion} from "../../model/Config";
 import {RootState} from '../../store/redux';
@@ -49,7 +49,7 @@ const NationalDashboard = ({config, user, status}: NationalDashboardProps) => {
 
       {status === 'loading' && <Grid container justifyContent={"center"}>
         <Grid item sx={{p: 4}}>
-          <CircularProgress/>
+          <LoadingSpinner>Loading dashboard...</LoadingSpinner>
         </Grid>
       </Grid>
       }
