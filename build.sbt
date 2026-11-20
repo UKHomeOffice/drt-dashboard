@@ -9,8 +9,8 @@ lazy val root = (project in file(".")).
     version := sys.env.getOrElse("DRONE_BUILD_NUMBER", sys.env.getOrElse("BUILD_ID", "DEV")),
     name := "drt-dashboard",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    dockerBaseImage := "openjdk:11-jre-slim-buster",
     libraryDependencies ++= AppDependencies.all,
+    dependencyOverrides ++= AppDependencies.dependencyOverrides,
     resolvers ++= Seq(
       "Artifactory Release Realm" at "https://artifactory.digital.homeoffice.gov.uk/",
       "Artifactory Realm release local" at
@@ -18,7 +18,6 @@ lazy val root = (project in file(".")).
       "Spring Lib Release Repository" at "https://repo.spring.io/libs-release/",
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
-
     dockerExposedPorts ++= Seq(8081),
     Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "resources",
     run / fork := true,
