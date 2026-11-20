@@ -2,7 +2,10 @@
     <variable name="ENV_LOG_LEVEL" value="${ENV_LOG_LEVEL:-INFO}"/>
     <variable name="ACTIVE_APPENDER" value="STDOUT_JSON"/>
 
-    <if condition='isDefined("NO_JSON_LOGGING")'>
+    <condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+        <expression>isDefined("NO_JSON_LOGGING")</expression>
+    </condition>
+    <if>
         <then>
             <variable name="ACTIVE_APPENDER" value="STDOUT_TEXT"/>
         </then>
