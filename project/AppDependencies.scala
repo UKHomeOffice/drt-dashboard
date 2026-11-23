@@ -49,5 +49,10 @@ object AppDependencies {
   val all: Seq[ModuleID] = compileDependencies ++ testDependencies
 
   // Spark 4.3.0 pulls Netty 4.2.13.Final, which predates the fix for GHSA-5pvg-856g-cp85 (fixed in 4.2.15.Final).
-  val dependencyOverrides: Seq[ModuleID] = Seq("io.netty" % "netty-all" % "4.2.20.Final")
+  // Keep the tcnative bindings and native binaries aligned with the version in Netty's BOM.
+  val dependencyOverrides: Seq[ModuleID] = Seq(
+    "io.netty" % "netty-all" % "4.2.20.Final",
+    "io.netty" % "netty-tcnative-classes" % "2.0.86.Final",
+    "io.netty" % "netty-tcnative-boringssl-static" % "2.0.86.Final"
+  )
 }
