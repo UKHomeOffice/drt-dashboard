@@ -9,6 +9,7 @@ import {PortsObject} from './regionalPressureSagas';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import moment from 'moment';
+import {enqueueSnackbar} from 'notistack';
 
 interface RegionalPressureExportProps {
   granularity: 'hour' | 'day',
@@ -18,6 +19,8 @@ interface RegionalPressureExportProps {
   historicHourlyPaxByPort: {
     [key: string]: TerminalDataPoint[]
   };
+  forecastStart: string;
+  historicStart: string;
 }
 
 type ExportDataPoint = {
@@ -29,41 +32,56 @@ type ExportDataPoint = {
   drtTotalPax: number,
   drtEgatePax: number,
   drtDeskPax: number,
-  bxTotalPax: number,
-  bxEgatePax: number,
-  bxDeskPax: number,
+  bxTotalPax: number | string,
+  bxEgatePax: number | string,
+  bxDeskPax: number | string,
 }
 
-const constructCsvRows = (forecast: PortsObject, historic: PortsObject, granularity: 'hour' | 'day') => {
+const constructCsvRows = (
+  forecast: PortsObject,
+  historic: PortsObject,
+  granularity: 'hour' | 'day',
+  forecastStart: string,
+  historicStart: string,
+) => {
   const rows: ExportDataPoint[] = []
-  Object.keys(forecast).map((port: string) => {
+  const slot = (point: TerminalDataPoint, start: string) => {
+    const day = moment.utc(point.date).startOf('day').diff(moment.utc(start).startOf('day'), 'days')
+    return granularity === 'hour' ? `${day}:${point.hour}` : `${day}`
+  }
+  const formatDate = (point: TerminalDataPoint) => {
+    const date = moment(point.date).format('DD-MM-YYYY')
+    return granularity === 'hour' ? `${String(point.hour).padStart(2, '0')}:00 ${date}` : date
+  }
+
+  Object.keys(forecast).forEach((port: string) => {
+    const historicBySlot = new Map<string, TerminalDataPoint[]>()
+    const historicPoints = historic[port] || []
+    historicPoints.filter(point => !point.terminalName).forEach(point => {
+      const key = slot(point, historicStart)
+      const points = historicBySlot.get(key) || []
+      points.push(point)
+      historicBySlot.set(key, points)
+    })
+
     forecast[port]
       .filter((portDataPoint) => !portDataPoint.terminalName)
-      .map((portDataPoint, index) => {
-        const historicDataPoint = historic[port][index]
+      .forEach((portDataPoint) => {
+        const historicDataPoint = historicBySlot.get(slot(portDataPoint, forecastStart))?.shift()
         const [drtEgatePax, drtDeskPax] = paxByGateType(portDataPoint.drtQueueCounts)
-        const [bxEgatePax, bxDeskPax] = paxByGateType(historicDataPoint.bxQueueCounts)
-
-
-        const date = granularity === 'hour' ?
-          moment(portDataPoint.date).add(portDataPoint.hour, 'hours').format('HH:mm DD-MM-YYYY') :
-          moment(portDataPoint.date).format('DD-MM-YYYY')
-
-        const historicDate = granularity === 'hour' ?
-          moment(historicDataPoint.date).add(historicDataPoint.hour, 'hours').format('HH:mm DD-MM-YYYY') :
-          moment(historicDataPoint.date).format('DD-MM-YYYY')
+        const historicPax = historicDataPoint ? paxByGateType(historicDataPoint.bxQueueCounts) : undefined
 
         const exportDataPoint: ExportDataPoint = {
-          forecastDate: date,
-          historicDate,
+          forecastDate: formatDate(portDataPoint),
+          historicDate: historicDataPoint ? formatDate(historicDataPoint) : '',
           portCode: portDataPoint.portCode || '',
           regionName: portDataPoint.regionName || '',
           drtTotalPax: drtEgatePax + drtDeskPax,
           drtEgatePax: drtEgatePax,
           drtDeskPax: drtDeskPax,
-          bxTotalPax: bxEgatePax + bxDeskPax,
-          bxEgatePax: bxEgatePax,
-          bxDeskPax: bxDeskPax,
+          bxTotalPax: historicPax ? historicPax[0] + historicPax[1] : '',
+          bxEgatePax: historicPax ? historicPax[0] : '',
+          bxDeskPax: historicPax ? historicPax[1] : '',
         }
         rows.push(exportDataPoint)
       })
@@ -72,7 +90,7 @@ const constructCsvRows = (forecast: PortsObject, historic: PortsObject, granular
   return rows
 }
 
-const RegionalPressureExport = ({forecastHourlyPaxByPort, historicHourlyPaxByPort, granularity}: RegionalPressureExportProps) => {
+const RegionalPressureExport = ({forecastHourlyPaxByPort, historicHourlyPaxByPort, granularity, forecastStart, historicStart}: RegionalPressureExportProps) => {
 
   const navigate = useNavigate();
 
@@ -94,7 +112,11 @@ const RegionalPressureExport = ({forecastHourlyPaxByPort, historicHourlyPaxByPor
   });
 
   const handleExport = () => {
-    const csvRows: ExportDataPoint[] = constructCsvRows(forecastHourlyPaxByPort, historicHourlyPaxByPort, granularity)
+    const csvRows = constructCsvRows(forecastHourlyPaxByPort, historicHourlyPaxByPort, granularity, forecastStart, historicStart)
+    if (csvRows.length === 0) {
+      enqueueSnackbar('There is no forecast data to export for the selected dates.', {variant: 'warning'})
+      return
+    }
     const csv = generateCsv(csvConfig)(csvRows);
     download(csvConfig)(csv)
   }
@@ -119,6 +141,8 @@ const mapState = (state: RootState) => {
     forecastHourlyPaxByPort: state.pressureDashboard?.forecastHourlyPaxByPort,
     historicHourlyPaxByPort: state.pressureDashboard?.historicHourlyPaxByPort,
     granularity: state.pressureDashboard?.interval,
+    forecastStart: state.pressureDashboard?.forecastStart,
+    historicStart: state.pressureDashboard?.historicStart,
   };
 }
 
